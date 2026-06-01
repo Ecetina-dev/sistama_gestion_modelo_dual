@@ -1,0 +1,65 @@
+# ===========================================
+# .NET / Visual Studio
+# ===========================================
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio 2015/2017 cache/options directory
+.vs/
+
+# Visual Studio Code
+.vscode/
+
+# NuGet Packages
+*.nupkg
+*.snupkg
+[nN]u[gG]et[sS]-packages/
+packages/
+
+# Test Results and Covers
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.trx
+*.coverage
+*.coveragexml
+
+# Dotnet builds
+*.dll
+*.exe
+*.pdb
+*.xml
+
+# ===========================================
+# Project-specific
+# ===========================================
+
+# Sensitive files (passwords, API keys, etc)
+App.config
+appsettings.json
+*connection*.config
+
+# SQL files (if you don't want to commit DB scripts)
+# *.sql
+# database/
+
+# IDE settings per user
+*.suo
+*.user

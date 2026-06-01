@@ -1,0 +1,360 @@
+using System;
+using System.Collections.Generic;
+using MySqlConnector;
+using Laboratorio_del_Tema_5_2.Data;
+using Laboratorio_del_Tema_5_2.Models;
+
+namespace Laboratorio_del_Tema_5_2.Controllers
+{
+    /// <summary>
+    /// Controlador para operaciones CRUD de la entidad Alumno.
+    /// </summary>
+    public class AlumnoController
+    {
+        /// <summary>
+        /// Inserta un nuevo alumno en la base de datos.
+        /// </summary>
+        public bool Create(Alumno alumno)
+        {
+            try
+            {
+                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                {
+                    conn.Open();
+                    string query = @"INSERT INTO Alumno 
+                                     (no_control, nombre, apellido_paterno, apellido_materno, 
+                                      email, telefono, fecha_nacimiento, status_alumno) 
+                                     VALUES 
+                                     (@no_control, @nombre, @apellido_paterno, @apellido_materno,
+                                      @email, @telefono, @fecha_nacimiento, @status_alumno)";
+
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@no_control", alumno.No_Control);
+                        cmd.Parameters.AddWithValue("@nombre", alumno.Nombre);
+                        cmd.Parameters.AddWithValue("@apellido_paterno", alumno.Apellido_Paterno);
+                        
+                        if (string.IsNullOrEmpty(alumno.Apellido_Materno))
+                            cmd.Parameters.AddWithValue("@apellido_materno", DBNull.Value);
+                        else
+                            cmd.Parameters.AddWithValue("@apellido_materno", alumno.Apellido_Materno);
+                        
+                        if (string.IsNullOrEmpty(alumno.Email))
+                            cmd.Parameters.AddWithValue("@email", DBNull.Value);
+                        else
+                            cmd.Parameters.AddWithValue("@email", alumno.Email);
+                        
+                        if (string.IsNullOrEmpty(alumno.Telefono))
+                            cmd.Parameters.AddWithValue("@telefono", DBNull.Value);
+                        else
+                            cmd.Parameters.AddWithValue("@telefono", alumno.Telefono);
+                        
+                        if (alumno.Fecha_Nacimiento.HasValue)
+                            cmd.Parameters.AddWithValue("@fecha_nacimiento", alumno.Fecha_Nacimiento.Value);
+                        else
+                            cmd.Parameters.AddWithValue("@fecha_nacimiento", DBNull.Value);
+                        
+                        cmd.Parameters.AddWithValue("@status_alumno", string.IsNullOrEmpty(alumno.Status_Alumno) ? "activo" : alumno.Status_Alumno);
+
+                        int rowsAffected = cmd.ExecuteNonQuery();
+                        return rowsAffected > 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error al crear alumno: " + ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Obtiene todos los alumnos de la base de datos.
+        /// </summary>
+        public List<Alumno> Read()
+        {
+            List<Alumno> alumnos = new List<Alumno>();
+
+            try
+            {
+                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                {
+                    conn.Open();
+                    string query = "SELECT * FROM Alumno ORDER BY apellido_paterno, nombre";
+
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            Alumno alumno = new Alumno();
+                            alumno.Id_Alumno = reader.GetInt32("id_alumno");
+                            alumno.No_Control = reader.GetString("no_control");
+                            alumno.Nombre = reader.GetString("nombre");
+                            alumno.Apellido_Paterno = reader.GetString("apellido_paterno");
+                            
+                            int idxApMaterno = reader.GetOrdinal("apellido_materno");
+                            alumno.Apellido_Materno = reader.IsDBNull(idxApMaterno) ? null : reader.GetString(idxApMaterno);
+                            
+                            int idxEmail = reader.GetOrdinal("email");
+                            alumno.Email = reader.IsDBNull(idxEmail) ? null : reader.GetString(idxEmail);
+                            
+                            int idxTelefono = reader.GetOrdinal("telefono");
+                            alumno.Telefono = reader.IsDBNull(idxTelefono) ? null : reader.GetString(idxTelefono);
+                            
+                            int idxFechaNac = reader.GetOrdinal("fecha_nacimiento");
+                            alumno.Fecha_Nacimiento = reader.IsDBNull(idxFechaNac) ? (DateTime?)null : reader.GetDateTime(idxFechaNac);
+                            
+                            alumno.Status_Alumno = reader.GetString("status_alumno");
+                            alumno.Created_At = reader.GetDateTime("created_at");
+                            alumno.Updated_At = reader.GetDateTime("updated_at");
+                            
+                            alumnos.Add(alumno);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error al leer alumnos: " + ex.Message);
+            }
+
+            return alumnos;
+        }
+
+        /// <summary>
+        /// Obtiene un alumno especifico por su ID.
+        /// </summary>
+        public Alumno ReadById(int idAlumno)
+        {
+            try
+            {
+                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                {
+                    conn.Open();
+                    string query = "SELECT * FROM Alumno WHERE id_alumno = @id_alumno";
+
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id_alumno", idAlumno);
+
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                Alumno alumno = new Alumno();
+                                alumno.Id_Alumno = reader.GetInt32("id_alumno");
+                                alumno.No_Control = reader.GetString("no_control");
+                                alumno.Nombre = reader.GetString("nombre");
+                                alumno.Apellido_Paterno = reader.GetString("apellido_paterno");
+                                
+                                int idxApMaterno = reader.GetOrdinal("apellido_materno");
+                                alumno.Apellido_Materno = reader.IsDBNull(idxApMaterno) ? null : reader.GetString(idxApMaterno);
+                                
+                                int idxEmail = reader.GetOrdinal("email");
+                                alumno.Email = reader.IsDBNull(idxEmail) ? null : reader.GetString(idxEmail);
+                                
+                                int idxTelefono = reader.GetOrdinal("telefono");
+                                alumno.Telefono = reader.IsDBNull(idxTelefono) ? null : reader.GetString(idxTelefono);
+                                
+                                int idxFechaNac = reader.GetOrdinal("fecha_nacimiento");
+                                alumno.Fecha_Nacimiento = reader.IsDBNull(idxFechaNac) ? (DateTime?)null : reader.GetDateTime(idxFechaNac);
+                                
+                                alumno.Status_Alumno = reader.GetString("status_alumno");
+                                alumno.Created_At = reader.GetDateTime("created_at");
+                                alumno.Updated_At = reader.GetDateTime("updated_at");
+                                
+                                return alumno;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error al buscar alumno: " + ex.Message);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Actualiza los datos de un alumno existente.
+        /// </summary>
+        public bool Update(Alumno alumno)
+        {
+            try
+            {
+                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                {
+                    conn.Open();
+                    string query = @"UPDATE Alumno SET 
+                                     no_control = @no_control,
+                                     nombre = @nombre,
+                                     apellido_paterno = @apellido_paterno,
+                                     apellido_materno = @apellido_materno,
+                                     email = @email,
+                                     telefono = @telefono,
+                                     fecha_nacimiento = @fecha_nacimiento,
+                                     status_alumno = @status_alumno
+                                     WHERE id_alumno = @id_alumno";
+
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id_alumno", alumno.Id_Alumno);
+                        cmd.Parameters.AddWithValue("@no_control", alumno.No_Control);
+                        cmd.Parameters.AddWithValue("@nombre", alumno.Nombre);
+                        cmd.Parameters.AddWithValue("@apellido_paterno", alumno.Apellido_Paterno);
+                        
+                        if (string.IsNullOrEmpty(alumno.Apellido_Materno))
+                            cmd.Parameters.AddWithValue("@apellido_materno", DBNull.Value);
+                        else
+                            cmd.Parameters.AddWithValue("@apellido_materno", alumno.Apellido_Materno);
+                        
+                        if (string.IsNullOrEmpty(alumno.Email))
+                            cmd.Parameters.AddWithValue("@email", DBNull.Value);
+                        else
+                            cmd.Parameters.AddWithValue("@email", alumno.Email);
+                        
+                        if (string.IsNullOrEmpty(alumno.Telefono))
+                            cmd.Parameters.AddWithValue("@telefono", DBNull.Value);
+                        else
+                            cmd.Parameters.AddWithValue("@telefono", alumno.Telefono);
+                        
+                        if (alumno.Fecha_Nacimiento.HasValue)
+                            cmd.Parameters.AddWithValue("@fecha_nacimiento", alumno.Fecha_Nacimiento.Value);
+                        else
+                            cmd.Parameters.AddWithValue("@fecha_nacimiento", DBNull.Value);
+                        
+                        cmd.Parameters.AddWithValue("@status_alumno", string.IsNullOrEmpty(alumno.Status_Alumno) ? "activo" : alumno.Status_Alumno);
+
+                        int rowsAffected = cmd.ExecuteNonQuery();
+                        return rowsAffected > 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error al actualizar alumno: " + ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Elimina un alumno de la base de datos por su ID.
+        /// </summary>
+        public bool Delete(int idAlumno)
+        {
+            try
+            {
+                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                {
+                    conn.Open();
+                    string query = "DELETE FROM Alumno WHERE id_alumno = @id_alumno";
+
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id_alumno", idAlumno);
+                        int rowsAffected = cmd.ExecuteNonQuery();
+                        return rowsAffected > 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error al eliminar alumno: " + ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Obtiene la lista de alumnos con su empresa asignada usando JOIN.
+        /// </summary>
+        public List<AlumnoConEmpresa> GetAlumnosConEmpresa()
+        {
+            List<AlumnoConEmpresa> lista = new List<AlumnoConEmpresa>();
+
+            try
+            {
+                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                {
+                    conn.Open();
+                    string query = @"SELECT 
+                                        a.id_alumno,
+                                        a.no_control,
+                                        a.nombre,
+                                        a.apellido_paterno,
+                                        a.apellido_materno,
+                                        a.email,
+                                        a.telefono,
+                                        a.status_alumno,
+                                        e.nombre_comercial AS empresa,
+                                        ae.puesto,
+                                        ae.salario
+                                    FROM Alumno a
+                                    INNER JOIN Alumno_Empresa ae ON a.id_alumno = ae.id_alumno
+                                    INNER JOIN Empresa e ON ae.id_empresa = e.id_empresa
+                                    WHERE ae.status_asignacion = 'activa'
+                                    ORDER BY a.apellido_paterno, a.nombre";
+
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            AlumnoConEmpresa item = new AlumnoConEmpresa();
+                            item.Id_Alumno = reader.GetInt32("id_alumno");
+                            item.No_Control = reader.GetString("no_control");
+                            item.Nombre = reader.GetString("nombre");
+                            item.Apellido_Paterno = reader.GetString("apellido_paterno");
+                            
+                            int idxApMaterno = reader.GetOrdinal("apellido_materno");
+                            item.Apellido_Materno = reader.IsDBNull(idxApMaterno) ? null : reader.GetString(idxApMaterno);
+                            
+                            int idxEmail = reader.GetOrdinal("email");
+                            item.Email = reader.IsDBNull(idxEmail) ? null : reader.GetString(idxEmail);
+                            
+                            int idxTelefono = reader.GetOrdinal("telefono");
+                            item.Telefono = reader.IsDBNull(idxTelefono) ? null : reader.GetString(idxTelefono);
+                            
+                            item.Status_Alumno = reader.GetString("status_alumno");
+                            item.Empresa = reader.GetString("empresa");
+                            item.Puesto = reader.GetString("puesto");
+                            
+                            int idxSalario = reader.GetOrdinal("salario");
+                            item.Salario = reader.IsDBNull(idxSalario) ? 0 : reader.GetDecimal(idxSalario);
+                            
+                            lista.Add(item);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error al buscar alumnos con empresa: " + ex.Message);
+            }
+
+            return lista;
+        }
+    }
+
+    /// <summary>
+    /// Clase auxiliar para almacenar el resultado de la consulta JOIN.
+    /// </summary>
+    public class AlumnoConEmpresa
+    {
+        public int Id_Alumno { get; set; }
+        public string No_Control { get; set; }
+        public string Nombre { get; set; }
+        public string Apellido_Paterno { get; set; }
+        public string Apellido_Materno { get; set; }
+        public string Email { get; set; }
+        public string Telefono { get; set; }
+        public string Status_Alumno { get; set; }
+        public string Empresa { get; set; }
+        public string Puesto { get; set; }
+        public decimal Salario { get; set; }
+
+        public string NombreCompleto => $"{Nombre} {Apellido_Paterno} {Apellido_Materno}";
+    }
+}
