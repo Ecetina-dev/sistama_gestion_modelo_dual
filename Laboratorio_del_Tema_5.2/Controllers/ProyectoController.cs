@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using MySqlConnector;
 using Laboratorio_del_Tema_5_2.Data;
 using Laboratorio_del_Tema_5_2.Models;
+using Laboratorio_del_Tema_5_2.Utils;
 
 namespace Laboratorio_del_Tema_5_2.Controllers
 {
@@ -37,7 +38,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                         cmd.Parameters.AddWithValue("@fecha_inicio", proyecto.Fecha_Inicio.HasValue ? (object)proyecto.Fecha_Inicio.Value : DBNull.Value);
                         cmd.Parameters.AddWithValue("@fecha_fin", proyecto.Fecha_Fin.HasValue ? (object)proyecto.Fecha_Fin.Value : DBNull.Value);
                         cmd.Parameters.AddWithValue("@horas_totales", proyecto.Horas_Totales.HasValue ? (object)proyecto.Horas_Totales.Value : DBNull.Value);
-                        cmd.Parameters.AddWithValue("@status_proyecto", string.IsNullOrEmpty(proyecto.Status) ? "propuesto" : proyecto.Status);
+                        cmd.Parameters.AddWithValue("@status_proyecto", string.IsNullOrEmpty(proyecto.Status) ? Estatus.ProyectoPropuesto : proyecto.Status);
                         cmd.Parameters.AddWithValue("@created_at", DateTime.Now);
                         cmd.Parameters.AddWithValue("@updated_at", DateTime.Now);
 
@@ -48,7 +49,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al crear proyecto: " + ex.Message);
+                Logger.Error("Error al crear proyecto", ex);
                 return false;
             }
         }
@@ -102,9 +103,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al leer proyectos: " + ex.Message);
+                Logger.Error("Error al leer proyectos", ex);
             }
-
             return proyectos;
         }
 
@@ -159,9 +159,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al buscar proyecto: " + ex.Message);
+                Logger.Error($"Error al buscar proyecto ID: {idProyecto}", ex);
             }
-
             return null;
         }
 
@@ -197,7 +196,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                         cmd.Parameters.AddWithValue("@fecha_inicio", proyecto.Fecha_Inicio.HasValue ? (object)proyecto.Fecha_Inicio.Value : DBNull.Value);
                         cmd.Parameters.AddWithValue("@fecha_fin", proyecto.Fecha_Fin.HasValue ? (object)proyecto.Fecha_Fin.Value : DBNull.Value);
                         cmd.Parameters.AddWithValue("@horas_totales", proyecto.Horas_Totales.HasValue ? (object)proyecto.Horas_Totales.Value : DBNull.Value);
-                        cmd.Parameters.AddWithValue("@status_proyecto", string.IsNullOrEmpty(proyecto.Status) ? "propuesto" : proyecto.Status);
+                        cmd.Parameters.AddWithValue("@status_proyecto", string.IsNullOrEmpty(proyecto.Status) ? Estatus.ProyectoPropuesto : proyecto.Status);
                         cmd.Parameters.AddWithValue("@updated_at", DateTime.Now);
 
                         int rowsAffected = cmd.ExecuteNonQuery();
@@ -207,7 +206,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al actualizar proyecto: " + ex.Message);
+                Logger.Error("Error al actualizar proyecto", ex);
                 return false;
             }
         }
@@ -234,7 +233,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al eliminar proyecto: " + ex.Message);
+                Logger.Error($"Error al eliminar proyecto ID: {idProyecto}", ex);
                 return false;
             }
         }

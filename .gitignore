@@ -1,15 +1,21 @@
 # ===========================================
-# .NET / Visual Studio
+# 🎯 .gitignore PROFESIONAL - Modelo Dual
 # ===========================================
 
-# User-specific files
-*.rsuser
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
+# ===========================================
+# 🔐 CREDENCIALES Y CONFIG SENSIBLE
+# ===========================================
+App.config
+appsettings.json
+appsettings.Development.json
+appsettings.Production.json
+*.connection.config
+connectionstrings.config
+SistemaTests/App.config
 
-# Build results
+# ===========================================
+# 📦 RESULTADOS DE BUILD
+# ===========================================
 [Dd]ebug/
 [Rr]elease/
 x64/
@@ -21,45 +27,78 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+*.dll
+*.exe
+*.pdb
+*.xml
+*.so
+*.dylib
+*.lib
+*.exp
 
-# Visual Studio 2015/2017 cache/options directory
+# ===========================================
+# 🛠️ ARCHIVOS DE IDE/USUARIO
+# ===========================================
 .vs/
-
-# Visual Studio Code
 .vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.rsuser
+[Dd]otSettings.user
 
-# NuGet Packages
+# ===========================================
+# 📦 NUGET
+# ===========================================
 *.nupkg
 *.snupkg
-[nN]u[gG]et[sS]-packages/
+[Nn]uget/
 packages/
+.nuget/
 
-# Test Results and Covers
+# ===========================================
+# 🧪 RESULTADOS DE TESTS
+# ===========================================
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 *.trx
 *.coverage
 *.coveragexml
-
-# Dotnet builds
-*.dll
-*.exe
-*.pdb
-*.xml
+*.log
 
 # ===========================================
-# Project-specific
+# 📊 REPORTES Y DOC GENERADA
 # ===========================================
+*.doc
+*.docx
+*.xls
+*.xlsx
+*.pdf
+node_modules/
 
-# Sensitive files (passwords, API keys, etc)
-App.config
-appsettings.json
-*connection*.config
+# ===========================================
+# 🤖 OPENCODE / ATL (asistente IA)
+# ===========================================
+.atl/
+.opencode/
+skill-registry/
+*_cache*
 
-# SQL files (if you don't want to commit DB scripts)
-# *.sql
-# database/
+# ===========================================
+# 🗑️ ARCHIVOS TEMPORALES
+# ===========================================
+[Tt]emp/
+[Rr]ecycle.Bin/
+*.tmp
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
 
-# IDE settings per user
-*.suo
-*.user
+# ===========================================
+# 🧪 PROYECTOS DE TEST TEMPORALES
+# ===========================================
+HashGen/

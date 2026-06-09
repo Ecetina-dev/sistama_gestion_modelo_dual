@@ -1,18 +1,36 @@
 using System;
+using System.Configuration;
 using MySqlConnector;
 
 namespace Laboratorio_del_Tema_5_2.Data
 {
     /// <summary>
-    /// Clase estatica para gestionar la conexion a la base de datos MySQL.
+    /// Proporciona metodos para gestionar la conexion a la base de datos MySQL.
     /// </summary>
     public static class MySQLConnection
     {
-        private const string ConnectionString = 
-            "Server=localhost;Database=ModeloDualDB;User=root;Password=Creeper77xd;Port=3307;";
+        /// <summary>
+        /// Obtiene la cadena de conexion desde App.config.
+        /// </summary>
+        private static string ConnectionString
+        {
+            get
+            {
+                try
+                {
+                    return ConfigurationManager.ConnectionStrings["MySQL"]?.ConnectionString 
+                        ?? throw new InvalidOperationException("No se encontro la cadena de conexion 'MySQL' en App.config.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error al cargar connection string: " + ex.Message);
+                    throw;
+                }
+            }
+        }
 
         /// <summary>
-        /// Obtiene una nueva conexion a MySQL.
+        /// Obtiene una nueva conexion a la base de datos.
         /// </summary>
         public static MySqlConnection GetConnection()
         {
@@ -20,7 +38,7 @@ namespace Laboratorio_del_Tema_5_2.Data
         }
 
         /// <summary>
-        /// Verifica si la conexion a MySQL es exitosa.
+        /// Verifica si la conexion a MySQL funciona correctamente.
         /// </summary>
         public static bool TestConnection()
         {
@@ -56,6 +74,22 @@ namespace Laboratorio_del_Tema_5_2.Data
             catch (Exception ex)
             {
                 return "No conectado: " + ex.Message;
+            }
+        }
+
+        /// <summary>
+        /// Obtiene el timeout de conexion configurado.
+        /// </summary>
+        public static int GetTimeout()
+        {
+            try
+            {
+                string timeoutStr = ConfigurationManager.AppSettings["TimeoutConexion"];
+                return int.TryParse(timeoutStr, out int timeout) ? timeout : 30;
+            }
+            catch
+            {
+                return 30;
             }
         }
     }

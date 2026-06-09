@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using MySqlConnector;
 using Laboratorio_del_Tema_5_2.Data;
 using Laboratorio_del_Tema_5_2.Models;
+using Laboratorio_del_Tema_5_2.Utils;
 
 namespace Laboratorio_del_Tema_5_2.Controllers
 {
@@ -54,7 +55,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                         else
                             cmd.Parameters.AddWithValue("@fecha_nacimiento", DBNull.Value);
                         
-                        cmd.Parameters.AddWithValue("@status_alumno", string.IsNullOrEmpty(alumno.Status_Alumno) ? "activo" : alumno.Status_Alumno);
+                        cmd.Parameters.AddWithValue("@status_alumno", string.IsNullOrEmpty(alumno.Status_Alumno) ? Estatus.AlumnoActivo : alumno.Status_Alumno);
 
                         int rowsAffected = cmd.ExecuteNonQuery();
                         return rowsAffected > 0;
@@ -63,8 +64,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al crear alumno: " + ex.Message);
-                return false;
+                Logger.Error("Error al crear alumno", ex);
+                throw new CrudOperationException($"Error al crear el alumno: {ex.Message}", "Create", alumno);
             }
         }
 
@@ -116,9 +117,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al leer alumnos: " + ex.Message);
+                Logger.Error("Error al leer alumnos", ex);
             }
-
             return alumnos;
         }
 
@@ -172,9 +172,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al buscar alumno: " + ex.Message);
+                Logger.Error("Error al buscar alumno", ex);
             }
-
             return null;
         }
 
@@ -226,7 +225,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                         else
                             cmd.Parameters.AddWithValue("@fecha_nacimiento", DBNull.Value);
                         
-                        cmd.Parameters.AddWithValue("@status_alumno", string.IsNullOrEmpty(alumno.Status_Alumno) ? "activo" : alumno.Status_Alumno);
+                        cmd.Parameters.AddWithValue("@status_alumno", string.IsNullOrEmpty(alumno.Status_Alumno) ? Estatus.AlumnoActivo : alumno.Status_Alumno);
 
                         int rowsAffected = cmd.ExecuteNonQuery();
                         return rowsAffected > 0;
@@ -235,8 +234,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al actualizar alumno: " + ex.Message);
-                return false;
+                Logger.Error("Error al actualizar alumno", ex);
+                throw new CrudOperationException($"Error al actualizar el alumno: {ex.Message}", "Update", alumno);
             }
         }
 
@@ -262,8 +261,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al eliminar alumno: " + ex.Message);
-                return false;
+                Logger.Error($"Error al eliminar alumno ID: {idAlumno}", ex);
+                throw new CrudOperationException($"Error al eliminar el alumno: {ex.Message}", "Delete", null);
             }
         }
 
@@ -294,47 +293,78 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                     FROM Alumno a
                                     INNER JOIN Alumno_Empresa ae ON a.id_alumno = ae.id_alumno
                                     INNER JOIN Empresa e ON ae.id_empresa = e.id_empresa
-                                    WHERE ae.status_asignacion = 'activa'
+                                    WHERE ae.status_asignacion = @statusActivo
                                     ORDER BY a.apellido_paterno, a.nombre";
 
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
-                        while (reader.Read())
+                        cmd.Parameters.AddWithValue("@statusActivo", Estatus.AsignacionActiva);
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
                         {
-                            AlumnoConEmpresa item = new AlumnoConEmpresa();
-                            item.Id_Alumno = reader.GetInt32("id_alumno");
-                            item.No_Control = reader.GetString("no_control");
-                            item.Nombre = reader.GetString("nombre");
-                            item.Apellido_Paterno = reader.GetString("apellido_paterno");
-                            
-                            int idxApMaterno = reader.GetOrdinal("apellido_materno");
-                            item.Apellido_Materno = reader.IsDBNull(idxApMaterno) ? null : reader.GetString(idxApMaterno);
-                            
-                            int idxEmail = reader.GetOrdinal("email");
-                            item.Email = reader.IsDBNull(idxEmail) ? null : reader.GetString(idxEmail);
-                            
-                            int idxTelefono = reader.GetOrdinal("telefono");
-                            item.Telefono = reader.IsDBNull(idxTelefono) ? null : reader.GetString(idxTelefono);
-                            
-                            item.Status_Alumno = reader.GetString("status_alumno");
-                            item.Empresa = reader.GetString("empresa");
-                            item.Puesto = reader.GetString("puesto");
-                            
-                            int idxSalario = reader.GetOrdinal("salario");
-                            item.Salario = reader.IsDBNull(idxSalario) ? 0 : reader.GetDecimal(idxSalario);
-                            
-                            lista.Add(item);
+                            while (reader.Read())
+                            {
+                                AlumnoConEmpresa item = new AlumnoConEmpresa();
+                                item.Id_Alumno = reader.GetInt32("id_alumno");
+                                item.No_Control = reader.GetString("no_control");
+                                item.Nombre = reader.GetString("nombre");
+                                item.Apellido_Paterno = reader.GetString("apellido_paterno");
+                                
+                                int idxApMaterno = reader.GetOrdinal("apellido_materno");
+                                item.Apellido_Materno = reader.IsDBNull(idxApMaterno) ? null : reader.GetString(idxApMaterno);
+                                
+                                int idxEmail = reader.GetOrdinal("email");
+                                item.Email = reader.IsDBNull(idxEmail) ? null : reader.GetString(idxEmail);
+                                
+                                int idxTelefono = reader.GetOrdinal("telefono");
+                                item.Telefono = reader.IsDBNull(idxTelefono) ? null : reader.GetString(idxTelefono);
+                                
+                                item.Status_Alumno = reader.GetString("status_alumno");
+                                item.Empresa = reader.GetString("empresa");
+                                item.Puesto = reader.GetString("puesto");
+                                
+                                int idxSalario = reader.GetOrdinal("salario");
+                                item.Salario = reader.IsDBNull(idxSalario) ? 0 : reader.GetDecimal(idxSalario);
+                                
+                                lista.Add(item);
+                            }
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al buscar alumnos con empresa: " + ex.Message);
+                Logger.Error("Error al buscar alumnos con empresa", ex);
             }
-
             return lista;
+        }
+        /// <summary>
+        /// Verifica si ya existe un alumno con el mismo número de control.
+        /// </summary>
+        public bool ExisteNoControl(string noControl, int? excluirId = null)
+        {
+            try
+            {
+                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                {
+                    conn.Open();
+                    string query = "SELECT COUNT(*) FROM Alumno WHERE no_control = @no_control";
+                    if (excluirId.HasValue)
+                        query += " AND id_alumno != @id";
+
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@no_control", noControl);
+                        if (excluirId.HasValue)
+                            cmd.Parameters.AddWithValue("@id", excluirId.Value);
+                        return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error al verificar no_control", ex);
+                return false;
+            }
         }
     }
 

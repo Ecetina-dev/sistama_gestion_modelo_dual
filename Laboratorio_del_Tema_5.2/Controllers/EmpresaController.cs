@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using MySqlConnector;
 using Laboratorio_del_Tema_5_2.Data;
 using Laboratorio_del_Tema_5_2.Models;
+using Laboratorio_del_Tema_5_2.Utils;
 
 namespace Laboratorio_del_Tema_5_2.Controllers
 {
@@ -43,7 +44,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                         cmd.Parameters.AddWithValue("@email_empresa", string.IsNullOrEmpty(empresa.Email_Empresa) ? (object)DBNull.Value : empresa.Email_Empresa);
                         cmd.Parameters.AddWithValue("@nombre_contacto", string.IsNullOrEmpty(empresa.Nombre_Contacto) ? (object)DBNull.Value : empresa.Nombre_Contacto);
                         cmd.Parameters.AddWithValue("@puesto_contacto", string.IsNullOrEmpty(empresa.Puesto_Contacto) ? (object)DBNull.Value : empresa.Puesto_Contacto);
-                        cmd.Parameters.AddWithValue("@status_empresa", string.IsNullOrEmpty(empresa.Status_Empresa) ? "activa" : empresa.Status_Empresa);
+                        cmd.Parameters.AddWithValue("@status_empresa", string.IsNullOrEmpty(empresa.Status_Empresa) ? Estatus.EmpresaActiva : empresa.Status_Empresa);
 
                         int rowsAffected = cmd.ExecuteNonQuery();
                         return rowsAffected > 0;
@@ -52,7 +53,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al crear empresa: " + ex.Message);
+                Logger.Error("Error al crear empresa", ex);
                 return false;
             }
         }
@@ -121,9 +122,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al leer empresas: " + ex.Message);
+                Logger.Error("Error al leer empresas", ex);
             }
-
             return empresas;
         }
 
@@ -193,9 +193,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al buscar empresa: " + ex.Message);
+                Logger.Error("Error al buscar empresa", ex);
             }
-
             return null;
         }
 
@@ -238,7 +237,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                         cmd.Parameters.AddWithValue("@email_empresa", string.IsNullOrEmpty(empresa.Email_Empresa) ? (object)DBNull.Value : empresa.Email_Empresa);
                         cmd.Parameters.AddWithValue("@nombre_contacto", string.IsNullOrEmpty(empresa.Nombre_Contacto) ? (object)DBNull.Value : empresa.Nombre_Contacto);
                         cmd.Parameters.AddWithValue("@puesto_contacto", string.IsNullOrEmpty(empresa.Puesto_Contacto) ? (object)DBNull.Value : empresa.Puesto_Contacto);
-                        cmd.Parameters.AddWithValue("@status_empresa", string.IsNullOrEmpty(empresa.Status_Empresa) ? "activa" : empresa.Status_Empresa);
+                        cmd.Parameters.AddWithValue("@status_empresa", string.IsNullOrEmpty(empresa.Status_Empresa) ? Estatus.EmpresaActiva : empresa.Status_Empresa);
 
                         int rowsAffected = cmd.ExecuteNonQuery();
                         return rowsAffected > 0;
@@ -247,7 +246,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al actualizar empresa: " + ex.Message);
+                Logger.Error("Error al actualizar empresa", ex);
                 return false;
             }
         }
@@ -274,7 +273,37 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al eliminar empresa: " + ex.Message);
+                Logger.Error($"Error al eliminar empresa ID: {idEmpresa}", ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Verifica si ya existe una empresa con el mismo RFC.
+        /// </summary>
+        public bool ExisteRFC(string rfc, int? excluirId = null)
+        {
+            try
+            {
+                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                {
+                    conn.Open();
+                    string query = "SELECT COUNT(*) FROM Empresa WHERE rfc = @rfc";
+                    if (excluirId.HasValue)
+                        query += " AND id_empresa != @id";
+
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@rfc", rfc);
+                        if (excluirId.HasValue)
+                            cmd.Parameters.AddWithValue("@id", excluirId.Value);
+                        return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error al verificar RFC", ex);
                 return false;
             }
         }
@@ -291,7 +320,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 using (MySqlConnection conn = MySQLConnection.GetConnection())
                 {
                     conn.Open();
-                    string query = @"SELECT 
+string query = @"SELECT 
                                         e.id_empresa,
                                         e.nombre_comercial,
                                         e.ciudad,
@@ -301,38 +330,39 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                     FROM Empresa e
                                     INNER JOIN Alumno_Empresa ae ON e.id_empresa = ae.id_empresa
                                     INNER JOIN Alumno a ON ae.id_alumno = a.id_alumno
-                                    WHERE ae.status_asignacion = 'activa'
-                                    GROUP BY e.id_empresa
-                                    ORDER BY num_alumnos DESC";
+                                    WHERE ae.status_asignacion = @statusActivo
+                                    GROUP BY e.id_empresa";
 
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
-                        while (reader.Read())
+                        cmd.Parameters.AddWithValue("@statusActivo", Estatus.AsignacionActiva);
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
                         {
-                            EmpresaConAlumnos item = new EmpresaConAlumnos();
-                            item.Id_Empresa = reader.GetInt32("id_empresa");
-                            item.Nombre_Comercial = reader.GetString("nombre_comercial");
-                            
-                            int idx = reader.GetOrdinal("ciudad");
-                            item.Ciudad = reader.IsDBNull(idx) ? null : reader.GetString(idx);
-                            
-                            item.Status_Empresa = reader.GetString("status_empresa");
-                            item.Num_Alumnos = reader.GetInt32("num_alumnos");
-                            
-                            idx = reader.GetOrdinal("alumnos");
-                            item.Alumnos = reader.IsDBNull(idx) ? null : reader.GetString(idx);
-                            
-                            lista.Add(item);
+                            while (reader.Read())
+                            {
+                                EmpresaConAlumnos item = new EmpresaConAlumnos();
+                                item.Id_Empresa = reader.GetInt32("id_empresa");
+                                item.Nombre_Comercial = reader.GetString("nombre_comercial");
+                                
+                                int idx = reader.GetOrdinal("ciudad");
+                                item.Ciudad = reader.IsDBNull(idx) ? null : reader.GetString(idx);
+                                
+                                item.Status_Empresa = reader.GetString("status_empresa");
+                                item.Num_Alumnos = reader.GetInt32("num_alumnos");
+                                
+                                idx = reader.GetOrdinal("alumnos");
+                                item.Alumnos = reader.IsDBNull(idx) ? null : reader.GetString(idx);
+                                
+                                lista.Add(item);
+                            }
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al buscar empresas con alumnos: " + ex.Message);
+                Logger.Error("Error al buscar empresas con alumnos", ex);
             }
-
             return lista;
         }
     }

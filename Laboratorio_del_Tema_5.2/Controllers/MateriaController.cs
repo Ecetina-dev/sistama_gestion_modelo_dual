@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using MySqlConnector;
 using Laboratorio_del_Tema_5_2.Data;
 using Laboratorio_del_Tema_5_2.Models;
+using Laboratorio_del_Tema_5_2.Utils;
 
 namespace Laboratorio_del_Tema_5_2.Controllers
 {
@@ -34,7 +35,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                         cmd.Parameters.AddWithValue("@semestre", materia.Semestre > 0 ? materia.Semestre : (object)DBNull.Value);
                         cmd.Parameters.AddWithValue("@horas_teoria", materia.Horas_Teoria);
                         cmd.Parameters.AddWithValue("@horas_practica", materia.Horas_Practica);
-                        cmd.Parameters.AddWithValue("@status_materia", string.IsNullOrEmpty(materia.Status_Materia) ? "activa" : materia.Status_Materia);
+                        cmd.Parameters.AddWithValue("@status_materia", string.IsNullOrEmpty(materia.Status_Materia) ? Estatus.MateriaActiva : materia.Status_Materia);
 
                         int rowsAffected = cmd.ExecuteNonQuery();
                         return rowsAffected > 0;
@@ -43,7 +44,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al crear materia: " + ex.Message);
+                Logger.Error("Error al crear materia", ex);
                 return false;
             }
         }
@@ -93,9 +94,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al leer materias: " + ex.Message);
+                Logger.Error("Error al leer materias", ex);
             }
-
             return materias;
         }
 
@@ -146,9 +146,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al buscar materia: " + ex.Message);
+                Logger.Error($"Error al buscar materia ID: {idMateria}", ex);
             }
-
             return null;
         }
 
@@ -183,7 +182,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                         cmd.Parameters.AddWithValue("@semestre", materia.Semestre > 0 ? materia.Semestre : (object)DBNull.Value);
                         cmd.Parameters.AddWithValue("@horas_teoria", materia.Horas_Teoria);
                         cmd.Parameters.AddWithValue("@horas_practica", materia.Horas_Practica);
-                        cmd.Parameters.AddWithValue("@status_materia", string.IsNullOrEmpty(materia.Status_Materia) ? "activa" : materia.Status_Materia);
+                        cmd.Parameters.AddWithValue("@status_materia", string.IsNullOrEmpty(materia.Status_Materia) ? Estatus.MateriaActiva : materia.Status_Materia);
 
                         int rowsAffected = cmd.ExecuteNonQuery();
                         return rowsAffected > 0;
@@ -192,7 +191,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al actualizar materia: " + ex.Message);
+                Logger.Error("Error al actualizar materia", ex);
                 return false;
             }
         }
@@ -219,7 +218,37 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al eliminar materia: " + ex.Message);
+                Logger.Error($"Error al eliminar materia ID: {idMateria}", ex);
+                return false;
+            }
+        }
+
+        // ============================================
+        // EXISTS - Verificar si ya existe la clave
+        // ============================================
+        public bool ExisteClave(string clave, int? excluirId = null)
+        {
+            try
+            {
+                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                {
+                    conn.Open();
+                    string query = "SELECT COUNT(*) FROM Materia WHERE clave_materia = @clave";
+                    if (excluirId.HasValue)
+                        query += " AND id_materia != @id";
+
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@clave", clave);
+                        if (excluirId.HasValue)
+                            cmd.Parameters.AddWithValue("@id", excluirId.Value);
+                        return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error al verificar clave_materia", ex);
                 return false;
             }
         }
@@ -280,9 +309,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al buscar materias con proyectos: " + ex.Message);
+                Logger.Error("Error al buscar materias con proyectos", ex);
             }
-
             return lista;
         }
     }

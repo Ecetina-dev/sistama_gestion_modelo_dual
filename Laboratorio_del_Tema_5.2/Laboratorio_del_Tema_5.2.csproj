@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{CCEE838F-D933-40E7-9061-F9DF6832FC2C}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>Laboratorio_del_Tema_5._2</RootNamespace>
+    <RootNamespace>Laboratorio_del_Tema_5_2</RootNamespace>
     <AssemblyName>Laboratorio_del_Tema_5.2</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFramework>net472</TargetFramework>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
+    <LangVersion>latest</LangVersion>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
+
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
@@ -23,6 +22,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
@@ -32,10 +32,13 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="MySqlConnector">
-      <Version>2.3.1</Version>
-    </PackageReference>
+    <PackageReference Include="MySqlConnector" Version="2.3.1" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -46,110 +49,29 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Deployment" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="Models\Alumno.cs" />
-    <Compile Include="Models\Empresa.cs" />
-    <Compile Include="Models\Profesor.cs" />
-    <Compile Include="Models\Materia.cs" />
-    <Compile Include="Models\Proyecto.cs" />
-    <Compile Include="Models\Tema.cs" />
+    <None Include="Database\Fix_Errores_Ortografia.sql" />
+    <None Include="Database\Auth_Migration.sql" />
+    <None Include="Properties\Settings.settings" />
+    <None Include="App.config" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="Controllers\AlumnoController.cs" />
-    <Compile Include="Controllers\EmpresaController.cs" />
-    <Compile Include="Controllers\ProfesorController.cs" />
-    <Compile Include="Controllers\MateriaController.cs" />
-    <Compile Include="Controllers\ProyectoController.cs" />
-    <Compile Include="Controllers\TemaController.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Data\MySQLConnection.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Views\FormAlumnos.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\FormAlumnos.Designer.cs">
-      <DependentUpon>FormAlumnos.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Views\FormEmpresas.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\FormEmpresas.Designer.cs">
-      <DependentUpon>FormEmpresas.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Views\FormProyectos.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\FormProyectos.Designer.cs">
-      <DependentUpon>FormProyectos.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Views\FormProfesores.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\FormProfesores.Designer.cs">
-      <DependentUpon>FormProfesores.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Views\FormMaterias.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\FormMaterias.Designer.cs">
-      <DependentUpon>FormMaterias.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Views\FormTemas.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\FormTemas.Designer.cs">
-      <DependentUpon>FormTemas.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Views\FormMenuPrincipal.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Views\FormMenuPrincipal.Designer.cs">
-      <DependentUpon>FormMenuPrincipal.cs</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="Views\FormMaterias.resx">
-      <DependentUpon>FormMaterias.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\FormMenuPrincipal.resx">
-      <DependentUpon>FormMenuPrincipal.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\FormProfesores.resx">
-      <DependentUpon>FormProfesores.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Views\FormProyectos.resx">
-      <DependentUpon>FormProyectos.cs</DependentUpon>
-    </EmbeddedResource>
   </ItemGroup>
+
   <ItemGroup>
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

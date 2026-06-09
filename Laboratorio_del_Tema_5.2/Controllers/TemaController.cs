@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using MySqlConnector;
 using Laboratorio_del_Tema_5_2.Data;
 using Laboratorio_del_Tema_5_2.Models;
+using Laboratorio_del_Tema_5_2.Utils;
 
 namespace Laboratorio_del_Tema_5_2.Controllers
 {
@@ -19,11 +20,9 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 {
                     conn.Open();
                     string query = @"INSERT INTO Tema 
-                                     (id_materia, numero_tema, nombre, descripcion, 
-                                      horas_estimadas, status_tema) 
-                                     VALUES 
-                                     (@id_materia, @numero_tema, @nombre, @descripcion,
-                                      @horas_estimadas, @status_tema)";
+                                      (id_materia, numero_tema, nombre, descripcion, status_tema) 
+                                      VALUES 
+                                      (@id_materia, @numero_tema, @nombre, @descripcion, @status_tema)";
 
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
@@ -31,8 +30,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                         cmd.Parameters.AddWithValue("@numero_tema", tema.Numero_Tema);
                         cmd.Parameters.AddWithValue("@nombre", tema.Nombre);
                         cmd.Parameters.AddWithValue("@descripcion", string.IsNullOrEmpty(tema.Descripcion) ? (object)DBNull.Value : tema.Descripcion);
-                        cmd.Parameters.AddWithValue("@horas_estimadas", tema.Horas_Estimadas);
-                        cmd.Parameters.AddWithValue("@status_tema", string.IsNullOrEmpty(tema.Status_Tema) ? "activo" : tema.Status_Tema);
+                        cmd.Parameters.AddWithValue("@status_tema", string.IsNullOrEmpty(tema.Status_Tema) ? Estatus.TemaActivo : tema.Status_Tema);
 
                         int rowsAffected = cmd.ExecuteNonQuery();
                         return rowsAffected > 0;
@@ -41,7 +39,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al crear tema: " + ex.Message);
+                Logger.Error("Error al crear tema", ex);
                 return false;
             }
         }
@@ -77,7 +75,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                             int idx = reader.GetOrdinal("descripcion");
                             tema.Descripcion = reader.IsDBNull(idx) ? null : reader.GetString(idx);
                             
-                            tema.Horas_Estimadas = reader.GetDecimal("horas_estimadas");
                             tema.Status_Tema = reader.GetString("status_tema");
                             tema.Created_At = reader.GetDateTime("created_at");
                             tema.Updated_At = reader.GetDateTime("updated_at");
@@ -92,9 +89,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al leer temas: " + ex.Message);
+                Logger.Error("Error al leer temas", ex);
             }
-
             return temas;
         }
 
@@ -130,7 +126,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                 int idx = reader.GetOrdinal("descripcion");
                                 tema.Descripcion = reader.IsDBNull(idx) ? null : reader.GetString(idx);
                                 
-                                tema.Horas_Estimadas = reader.GetDecimal("horas_estimadas");
                                 tema.Status_Tema = reader.GetString("status_tema");
                                 tema.Created_At = reader.GetDateTime("created_at");
                                 tema.Updated_At = reader.GetDateTime("updated_at");
@@ -146,9 +141,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al buscar tema: " + ex.Message);
+                Logger.Error($"Error al buscar tema ID: {idTema}", ex);
             }
-
             return null;
         }
 
@@ -187,7 +181,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                 int idx = reader.GetOrdinal("descripcion");
                                 tema.Descripcion = reader.IsDBNull(idx) ? null : reader.GetString(idx);
                                 
-                                tema.Horas_Estimadas = reader.GetDecimal("horas_estimadas");
                                 tema.Status_Tema = reader.GetString("status_tema");
                                 tema.Created_At = reader.GetDateTime("created_at");
                                 tema.Updated_At = reader.GetDateTime("updated_at");
@@ -203,9 +196,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al leer temas por materia: " + ex.Message);
+                Logger.Error($"Error al leer temas por materia ID: {idMateria}", ex);
             }
-
             return temas;
         }
 
@@ -220,13 +212,12 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 {
                     conn.Open();
                     string query = @"UPDATE Tema SET 
-                                     id_materia = @id_materia,
-                                     numero_tema = @numero_tema,
-                                     nombre = @nombre,
-                                     descripcion = @descripcion,
-                                     horas_estimadas = @horas_estimadas,
-                                     status_tema = @status_tema
-                                     WHERE id_tema = @id_tema";
+                                      id_materia = @id_materia,
+                                      numero_tema = @numero_tema,
+                                      nombre = @nombre,
+                                      descripcion = @descripcion,
+                                      status_tema = @status_tema
+                                      WHERE id_tema = @id_tema";
 
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
@@ -235,8 +226,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                         cmd.Parameters.AddWithValue("@numero_tema", tema.Numero_Tema);
                         cmd.Parameters.AddWithValue("@nombre", tema.Nombre);
                         cmd.Parameters.AddWithValue("@descripcion", string.IsNullOrEmpty(tema.Descripcion) ? (object)DBNull.Value : tema.Descripcion);
-                        cmd.Parameters.AddWithValue("@horas_estimadas", tema.Horas_Estimadas);
-                        cmd.Parameters.AddWithValue("@status_tema", string.IsNullOrEmpty(tema.Status_Tema) ? "activo" : tema.Status_Tema);
+                        cmd.Parameters.AddWithValue("@status_tema", string.IsNullOrEmpty(tema.Status_Tema) ? Estatus.TemaActivo : tema.Status_Tema);
 
                         int rowsAffected = cmd.ExecuteNonQuery();
                         return rowsAffected > 0;
@@ -245,7 +235,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al actualizar tema: " + ex.Message);
+                Logger.Error("Error al actualizar tema", ex);
                 return false;
             }
         }
@@ -272,7 +262,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al eliminar tema: " + ex.Message);
+                Logger.Error($"Error al eliminar tema ID: {idTema}", ex);
                 return false;
             }
         }

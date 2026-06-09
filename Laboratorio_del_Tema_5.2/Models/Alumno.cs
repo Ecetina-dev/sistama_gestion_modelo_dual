@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Laboratorio_del_Tema_5_2.Models
 {
@@ -8,13 +9,30 @@ namespace Laboratorio_del_Tema_5_2.Models
     public class Alumno
     {
         public int Id_Alumno { get; set; }
+
+        [Required(ErrorMessage = "El número de control es requerido")]
+        [StringLength(8, MinimumLength = 8, ErrorMessage = "El número de control debe tener 8 dígitos")]
         public string No_Control { get; set; }
+
+        [Required(ErrorMessage = "El nombre es requerido")]
+        [StringLength(100, ErrorMessage = "El nombre no puede exceder 100 caracteres")]
         public string Nombre { get; set; }
+
+        [Required(ErrorMessage = "El apellido paterno es requerido")]
+        [StringLength(100, ErrorMessage = "El apellido paterno no puede exceder 100 caracteres")]
         public string Apellido_Paterno { get; set; }
+
+        [StringLength(100, ErrorMessage = "El apellido materno no puede exceder 100 caracteres")]
         public string Apellido_Materno { get; set; }
+
+        [EmailAddress(ErrorMessage = "El formato del email no es válido")]
         public string Email { get; set; }
+
+        [StringLength(10, MinimumLength = 10, ErrorMessage = "El teléfono debe tener 10 dígitos")]
         public string Telefono { get; set; }
+
         public DateTime? Fecha_Nacimiento { get; set; }
+
         public string Status_Alumno { get; set; }
         public DateTime Created_At { get; set; }
         public DateTime Updated_At { get; set; }

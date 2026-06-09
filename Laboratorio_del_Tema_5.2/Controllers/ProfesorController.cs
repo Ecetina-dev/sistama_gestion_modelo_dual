@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using MySqlConnector;
 using Laboratorio_del_Tema_5_2.Data;
 using Laboratorio_del_Tema_5_2.Models;
+using Laboratorio_del_Tema_5_2.Utils;
 
 namespace Laboratorio_del_Tema_5_2.Controllers
 {
@@ -56,7 +57,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                         else
                             cmd.Parameters.AddWithValue("@puesto", profesor.Puesto);
                         
-                        cmd.Parameters.AddWithValue("@status_profesor", string.IsNullOrEmpty(profesor.Status_Profesor) ? "activo" : profesor.Status_Profesor);
+                        cmd.Parameters.AddWithValue("@status_profesor", string.IsNullOrEmpty(profesor.Status_Profesor) ? Estatus.ProfesorActivo : profesor.Status_Profesor);
 
                         int rowsAffected = cmd.ExecuteNonQuery();
                         return rowsAffected > 0;
@@ -65,7 +66,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al crear profesor: " + ex.Message);
+                Logger.Error("Error al crear profesor", ex);
                 return false;
             }
         }
@@ -121,9 +122,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al leer profesores: " + ex.Message);
+                Logger.Error("Error al leer profesores", ex);
             }
-
             return profesores;
         }
 
@@ -180,9 +180,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al buscar profesor: " + ex.Message);
+                Logger.Error($"Error al buscar profesor ID: {idProfesor}", ex);
             }
-
             return null;
         }
 
@@ -240,7 +239,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                         else
                             cmd.Parameters.AddWithValue("@puesto", profesor.Puesto);
                         
-                        cmd.Parameters.AddWithValue("@status_profesor", string.IsNullOrEmpty(profesor.Status_Profesor) ? "activo" : profesor.Status_Profesor);
+                        cmd.Parameters.AddWithValue("@status_profesor", string.IsNullOrEmpty(profesor.Status_Profesor) ? Estatus.ProfesorActivo : profesor.Status_Profesor);
 
                         int rowsAffected = cmd.ExecuteNonQuery();
                         return rowsAffected > 0;
@@ -249,7 +248,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al actualizar profesor: " + ex.Message);
+                Logger.Error("Error al actualizar profesor", ex);
                 return false;
             }
         }
@@ -276,7 +275,37 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al eliminar profesor: " + ex.Message);
+                Logger.Error($"Error al eliminar profesor ID: {idProfesor}", ex);
+                return false;
+            }
+        }
+
+        // ============================================
+        // EXISTS - Verificar si ya existe el No_Empleado
+        // ============================================
+        public bool ExisteNoEmpleado(string noEmpleado, int? excluirId = null)
+        {
+            try
+            {
+                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                {
+                    conn.Open();
+                    string query = "SELECT COUNT(*) FROM Profesor WHERE no_empleado = @no_empleado";
+                    if (excluirId.HasValue)
+                        query += " AND id_profesor != @id";
+
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@no_empleado", noEmpleado);
+                        if (excluirId.HasValue)
+                            cmd.Parameters.AddWithValue("@id", excluirId.Value);
+                        return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error al verificar no_empleado", ex);
                 return false;
             }
         }
@@ -300,49 +329,52 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                         p.apellido_paterno,
                                         p.apellido_materno,
                                         p.departamento,
-                                        pp.tipo_supervision,
-                                        COUNT(DISTINCT pp2.id_proyecto) AS num_proyectos,
-                                        GROUP_CONCAT(DISTINCT pr.nombre_proyecto SEPARATOR ', ') AS proyectos
+                                        COUNT(DISTINCT pr.id_proyecto) AS num_proyectos,
+                                        GROUP_CONCAT(DISTINCT pp.tipo_supervision SEPARATOR ', ') AS tipos_supervision,
+                                        GROUP_CONCAT(DISTINCT CONCAT(pp.tipo_supervision, ': ', pr.nombre_proyecto) SEPARATOR ', ') AS proyectos
                                     FROM Profesor p
                                     INNER JOIN Proyecto_Profesor pp ON p.id_profesor = pp.id_profesor
                                     INNER JOIN Proyecto pr ON pp.id_proyecto = pr.id_proyecto
-                                    WHERE pp.status_supervision = 'activa'
-                                    GROUP BY p.id_profesor, pp.tipo_supervision
-                                    ORDER BY p.apellido_paterno, p.nombre";
+                                    WHERE pp.status_supervision = @statusActiva
+                                    GROUP BY p.id_profesor, p.no_empleado, p.nombre, p.apellido_paterno, p.apellido_materno, p.departamento";
 
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
-                        while (reader.Read())
+                        cmd.Parameters.AddWithValue("@statusActiva", Estatus.AsignacionActiva);
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
                         {
-                            ProfesorConProyectos item = new ProfesorConProyectos();
-                            item.Id_Profesor = reader.GetInt32("id_profesor");
-                            item.No_Empleado = reader.GetString("no_empleado");
-                            item.Nombre = reader.GetString("nombre");
-                            item.Apellido_Paterno = reader.GetString("apellido_paterno");
-                            
-                            int idx = reader.GetOrdinal("apellido_materno");
-                            item.Apellido_Materno = reader.IsDBNull(idx) ? null : reader.GetString(idx);
-                            
-                            idx = reader.GetOrdinal("departamento");
-                            item.Departamento = reader.IsDBNull(idx) ? null : reader.GetString(idx);
-                            
-                            item.Tipo_Supervision = reader.GetString("tipo_supervision");
-                            item.Num_Proyectos = reader.GetInt32("num_proyectos");
-                            
-                            idx = reader.GetOrdinal("proyectos");
-                            item.Proyectos = reader.IsDBNull(idx) ? null : reader.GetString(idx);
-                            
-                            lista.Add(item);
+                            while (reader.Read())
+                            {
+                                ProfesorConProyectos item = new ProfesorConProyectos();
+                                item.Id_Profesor = reader.GetInt32("id_profesor");
+                                item.No_Empleado = reader.GetString("no_empleado");
+                                item.Nombre = reader.GetString("nombre");
+                                item.Apellido_Paterno = reader.GetString("apellido_paterno");
+                                
+                                int idx = reader.GetOrdinal("apellido_materno");
+                                item.Apellido_Materno = reader.IsDBNull(idx) ? null : reader.GetString(idx);
+                                
+                                idx = reader.GetOrdinal("departamento");
+                                item.Departamento = reader.IsDBNull(idx) ? null : reader.GetString(idx);
+                                
+                                item.Num_Proyectos = reader.GetInt32("num_proyectos");
+                                
+                                idx = reader.GetOrdinal("tipos_supervision");
+                                item.Tipos_Supervision = reader.IsDBNull(idx) ? null : reader.GetString(idx);
+                                
+                                idx = reader.GetOrdinal("proyectos");
+                                item.Proyectos = reader.IsDBNull(idx) ? null : reader.GetString(idx);
+                                
+                                lista.Add(item);
+                            }
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al buscar profesores con proyectos: " + ex.Message);
+                Logger.Error("Error al buscar profesores con proyectos", ex);
             }
-
             return lista;
         }
     }
@@ -358,7 +390,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         public string Apellido_Paterno { get; set; }
         public string Apellido_Materno { get; set; }
         public string Departamento { get; set; }
-        public string Tipo_Supervision { get; set; }
+        public string Tipos_Supervision { get; set; }
         public int Num_Proyectos { get; set; }
         public string Proyectos { get; set; }
 

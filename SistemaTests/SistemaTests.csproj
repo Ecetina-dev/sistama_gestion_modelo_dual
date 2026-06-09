@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <RootNamespace>SistemaTests</RootNamespace>
+    <AssemblyName>SistemaTests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="MySqlConnector" Version="2.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Laboratorio_del_Tema_5.2\Laboratorio_del_Tema_5.2.csproj" />
+  </ItemGroup>
+
+</Project>
