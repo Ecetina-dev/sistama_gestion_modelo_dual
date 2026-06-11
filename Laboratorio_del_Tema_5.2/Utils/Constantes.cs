@@ -120,7 +120,7 @@ namespace Laboratorio_del_Tema_5_2.Utils
         // Limites de seguridad
         // ============================================
         public const int MaxIntentosLogin = 5;
-        public const int MinutosBloqueo = 15;
+        public const int MinutosBloqueo = 1;
         public const int BcryptCostFactor = 11;
         public const int DuracionSesionHoras = 8;
 
@@ -140,7 +140,7 @@ namespace Laboratorio_del_Tema_5_2.Utils
         public const string MsgCredencialesInvalidas = "Usuario o contrasena incorrectos";
         public const string MsgErrorConexion = "No se pudo conectar al servidor. Verifica tu conexion.";
         public const string MsgErrorGenerico = "Ocurrio un error inesperado. Intenta de nuevo.";
-        public const string MsgCuentaBloqueada = "Cuenta bloqueada temporalmente. Intenta mas tarde.";
+        public const string MsgCuentaBloqueada = "Demasiados intentos fallidos. Cuenta bloqueada por 1 minuto.";
         public const string MsgCuentaInactiva = "Cuenta inactiva. Contacta al administrador.";
         public const string MsgSesionExpirada = "Tu sesion ha expirado. Inicia sesion de nuevo.";
 

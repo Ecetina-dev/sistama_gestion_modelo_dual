@@ -139,7 +139,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             {
                 var materias = materiaController.Read() ?? new List<Materia>();
                 cmbMateria.DataSource = materias;
-                cmbMateria.DisplayMember = "Nombre";
+                cmbMateria.DisplayMember = "nombre";
                 cmbMateria.ValueMember = "Id_Materia";
                 cmbMateria.SelectedIndex = -1;
             }
@@ -181,7 +181,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             var headers = new Dictionary<string, string>
             {
                 ["Numero_Tema"] = "No. Tema",
-                ["Nombre"] = "Nombre",
+                ["nombre"] = "nombre",
                 ["Nombre_Materia"] = "Materia",
                 ["Descripcion"] = "Descripcion"
             };
@@ -190,7 +190,7 @@ namespace Laboratorio_del_Tema_5_2.Views
                     dgvTemas.Columns[kv.Key].HeaderText = kv.Value;
 
             // Reordenar
-            string[] orden = { "Numero_Tema", "Nombre", "Nombre_Materia", "Descripcion" };
+            string[] orden = { "Numero_Tema", "nombre", "Nombre_Materia", "Descripcion" };
             int idx = 0;
             foreach (var col in orden)
                 if (dgvTemas.Columns.Contains(col))
@@ -245,7 +245,7 @@ namespace Laboratorio_del_Tema_5_2.Views
                 return;
             }
 
-            var nombre = dgvTemas.SelectedRows[0].Cells["Nombre"]?.Value?.ToString() ?? "sin nombre";
+            var nombre = dgvTemas.SelectedRows[0].Cells["nombre"]?.Value?.ToString() ?? "sin nombre";
 
             if (MessageBox.Show($"Eliminar tema '{nombre}'?\n\nEsto no se puede deshacer.",
                 "Confirmar eliminacion", MessageBoxButtons.YesNo, MessageBoxIcon.Question,
@@ -256,7 +256,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             {
                 if (controller.Delete(id))
                 {
-                    MostrarExito("Tema eliminado.");
+                    MostrarÉxito("Tema eliminado.");
                     CargarTemas();
                 }
                 else
@@ -334,7 +334,7 @@ namespace Laboratorio_del_Tema_5_2.Views
 
             if (success)
             {
-                MostrarExito("Tema guardado.");
+                MostrarÉxito("Tema guardado.");
                 isEditing = false;
                 isNewRecord = false;
                 panelCardDatos.Visible = false;
@@ -472,7 +472,8 @@ namespace Laboratorio_del_Tema_5_2.Views
         private void MostrarAdvertencia(string msg) =>
             MessageBox.Show(msg, "Validacion", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
-        private void MostrarExito(string msg) =>
-            MessageBox.Show(msg, "Exito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        private void MostrarÉxito(string msg) =>
+            MessageBox.Show(msg, "éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
 }
+

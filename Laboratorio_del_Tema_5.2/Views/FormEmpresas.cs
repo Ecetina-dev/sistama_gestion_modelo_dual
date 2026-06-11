@@ -273,7 +273,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             {
                 if (controller.Delete(id))
                 {
-                    MostrarExito("Empresa eliminada.");
+                    MostrarÉxito("Empresa eliminada.");
                     CargarEmpresas();
                 }
                 else
@@ -367,7 +367,7 @@ namespace Laboratorio_del_Tema_5_2.Views
 
             if (success)
             {
-                MostrarExito("Empresa guardada.");
+                MostrarÉxito("Empresa guardada.");
                 isEditing = false;
                 isNewRecord = false;
                 panelCardDatos.Visible = false;
@@ -550,7 +550,8 @@ namespace Laboratorio_del_Tema_5_2.Views
         private void MostrarAdvertencia(string msg) =>
             MessageBox.Show(msg, "Validacion", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
-        private void MostrarExito(string msg) =>
-            MessageBox.Show(msg, "Exito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        private void MostrarÉxito(string msg) =>
+            MessageBox.Show(msg, "éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
 }
+

@@ -70,7 +70,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             {
                 MessageBox.Show(
                     "Contrasena cambiada exitosamente",
-                    "Exito",
+                    "Éxito",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
                 this.Close();

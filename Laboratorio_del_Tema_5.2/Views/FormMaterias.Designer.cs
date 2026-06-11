@@ -82,9 +82,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelSidebar.Controls.Add(this.lblSideTitulo);
             this.panelSidebar.Dock = System.Windows.Forms.DockStyle.Left;
             this.panelSidebar.Location = new System.Drawing.Point(0, 0);
-            this.panelSidebar.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panelSidebar.Margin = new System.Windows.Forms.Padding(2);
             this.panelSidebar.Name = "panelSidebar";
-            this.panelSidebar.Size = new System.Drawing.Size(165, 569);
+            this.panelSidebar.Size = new System.Drawing.Size(165, 638);
             this.panelSidebar.TabIndex = 0;
             // 
             // panelSidebarFooter
@@ -92,8 +92,8 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelSidebarFooter.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(26)))), ((int)(((byte)(40)))));
             this.panelSidebarFooter.Controls.Add(this.lblSideVersion);
             this.panelSidebarFooter.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panelSidebarFooter.Location = new System.Drawing.Point(0, 504);
-            this.panelSidebarFooter.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panelSidebarFooter.Location = new System.Drawing.Point(0, 573);
+            this.panelSidebarFooter.Margin = new System.Windows.Forms.Padding(2);
             this.panelSidebarFooter.Name = "panelSidebarFooter";
             this.panelSidebarFooter.Padding = new System.Windows.Forms.Padding(11, 8, 11, 8);
             this.panelSidebarFooter.Size = new System.Drawing.Size(165, 65);
@@ -117,7 +117,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelSidebarNav.Controls.Add(this.btnNavVolver);
             this.panelSidebarNav.Controls.Add(this.lblNavSeccion);
             this.panelSidebarNav.Location = new System.Drawing.Point(0, 57);
-            this.panelSidebarNav.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panelSidebarNav.Margin = new System.Windows.Forms.Padding(2);
             this.panelSidebarNav.Name = "panelSidebarNav";
             this.panelSidebarNav.Size = new System.Drawing.Size(165, 447);
             this.panelSidebarNav.TabIndex = 1;
@@ -132,12 +132,12 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.btnNavVolver.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.btnNavVolver.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(225)))), ((int)(((byte)(235)))));
             this.btnNavVolver.Location = new System.Drawing.Point(8, 37);
-            this.btnNavVolver.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnNavVolver.Margin = new System.Windows.Forms.Padding(2);
             this.btnNavVolver.Name = "btnNavVolver";
             this.btnNavVolver.Padding = new System.Windows.Forms.Padding(11, 0, 0, 0);
             this.btnNavVolver.Size = new System.Drawing.Size(150, 34);
             this.btnNavVolver.TabIndex = 1;
-            this.btnNavVolver.Text = "←  Volver al Menu";
+            this.btnNavVolver.Text = "←  Volver al Menú";
             this.btnNavVolver.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnNavVolver.UseVisualStyleBackColor = false;
             this.btnNavVolver.Click += new System.EventHandler(this.btnCerrar_Click);
@@ -162,7 +162,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblSideTitulo.Location = new System.Drawing.Point(15, 20);
             this.lblSideTitulo.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblSideTitulo.Name = "lblSideTitulo";
-            this.lblSideTitulo.Size = new System.Drawing.Size(126, 25);
+            this.lblSideTitulo.Size = new System.Drawing.Size(120, 25);
             this.lblSideTitulo.TabIndex = 0;
             this.lblSideTitulo.Text = "📚  Materias";
             // 
@@ -173,9 +173,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelMain.Controls.Add(this.panelTopBar);
             this.panelMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelMain.Location = new System.Drawing.Point(165, 0);
-            this.panelMain.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panelMain.Margin = new System.Windows.Forms.Padding(2);
             this.panelMain.Name = "panelMain";
-            this.panelMain.Size = new System.Drawing.Size(660, 569);
+            this.panelMain.Size = new System.Drawing.Size(660, 638);
             this.panelMain.TabIndex = 1;
             // 
             // panelContent
@@ -187,10 +187,10 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelContent.Controls.Add(this.panelToolbar);
             this.panelContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelContent.Location = new System.Drawing.Point(0, 65);
-            this.panelContent.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panelContent.Margin = new System.Windows.Forms.Padding(2);
             this.panelContent.Name = "panelContent";
             this.panelContent.Padding = new System.Windows.Forms.Padding(19, 12, 19, 12);
-            this.panelContent.Size = new System.Drawing.Size(660, 504);
+            this.panelContent.Size = new System.Drawing.Size(660, 573);
             this.panelContent.TabIndex = 1;
             // 
             // panelCardDatos
@@ -201,7 +201,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelCardDatos.Controls.Add(this.panelCardBar);
             this.panelCardDatos.Controls.Add(this.panelCardBody);
             this.panelCardDatos.Location = new System.Drawing.Point(19, 296);
-            this.panelCardDatos.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panelCardDatos.Margin = new System.Windows.Forms.Padding(2);
             this.panelCardDatos.Name = "panelCardDatos";
             this.panelCardDatos.Size = new System.Drawing.Size(623, 268);
             this.panelCardDatos.TabIndex = 2;
@@ -215,9 +215,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelCardActions.Controls.Add(this.btnGuardar);
             this.panelCardActions.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panelCardActions.Location = new System.Drawing.Point(4, 220);
-            this.panelCardActions.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panelCardActions.Margin = new System.Windows.Forms.Padding(2);
             this.panelCardActions.Name = "panelCardActions";
-            this.panelCardActions.Padding = new System.Windows.Forms.Padding(8, 8, 8, 8);
+            this.panelCardActions.Padding = new System.Windows.Forms.Padding(8);
             this.panelCardActions.Size = new System.Drawing.Size(617, 46);
             this.panelCardActions.TabIndex = 2;
             // 
@@ -230,7 +230,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.btnCancelar.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.btnCancelar.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(100)))), ((int)(((byte)(100)))));
             this.btnCancelar.Location = new System.Drawing.Point(458, 8);
-            this.btnCancelar.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnCancelar.Margin = new System.Windows.Forms.Padding(2);
             this.btnCancelar.Name = "btnCancelar";
             this.btnCancelar.Size = new System.Drawing.Size(75, 29);
             this.btnCancelar.TabIndex = 1;
@@ -248,7 +248,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.btnGuardar.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
             this.btnGuardar.ForeColor = System.Drawing.Color.White;
             this.btnGuardar.Location = new System.Drawing.Point(540, 8);
-            this.btnGuardar.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnGuardar.Margin = new System.Windows.Forms.Padding(2);
             this.btnGuardar.Name = "btnGuardar";
             this.btnGuardar.Size = new System.Drawing.Size(68, 29);
             this.btnGuardar.TabIndex = 0;
@@ -262,7 +262,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelCardBar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(71)))), ((int)(((byte)(160)))));
             this.panelCardBar.Dock = System.Windows.Forms.DockStyle.Left;
             this.panelCardBar.Location = new System.Drawing.Point(0, 0);
-            this.panelCardBar.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panelCardBar.Margin = new System.Windows.Forms.Padding(2);
             this.panelCardBar.Name = "panelCardBar";
             this.panelCardBar.Size = new System.Drawing.Size(4, 266);
             this.panelCardBar.TabIndex = 0;
@@ -288,7 +288,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelCardBody.Controls.Add(this.txtClave);
             this.panelCardBody.Controls.Add(this.lblClave);
             this.panelCardBody.Location = new System.Drawing.Point(4, 0);
-            this.panelCardBody.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panelCardBody.Margin = new System.Windows.Forms.Padding(2);
             this.panelCardBody.Name = "panelCardBody";
             this.panelCardBody.Size = new System.Drawing.Size(617, 218);
             this.panelCardBody.TabIndex = 1;
@@ -310,14 +310,14 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblCardTitulo.Location = new System.Drawing.Point(14, 10);
             this.lblCardTitulo.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblCardTitulo.Name = "lblCardTitulo";
-            this.lblCardTitulo.Size = new System.Drawing.Size(212, 25);
+            this.lblCardTitulo.Size = new System.Drawing.Size(214, 25);
             this.lblCardTitulo.TabIndex = 0;
             this.lblCardTitulo.Text = "📋  Datos de la Materia";
             // 
             // txtIdMateria
             // 
             this.txtIdMateria.Location = new System.Drawing.Point(472, 109);
-            this.txtIdMateria.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtIdMateria.Margin = new System.Windows.Forms.Padding(2);
             this.txtIdMateria.Name = "txtIdMateria";
             this.txtIdMateria.ReadOnly = true;
             this.txtIdMateria.Size = new System.Drawing.Size(46, 20);
@@ -330,7 +330,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.txtDescripcion.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtDescripcion.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.txtDescripcion.Location = new System.Drawing.Point(14, 163);
-            this.txtDescripcion.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtDescripcion.Margin = new System.Windows.Forms.Padding(2);
             this.txtDescripcion.Multiline = true;
             this.txtDescripcion.Name = "txtDescripcion";
             this.txtDescripcion.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
@@ -345,7 +345,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblDescripcion.Location = new System.Drawing.Point(14, 148);
             this.lblDescripcion.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblDescripcion.Name = "lblDescripcion";
-            this.lblDescripcion.Size = new System.Drawing.Size(75, 15);
+            this.lblDescripcion.Size = new System.Drawing.Size(72, 15);
             this.lblDescripcion.TabIndex = 8;
             this.lblDescripcion.Text = "Descripcion";
             // 
@@ -355,8 +355,12 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.nudHorasPractica.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.nudHorasPractica.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.nudHorasPractica.Location = new System.Drawing.Point(467, 109);
-            this.nudHorasPractica.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.nudHorasPractica.Maximum = new decimal(new int[] { 99, 0, 0, 0 });
+            this.nudHorasPractica.Margin = new System.Windows.Forms.Padding(2);
+            this.nudHorasPractica.Maximum = new decimal(new int[] {
+            99,
+            0,
+            0,
+            0});
             this.nudHorasPractica.Name = "nudHorasPractica";
             this.nudHorasPractica.Size = new System.Drawing.Size(135, 29);
             this.nudHorasPractica.TabIndex = 5;
@@ -370,7 +374,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblHorasPractica.Location = new System.Drawing.Point(467, 96);
             this.lblHorasPractica.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblHorasPractica.Name = "lblHorasPractica";
-            this.lblHorasPractica.Size = new System.Drawing.Size(84, 15);
+            this.lblHorasPractica.Size = new System.Drawing.Size(66, 15);
             this.lblHorasPractica.TabIndex = 17;
             this.lblHorasPractica.Text = "H. Practica";
             // 
@@ -380,8 +384,12 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.nudHorasTeoria.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.nudHorasTeoria.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.nudHorasTeoria.Location = new System.Drawing.Point(316, 109);
-            this.nudHorasTeoria.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.nudHorasTeoria.Maximum = new decimal(new int[] { 99, 0, 0, 0 });
+            this.nudHorasTeoria.Margin = new System.Windows.Forms.Padding(2);
+            this.nudHorasTeoria.Maximum = new decimal(new int[] {
+            99,
+            0,
+            0,
+            0});
             this.nudHorasTeoria.Name = "nudHorasTeoria";
             this.nudHorasTeoria.Size = new System.Drawing.Size(135, 29);
             this.nudHorasTeoria.TabIndex = 4;
@@ -395,7 +403,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblHorasTeoria.Location = new System.Drawing.Point(316, 96);
             this.lblHorasTeoria.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblHorasTeoria.Name = "lblHorasTeoria";
-            this.lblHorasTeoria.Size = new System.Drawing.Size(75, 15);
+            this.lblHorasTeoria.Size = new System.Drawing.Size(56, 15);
             this.lblHorasTeoria.TabIndex = 15;
             this.lblHorasTeoria.Text = "H. Teoria";
             // 
@@ -405,14 +413,26 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.nudSemestre.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.nudSemestre.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.nudSemestre.Location = new System.Drawing.Point(165, 109);
-            this.nudSemestre.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.nudSemestre.Maximum = new decimal(new int[] { 12, 0, 0, 0 });
-            this.nudSemestre.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            this.nudSemestre.Margin = new System.Windows.Forms.Padding(2);
+            this.nudSemestre.Maximum = new decimal(new int[] {
+            12,
+            0,
+            0,
+            0});
+            this.nudSemestre.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             this.nudSemestre.Name = "nudSemestre";
             this.nudSemestre.Size = new System.Drawing.Size(135, 29);
             this.nudSemestre.TabIndex = 3;
             this.nudSemestre.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.nudSemestre.Value = new decimal(new int[] { 1, 0, 0, 0 });
+            this.nudSemestre.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             // 
             // lblSemestre
             // 
@@ -422,7 +442,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblSemestre.Location = new System.Drawing.Point(165, 96);
             this.lblSemestre.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblSemestre.Name = "lblSemestre";
-            this.lblSemestre.Size = new System.Drawing.Size(59, 15);
+            this.lblSemestre.Size = new System.Drawing.Size(61, 15);
             this.lblSemestre.TabIndex = 13;
             this.lblSemestre.Text = "Semestre";
             // 
@@ -432,14 +452,26 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.nudCreditos.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.nudCreditos.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.nudCreditos.Location = new System.Drawing.Point(14, 109);
-            this.nudCreditos.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.nudCreditos.Maximum = new decimal(new int[] { 50, 0, 0, 0 });
-            this.nudCreditos.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            this.nudCreditos.Margin = new System.Windows.Forms.Padding(2);
+            this.nudCreditos.Maximum = new decimal(new int[] {
+            50,
+            0,
+            0,
+            0});
+            this.nudCreditos.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             this.nudCreditos.Name = "nudCreditos";
             this.nudCreditos.Size = new System.Drawing.Size(135, 29);
             this.nudCreditos.TabIndex = 2;
             this.nudCreditos.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.nudCreditos.Value = new decimal(new int[] { 1, 0, 0, 0 });
+            this.nudCreditos.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             // 
             // lblCreditos
             // 
@@ -449,7 +481,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblCreditos.Location = new System.Drawing.Point(14, 96);
             this.lblCreditos.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblCreditos.Name = "lblCreditos";
-            this.lblCreditos.Size = new System.Drawing.Size(57, 15);
+            this.lblCreditos.Size = new System.Drawing.Size(53, 15);
             this.lblCreditos.TabIndex = 11;
             this.lblCreditos.Text = "Creditos";
             // 
@@ -459,7 +491,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.txtNombre.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtNombre.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.txtNombre.Location = new System.Drawing.Point(220, 60);
-            this.txtNombre.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtNombre.Margin = new System.Windows.Forms.Padding(2);
             this.txtNombre.Name = "txtNombre";
             this.txtNombre.Size = new System.Drawing.Size(382, 29);
             this.txtNombre.TabIndex = 1;
@@ -482,7 +514,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.txtClave.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtClave.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.txtClave.Location = new System.Drawing.Point(14, 60);
-            this.txtClave.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtClave.Margin = new System.Windows.Forms.Padding(2);
             this.txtClave.Name = "txtClave";
             this.txtClave.Size = new System.Drawing.Size(190, 29);
             this.txtClave.TabIndex = 0;
@@ -495,7 +527,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblClave.Location = new System.Drawing.Point(14, 47);
             this.lblClave.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblClave.Name = "lblClave";
-            this.lblClave.Size = new System.Drawing.Size(82, 15);
+            this.lblClave.Size = new System.Drawing.Size(93, 15);
             this.lblClave.TabIndex = 7;
             this.lblClave.Text = "Clave_Materia *";
             // 
@@ -519,7 +551,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.dgvMaterias.EnableHeadersVisualStyles = false;
             this.dgvMaterias.GridColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(232)))), ((int)(((byte)(235)))));
             this.dgvMaterias.Location = new System.Drawing.Point(19, 65);
-            this.dgvMaterias.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.dgvMaterias.Margin = new System.Windows.Forms.Padding(2);
             this.dgvMaterias.MultiSelect = false;
             this.dgvMaterias.Name = "dgvMaterias";
             this.dgvMaterias.ReadOnly = true;
@@ -547,9 +579,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelToolbar.Controls.Add(this.btnNuevo);
             this.panelToolbar.Dock = System.Windows.Forms.DockStyle.Top;
             this.panelToolbar.Location = new System.Drawing.Point(19, 12);
-            this.panelToolbar.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panelToolbar.Margin = new System.Windows.Forms.Padding(2);
             this.panelToolbar.Name = "panelToolbar";
-            this.panelToolbar.Padding = new System.Windows.Forms.Padding(8, 8, 8, 8);
+            this.panelToolbar.Padding = new System.Windows.Forms.Padding(8);
             this.panelToolbar.Size = new System.Drawing.Size(622, 45);
             this.panelToolbar.TabIndex = 0;
             // 
@@ -559,7 +591,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.txtBuscar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtBuscar.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.txtBuscar.Location = new System.Drawing.Point(463, 10);
-            this.txtBuscar.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtBuscar.Margin = new System.Windows.Forms.Padding(2);
             this.txtBuscar.Name = "txtBuscar";
             this.txtBuscar.Size = new System.Drawing.Size(148, 27);
             this.txtBuscar.TabIndex = 1;
@@ -586,7 +618,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.btnActualizar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnActualizar.ForeColor = System.Drawing.Color.White;
             this.btnActualizar.Location = new System.Drawing.Point(255, 8);
-            this.btnActualizar.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnActualizar.Margin = new System.Windows.Forms.Padding(2);
             this.btnActualizar.Name = "btnActualizar";
             this.btnActualizar.Size = new System.Drawing.Size(79, 26);
             this.btnActualizar.TabIndex = 4;
@@ -604,7 +636,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.btnEliminar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnEliminar.ForeColor = System.Drawing.Color.White;
             this.btnEliminar.Location = new System.Drawing.Point(172, 8);
-            this.btnEliminar.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnEliminar.Margin = new System.Windows.Forms.Padding(2);
             this.btnEliminar.Name = "btnEliminar";
             this.btnEliminar.Size = new System.Drawing.Size(79, 26);
             this.btnEliminar.TabIndex = 3;
@@ -622,7 +654,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.btnEditar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnEditar.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(37)))), ((int)(((byte)(41)))));
             this.btnEditar.Location = new System.Drawing.Point(90, 8);
-            this.btnEditar.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnEditar.Margin = new System.Windows.Forms.Padding(2);
             this.btnEditar.Name = "btnEditar";
             this.btnEditar.Size = new System.Drawing.Size(79, 26);
             this.btnEditar.TabIndex = 2;
@@ -640,7 +672,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.btnNuevo.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnNuevo.ForeColor = System.Drawing.Color.White;
             this.btnNuevo.Location = new System.Drawing.Point(8, 8);
-            this.btnNuevo.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnNuevo.Margin = new System.Windows.Forms.Padding(2);
             this.btnNuevo.Name = "btnNuevo";
             this.btnNuevo.Size = new System.Drawing.Size(79, 26);
             this.btnNuevo.TabIndex = 0;
@@ -657,7 +689,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelTopBar.Controls.Add(this.lblTitulo);
             this.panelTopBar.Dock = System.Windows.Forms.DockStyle.Top;
             this.panelTopBar.Location = new System.Drawing.Point(0, 0);
-            this.panelTopBar.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panelTopBar.Margin = new System.Windows.Forms.Padding(2);
             this.panelTopBar.Name = "panelTopBar";
             this.panelTopBar.Padding = new System.Windows.Forms.Padding(19, 15, 19, 8);
             this.panelTopBar.Size = new System.Drawing.Size(660, 65);
@@ -681,7 +713,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblSubtitulo.Location = new System.Drawing.Point(170, 38);
             this.lblSubtitulo.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblSubtitulo.Name = "lblSubtitulo";
-            this.lblSubtitulo.Size = new System.Drawing.Size(325, 19);
+            this.lblSubtitulo.Size = new System.Drawing.Size(305, 19);
             this.lblSubtitulo.TabIndex = 1;
             this.lblSubtitulo.Text = "Administra las materias registradas en el sistema";
             // 
@@ -693,7 +725,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblTitulo.Location = new System.Drawing.Point(150, 7);
             this.lblTitulo.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblTitulo.Name = "lblTitulo";
-            this.lblTitulo.Size = new System.Drawing.Size(338, 37);
+            this.lblTitulo.Size = new System.Drawing.Size(326, 37);
             this.lblTitulo.TabIndex = 0;
             this.lblTitulo.Text = "📚  Gestion de Materias";
             // 
@@ -702,15 +734,15 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(247)))), ((int)(((byte)(250)))));
-            this.ClientSize = new System.Drawing.Size(825, 569);
+            this.ClientSize = new System.Drawing.Size(825, 638);
             this.Controls.Add(this.panelMain);
             this.Controls.Add(this.panelSidebar);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.MinimumSize = new System.Drawing.Size(754, 495);
             this.Name = "FormMaterias";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Gestion de Materias - Modelo Dual";
+            this.Text = "Gestión de Materias - Modelo Dual";
             this.panelSidebar.ResumeLayout(false);
             this.panelSidebar.PerformLayout();
             this.panelSidebarFooter.ResumeLayout(false);
@@ -786,3 +818,6 @@ namespace Laboratorio_del_Tema_5_2.Views
         private System.Windows.Forms.ToolTip toolTip;
     }
 }
+
+
+

@@ -82,7 +82,7 @@ namespace Laboratorio_del_Tema_5_2.Utils
         /// <summary>
         /// Muestra un mensaje de exito.
         /// </summary>
-        protected void MostrarExito(string mensaje, string titulo = "Exito")
+        protected void MostrarExito(string mensaje, string titulo = "Éxito")
         {
             MessageBox.Show(mensaje, titulo, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }

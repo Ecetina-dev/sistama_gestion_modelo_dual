@@ -248,7 +248,7 @@ namespace Laboratorio_del_Tema_5_2.Views
 
                 if (resultado.Success)
                 {
-                    string msg = $"Usuario cargado exitosamente!\n\n" +
+                    string msg = $"Usuario cargado Éxitosamente!\n\n" +
                                  $"Username: {resultado.Username}\n" +
                                  $"Password temporal: {resultado.PasswordTemporal}\n\n" +
                                  $"COMPARTIR ESTE PASSWORD CON EL USUARIO\n" +
@@ -409,7 +409,7 @@ namespace Laboratorio_del_Tema_5_2.Views
 
             if (_authController.CambiarStatusUsuario(usuario.Id_Usuario, nuevoStatus, SesionActiva.Instance.Id_Usuario))
             {
-                MessageBox.Show("Status actualizado", "Exito",
+                MessageBox.Show("Status actualizado", "Éxito",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
                 CargarUsuarios();
             }
@@ -439,3 +439,4 @@ namespace Laboratorio_del_Tema_5_2.Views
         }
     }
 }
+

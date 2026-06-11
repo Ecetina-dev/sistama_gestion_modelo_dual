@@ -152,7 +152,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             var headers = new Dictionary<string, string>
             {
                 ["Clave_Materia"] = "Clave",
-                ["Nombre"] = "Nombre",
+                ["nombre"] = "nombre",
                 ["Descripcion"] = "Descripcion",
                 ["Creditos"] = "Creditos",
                 ["Semestre"] = "Semestre",
@@ -164,7 +164,7 @@ namespace Laboratorio_del_Tema_5_2.Views
                     dgvMaterias.Columns[kv.Key].HeaderText = kv.Value;
 
             // Reordenar
-            string[] orden = { "Clave_Materia", "Nombre", "Descripcion", "Creditos", "Semestre", "Horas_Teoria", "Horas_Practica" };
+            string[] orden = { "Clave_Materia", "nombre", "Descripcion", "Creditos", "Semestre", "Horas_Teoria", "Horas_Practica" };
             int idx = 0;
             foreach (var col in orden)
                 if (dgvMaterias.Columns.Contains(col))
@@ -219,7 +219,7 @@ namespace Laboratorio_del_Tema_5_2.Views
                 return;
             }
 
-            var nombre = dgvMaterias.SelectedRows[0].Cells["Nombre"]?.Value?.ToString() ?? "";
+            var nombre = dgvMaterias.SelectedRows[0].Cells["nombre"]?.Value?.ToString() ?? "";
 
             if (MessageBox.Show($"Eliminar '{nombre}'?\n\nEsto no se puede deshacer.",
                 "Confirmar eliminacion", MessageBoxButtons.YesNo, MessageBoxIcon.Question,
@@ -230,7 +230,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             {
                 if (controller.Delete(id))
                 {
-                    MostrarExito("Materia eliminada.");
+                    MostrarÉxito("Materia eliminada.");
                     CargarMaterias();
                 }
                 else
@@ -320,7 +320,7 @@ namespace Laboratorio_del_Tema_5_2.Views
 
             if (success)
             {
-                MostrarExito("Materia guardada.");
+                MostrarÉxito("Materia guardada.");
                 isEditing = false;
                 isNewRecord = false;
                 panelCardDatos.Visible = false;
@@ -461,7 +461,8 @@ namespace Laboratorio_del_Tema_5_2.Views
         private void MostrarAdvertencia(string msg) =>
             MessageBox.Show(msg, "Validacion", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
-        private void MostrarExito(string msg) =>
-            MessageBox.Show(msg, "Exito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        private void MostrarÉxito(string msg) =>
+            MessageBox.Show(msg, "éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
 }
+

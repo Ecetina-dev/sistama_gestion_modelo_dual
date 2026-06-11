@@ -115,7 +115,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             if (!SesionActiva.Instance.TienePrivilegio("profesor.crud_alumno") &&
                 !SesionActiva.Instance.EsAdmin)
             {
-                MessageBox.Show("No tienes permiso para acceder a esta seccion.",
+                MessageBox.Show("No tienes permiso para acceder a esta sección.",
                     "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -126,7 +126,7 @@ namespace Laboratorio_del_Tema_5_2.Views
         {
             if (!SesionActiva.Instance.EsAdmin && !SesionActiva.Instance.EsEmpresa)
             {
-                MessageBox.Show("No tienes permiso para acceder a esta seccion.",
+                MessageBox.Show("No tienes permiso para acceder a esta sección.",
                     "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -142,7 +142,7 @@ namespace Laboratorio_del_Tema_5_2.Views
         {
             if (!SesionActiva.Instance.EsAdmin)
             {
-                MessageBox.Show("No tienes permiso para acceder a esta seccion.",
+                MessageBox.Show("No tienes permiso para acceder a esta sección.",
                     "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -154,7 +154,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             if (!SesionActiva.Instance.TienePrivilegio("profesor.crud_materia") &&
                 !SesionActiva.Instance.EsAdmin)
             {
-                MessageBox.Show("No tienes permiso para acceder a esta seccion.",
+                MessageBox.Show("No tienes permiso para acceder a esta sección.",
                     "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -166,7 +166,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             if (!SesionActiva.Instance.TienePrivilegio("profesor.crud_tema") &&
                 !SesionActiva.Instance.EsAdmin)
             {
-                MessageBox.Show("No tienes permiso para acceder a esta seccion.",
+                MessageBox.Show("No tienes permiso para acceder a esta sección.",
                     "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -177,7 +177,7 @@ namespace Laboratorio_del_Tema_5_2.Views
         {
             if (!SesionActiva.Instance.EsAdmin)
             {
-                MessageBox.Show("Solo el administrador puede acceder a esta seccion.",
+                MessageBox.Show("Solo el administrador puede acceder a esta sección.",
                     "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -207,16 +207,16 @@ namespace Laboratorio_del_Tema_5_2.Views
             if (MySQLConnection.TestConnection())
             {
                 MessageBox.Show(
-                    "Conexion a MySQL exitosa!\n\nVersion: " + MySQLConnection.GetMySQLVersion(),
-                    "Conexion OK",
+                    "Conexión a MySQL exitosa!\n\nVersion: " + MySQLConnection.GetMySQLVersion(),
+                    "Conexión OK",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
             }
             else
             {
                 MessageBox.Show(
-                    "No se pudo conectar a MySQL.\n\nVerifica que:\n1. MySQL este ejecutandose\n2. El password en App.config sea correcto",
-                    "Error de Conexion",
+                    "No se pudo conectar a MySQL.\n\nVerifica que:\n1. MySQL este ejecutándose\n2. El password en App.config sea correcto",
+                    "Error de Conexión",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
@@ -233,8 +233,8 @@ namespace Laboratorio_del_Tema_5_2.Views
         private void btnCerrarSesion_Click(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show(
-                "Deseas cerrar sesion?",
-                "Cerrar Sesion",
+                "¿Deseas cerrar sesión?",
+                "Cerrar Sesión",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question);
 
@@ -248,7 +248,7 @@ namespace Laboratorio_del_Tema_5_2.Views
         private void btnSalir_Click(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show(
-                "Deseas salir del sistema?",
+                "¿Deseas salir del sistema?",
                 "Confirmar salida",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question);
@@ -264,3 +264,4 @@ namespace Laboratorio_del_Tema_5_2.Views
         }
     }
 }
+

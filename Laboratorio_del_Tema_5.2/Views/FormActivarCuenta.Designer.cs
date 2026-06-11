@@ -1,4 +1,4 @@
-﻿#pragma warning disable CS0414
+#pragma warning disable CS0414
 namespace Laboratorio_del_Tema_5_2.Views
 {
     partial class FormActivarCuenta
@@ -69,7 +69,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblSubtituloIzq.Name = "lblSubtituloIzq";
             this.lblSubtituloIzq.Size = new System.Drawing.Size(126, 38);
             this.lblSubtituloIzq.TabIndex = 1;
-            this.lblSubtituloIzq.Text = "Sistema de Gestion\r\nModelo Dual";
+            this.lblSubtituloIzq.Text = "Sistema de Gestión\r\nModelo Dual";
             // 
             // lblTituloIzq
             // 
@@ -104,7 +104,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.btnActivar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnActivar.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
             this.btnActivar.ForeColor = System.Drawing.Color.White;
-            this.btnActivar.Location = new System.Drawing.Point(15, 372);
+            this.btnActivar.Location = new System.Drawing.Point(15, 388);
             this.btnActivar.Margin = new System.Windows.Forms.Padding(2);
             this.btnActivar.Name = "btnActivar";
             this.btnActivar.Size = new System.Drawing.Size(420, 39);
@@ -117,10 +117,10 @@ namespace Laboratorio_del_Tema_5_2.Views
             // 
             this.lblError.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.lblError.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(53)))), ((int)(((byte)(69)))));
-            this.lblError.Location = new System.Drawing.Point(15, 349);
+            this.lblError.Location = new System.Drawing.Point(15, 348);
             this.lblError.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblError.Name = "lblError";
-            this.lblError.Size = new System.Drawing.Size(420, 16);
+            this.lblError.Size = new System.Drawing.Size(420, 29);
             this.lblError.TabIndex = 1;
             this.lblError.Visible = false;
             // 
@@ -169,7 +169,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblConfirmarTxt.Name = "lblConfirmarTxt";
             this.lblConfirmarTxt.Size = new System.Drawing.Size(154, 19);
             this.lblConfirmarTxt.TabIndex = 8;
-            this.lblConfirmarTxt.Text = "Confirmar contrasena";
+            this.lblConfirmarTxt.Text = "Confirmar contraseña";
             // 
             // lblNuevoPwdTxt
             // 
@@ -181,7 +181,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblNuevoPwdTxt.Name = "lblNuevoPwdTxt";
             this.lblNuevoPwdTxt.Size = new System.Drawing.Size(129, 19);
             this.lblNuevoPwdTxt.TabIndex = 6;
-            this.lblNuevoPwdTxt.Text = "Nueva contrasena";
+            this.lblNuevoPwdTxt.Text = "Nueva contraseña";
             // 
             // lblPasswordTempTxt
             // 
@@ -205,7 +205,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblUsuarioTxt.Name = "lblUsuarioTxt";
             this.lblUsuarioTxt.Size = new System.Drawing.Size(137, 19);
             this.lblUsuarioTxt.TabIndex = 2;
-            this.lblUsuarioTxt.Text = "Usuario / Matricula";
+            this.lblUsuarioTxt.Text = "Usuario / Matrícula";
             // 
             // chkMostrarNuevo
             // 
@@ -217,7 +217,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.chkMostrarNuevo.Name = "chkMostrarNuevo";
             this.chkMostrarNuevo.Size = new System.Drawing.Size(198, 23);
             this.chkMostrarNuevo.TabIndex = 10;
-            this.chkMostrarNuevo.Text = "Mostrar ambas contrasenas";
+            this.chkMostrarNuevo.Text = "Mostrar ambas contraseñas";
             this.chkMostrarNuevo.CheckedChanged += new System.EventHandler(this.chkMostrarNuevo_CheckedChanged);
             // 
             // txtConfirmar
@@ -312,7 +312,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblDescripcion.Name = "lblDescripcion";
             this.lblDescripcion.Size = new System.Drawing.Size(297, 19);
             this.lblDescripcion.TabIndex = 1;
-            this.lblDescripcion.Text = "Ingresa tus datos y elige una nueva contrasena";
+            this.lblDescripcion.Text = "Ingresa tus datos y elige una nueva contraseña";
             // 
             // lblTitulo
             // 
@@ -375,4 +375,5 @@ namespace Laboratorio_del_Tema_5_2.Views
         private System.Windows.Forms.Button btnActivar;
     }
 }
+
 

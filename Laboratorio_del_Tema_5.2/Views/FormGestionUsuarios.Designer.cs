@@ -352,7 +352,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.Name = "FormGestionUsuarios";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Gestion de Usuarios";
+            this.Text = "Gestión de Usuarios";
             this.Load += new System.EventHandler(this.FormGestionUsuarios_Load);
             this.tabControl.ResumeLayout(false);
             this.tabCargar.ResumeLayout(false);
@@ -389,4 +389,5 @@ namespace Laboratorio_del_Tema_5_2.Views
         private System.Windows.Forms.Button btnCambiarStatus;
     }
 }
+
 

@@ -13,6 +13,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblError = new System.Windows.Forms.Label();
             this.picError = new System.Windows.Forms.Label();
             this.chkMostrarPassword = new System.Windows.Forms.CheckBox();
+            this.chkRecordar = new System.Windows.Forms.CheckBox();
             this.lblCapsLock = new System.Windows.Forms.Label();
             this.lnkRecuperar = new System.Windows.Forms.LinkLabel();
             this.lnkCrearCuenta = new System.Windows.Forms.LinkLabel();
@@ -36,7 +37,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelContenedor.BackColor = System.Drawing.Color.White;
             this.panelContenedor.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelContenedor.Location = new System.Drawing.Point(0, 0);
-            this.panelContenedor.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panelContenedor.Margin = new System.Windows.Forms.Padding(2);
             this.panelContenedor.Name = "panelContenedor";
             this.panelContenedor.Size = new System.Drawing.Size(675, 447);
             this.panelContenedor.TabIndex = 0;
@@ -48,6 +49,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelForm.Controls.Add(this.lblError);
             this.panelForm.Controls.Add(this.picError);
             this.panelForm.Controls.Add(this.chkMostrarPassword);
+            this.panelForm.Controls.Add(this.chkRecordar);
             this.panelForm.Controls.Add(this.lblCapsLock);
             this.panelForm.Controls.Add(this.lnkRecuperar);
             this.panelForm.Controls.Add(this.lnkCrearCuenta);
@@ -57,15 +59,15 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelForm.Controls.Add(this.lblSubtitulo);
             this.panelForm.Controls.Add(this.lblTitulo);
             this.panelForm.Location = new System.Drawing.Point(300, 0);
-            this.panelForm.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panelForm.Margin = new System.Windows.Forms.Padding(2);
             this.panelForm.Name = "panelForm";
             this.panelForm.Size = new System.Drawing.Size(375, 447);
             this.panelForm.TabIndex = 1;
             // 
             // picLoading
             // 
-            this.picLoading.Location = new System.Drawing.Point(345, 276);
-            this.picLoading.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.picLoading.Location = new System.Drawing.Point(344, 285);
+            this.picLoading.Margin = new System.Windows.Forms.Padding(2);
             this.picLoading.Name = "picLoading";
             this.picLoading.Size = new System.Drawing.Size(22, 24);
             this.picLoading.TabIndex = 10;
@@ -101,13 +103,25 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.chkMostrarPassword.AutoSize = true;
             this.chkMostrarPassword.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.chkMostrarPassword.Location = new System.Drawing.Point(38, 240);
-            this.chkMostrarPassword.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.chkMostrarPassword.Margin = new System.Windows.Forms.Padding(2);
             this.chkMostrarPassword.Name = "chkMostrarPassword";
             this.chkMostrarPassword.Size = new System.Drawing.Size(155, 24);
             this.chkMostrarPassword.TabIndex = 5;
-            this.chkMostrarPassword.Text = "Mostrar contrasena";
+            this.chkMostrarPassword.Text = "Mostrar contraseña";
             this.chkMostrarPassword.UseVisualStyleBackColor = true;
             this.chkMostrarPassword.CheckedChanged += new System.EventHandler(this.chkMostrarPassword_CheckedChanged);
+            // 
+            // chkRecordar
+            // 
+            this.chkRecordar.AutoSize = true;
+            this.chkRecordar.Font = new System.Drawing.Font("Segoe UI", 11F);
+            this.chkRecordar.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(100)))), ((int)(((byte)(100)))));
+            this.chkRecordar.Location = new System.Drawing.Point(56, 240);
+            this.chkRecordar.Name = "chkRecordar";
+            this.chkRecordar.Size = new System.Drawing.Size(140, 24);
+            this.chkRecordar.TabIndex = 6;
+            this.chkRecordar.Text = "Recordar usuario";
+            this.chkRecordar.UseVisualStyleBackColor = true;
             // 
             // lblCapsLock
             // 
@@ -130,10 +144,10 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lnkRecuperar.Location = new System.Drawing.Point(109, 353);
             this.lnkRecuperar.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lnkRecuperar.Name = "lnkRecuperar";
-            this.lnkRecuperar.Size = new System.Drawing.Size(160, 19);
+            this.lnkRecuperar.Size = new System.Drawing.Size(166, 19);
             this.lnkRecuperar.TabIndex = 8;
             this.lnkRecuperar.TabStop = true;
-            this.lnkRecuperar.Text = "Olvidaste tu contrasena?";
+            this.lnkRecuperar.Text = "¿Olvidaste tu contraseña?";
             this.lnkRecuperar.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkRecuperar_LinkClicked);
             // 
             // lnkCrearCuenta
@@ -159,11 +173,11 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.btnIniciarSesion.Font = new System.Drawing.Font("Segoe UI", 13F, System.Drawing.FontStyle.Bold);
             this.btnIniciarSesion.ForeColor = System.Drawing.Color.White;
             this.btnIniciarSesion.Location = new System.Drawing.Point(38, 276);
-            this.btnIniciarSesion.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnIniciarSesion.Margin = new System.Windows.Forms.Padding(2);
             this.btnIniciarSesion.Name = "btnIniciarSesion";
             this.btnIniciarSesion.Size = new System.Drawing.Size(300, 39);
             this.btnIniciarSesion.TabIndex = 6;
-            this.btnIniciarSesion.Text = "Iniciar Sesion";
+            this.btnIniciarSesion.Text = "Iniciar Sesión";
             this.btnIniciarSesion.UseVisualStyleBackColor = false;
             this.btnIniciarSesion.Click += new System.EventHandler(this.btnIniciarSesion_Click);
             // 
@@ -173,7 +187,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.txtPassword.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtPassword.Font = new System.Drawing.Font("Segoe UI", 13F);
             this.txtPassword.Location = new System.Drawing.Point(38, 207);
-            this.txtPassword.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtPassword.Margin = new System.Windows.Forms.Padding(2);
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.PasswordChar = '*';
             this.txtPassword.Size = new System.Drawing.Size(300, 31);
@@ -185,7 +199,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.txtLogin.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtLogin.Font = new System.Drawing.Font("Segoe UI", 13F);
             this.txtLogin.Location = new System.Drawing.Point(38, 162);
-            this.txtLogin.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtLogin.Margin = new System.Windows.Forms.Padding(2);
             this.txtLogin.Name = "txtLogin";
             this.txtLogin.Size = new System.Drawing.Size(300, 31);
             this.txtLogin.TabIndex = 3;
@@ -200,7 +214,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblSubtitulo.Name = "lblSubtitulo";
             this.lblSubtitulo.Size = new System.Drawing.Size(115, 25);
             this.lblSubtitulo.TabIndex = 1;
-            this.lblSubtitulo.Text = "Iniciar Sesion";
+            this.lblSubtitulo.Text = "Iniciar Sesión";
             // 
             // lblTitulo
             // 
@@ -221,7 +235,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelLogo.Controls.Add(this.lblSubtituloLogo);
             this.panelLogo.Dock = System.Windows.Forms.DockStyle.Left;
             this.panelLogo.Location = new System.Drawing.Point(0, 0);
-            this.panelLogo.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panelLogo.Margin = new System.Windows.Forms.Padding(2);
             this.panelLogo.Name = "panelLogo";
             this.panelLogo.Size = new System.Drawing.Size(300, 447);
             this.panelLogo.TabIndex = 0;
@@ -248,7 +262,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblSubtituloLogo.Name = "lblSubtituloLogo";
             this.lblSubtituloLogo.Size = new System.Drawing.Size(143, 21);
             this.lblSubtituloLogo.TabIndex = 2;
-            this.lblSubtituloLogo.Text = "Sistema de Gestion";
+            this.lblSubtituloLogo.Text = "Sistema de Gestión";
             // 
             // pictureBoxLogo
             // 
@@ -269,7 +283,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.Controls.Add(this.panelLogo);
             this.Controls.Add(this.panelContenedor);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "FormLogin";
@@ -295,6 +309,7 @@ namespace Laboratorio_del_Tema_5_2.Views
         private System.Windows.Forms.TextBox txtLogin;
         private System.Windows.Forms.TextBox txtPassword;
         private System.Windows.Forms.CheckBox chkMostrarPassword;
+        private System.Windows.Forms.CheckBox chkRecordar;
         private System.Windows.Forms.Button btnIniciarSesion;
         private System.Windows.Forms.LinkLabel lnkCrearCuenta;
         private System.Windows.Forms.LinkLabel lnkRecuperar;
@@ -306,3 +321,4 @@ namespace Laboratorio_del_Tema_5_2.Views
         private System.Windows.Forms.Label lblSubtituloLogo;
     }
 }
+

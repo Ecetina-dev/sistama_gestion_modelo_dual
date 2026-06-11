@@ -1,10 +1,13 @@
+#pragma warning disable CS0414
 using System;
 using System.Drawing;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Threading.Tasks;
 using Laboratorio_del_Tema_5_2.Controllers;
 using Laboratorio_del_Tema_5_2.Models;
 using Laboratorio_del_Tema_5_2.Utils;
+using Laboratorio_del_Tema_5_2.Data;
 
 namespace Laboratorio_del_Tema_5_2.Views
 {
@@ -22,34 +25,39 @@ namespace Laboratorio_del_Tema_5_2.Views
 
         private void ConfigurarControles()
         {
-            txtUsuario.MaxLength = Seguridad.UsernameMaxLength;
-            txtPasswordTemp.MaxLength = Seguridad.PasswordMaxLength;
-            txtPasswordNuevo.MaxLength = Seguridad.PasswordMaxLength;
-            txtConfirmar.MaxLength = Seguridad.PasswordMaxLength;
+            // Limites realistas segun el tipo de campo y la BD
+            txtUsuario.MaxLength = 25;       // Matrícula o usuario
+            txtPasswordTemp.MaxLength = 50;  // Password temporal generado
+            txtPasswordNuevo.MaxLength = 50; // Contraseña nueva
+            txtConfirmar.MaxLength = 50;     // Confirmación
 
             this.Shown += (s, e) => txtUsuario.Focus();
 
-            txtUsuario.TextChanged += (s, e) => { LimpiarError(); MarcarNormal(txtUsuario); };
+            // Restaurar color al escribir
+            txtUsuario.TextChanged += (s, e) => { LimpiarError(); RestaurarColor(txtUsuario); };
             txtPasswordTemp.TextChanged += (s, e) => LimpiarError();
             txtPasswordNuevo.TextChanged += (s, e) =>
             {
                 LimpiarError();
-                MarcarNormal(txtPasswordNuevo);
-                MarcarNormal(txtConfirmar);
+                RestaurarColor(txtPasswordNuevo);
+                RestaurarColor(txtConfirmar);
                 ActualizarFuerza();
             };
-            txtConfirmar.TextChanged += (s, e) => { LimpiarError(); };
+            txtConfirmar.TextChanged += (s, e) => LimpiarError();
 
+            // Enter navega, Escape con confirmación
             this.KeyPreview = true;
             this.KeyDown += (s, e) =>
             {
                 if (e.KeyCode == Keys.Escape && !_isLoading)
                 {
                     e.SuppressKeyPress = true;
-                    this.Close();
+                    btnCancelar_Click(s, e);
                 }
             };
         }
+
+        // ==================== INDICADOR DE FUERZA ====================
 
         private void ActualizarFuerza()
         {
@@ -65,17 +73,17 @@ namespace Laboratorio_del_Tema_5_2.Views
 
             if (score < 3)
             {
-                lblFuerza.Text = "Contrasena DEBIL - Agrega mas variedad";
+                lblFuerza.Text = "DÉBIL - Agrega mayúsculas, números y símbolos";
                 lblFuerza.ForeColor = Color.FromArgb(220, 53, 69);
             }
             else if (score < 5)
             {
-                lblFuerza.Text = "Contrasena ACEPTABLE";
+                lblFuerza.Text = "ACEPTABLE";
                 lblFuerza.ForeColor = Color.FromArgb(255, 193, 7);
             }
             else
             {
-                lblFuerza.Text = "Contrasena FUERTE";
+                lblFuerza.Text = "FUERTE";
                 lblFuerza.ForeColor = Color.FromArgb(40, 167, 69);
             }
         }
@@ -87,66 +95,111 @@ namespace Laboratorio_del_Tema_5_2.Views
             if (password.Length >= 6) score++;
             if (password.Length >= 8) score++;
             if (password.Length >= 12) score++;
-            if (System.Text.RegularExpressions.Regex.IsMatch(password, @"[a-z]")) score++;
-            if (System.Text.RegularExpressions.Regex.IsMatch(password, @"[A-Z]")) score++;
-            if (System.Text.RegularExpressions.Regex.IsMatch(password, @"[0-9]")) score++;
-            if (System.Text.RegularExpressions.Regex.IsMatch(password, @"[^a-zA-Z0-9]")) score++;
+            if (Regex.IsMatch(password, @"[a-z]")) score++;
+            if (Regex.IsMatch(password, @"[A-Z]")) score++;
+            if (Regex.IsMatch(password, @"[0-9]")) score++;
+            if (Regex.IsMatch(password, @"[^a-zA-Z0-9]")) score++;
             return score;
         }
 
+        // ==================== VALIDACIÓN ====================
+
         private bool ValidarCampos()
         {
+            RestaurarColores();
             string usuario = txtUsuario.Text.Trim();
 
             if (string.IsNullOrEmpty(usuario))
             {
-                MostrarError("Ingresa tu matricula o usuario", txtUsuario);
+                MarcarError(txtUsuario);
+                MostrarError("Ingresa tu matrícula o usuario.");
                 return false;
             }
 
             if (string.IsNullOrEmpty(txtPasswordTemp.Text))
             {
-                MostrarError("Ingresa el password temporal", txtPasswordTemp);
+                MarcarError(txtPasswordTemp);
+                MostrarError("Ingresa el password temporal que te entregaron.");
                 return false;
             }
 
-            if (string.IsNullOrEmpty(txtPasswordNuevo.Text))
+            string pwdNuevo = txtPasswordNuevo.Text;
+
+            if (string.IsNullOrEmpty(pwdNuevo))
             {
-                MostrarError("Ingresa tu nueva contrasena", txtPasswordNuevo);
+                MarcarError(txtPasswordNuevo);
+                MostrarError("Ingresa tu nueva contraseña.");
                 return false;
             }
 
-            if (txtPasswordNuevo.Text.Length < Seguridad.PasswordMinLength)
+            if (pwdNuevo.Length < Seguridad.PasswordMinLength)
             {
-                MostrarError("Minimo 6 caracteres para la contrasena", txtPasswordNuevo);
+                MarcarError(txtPasswordNuevo);
+                MostrarError("Mínimo " + Seguridad.PasswordMinLength + " caracteres.");
                 return false;
             }
 
-            if (txtPasswordNuevo.Text != txtConfirmar.Text)
+            // Requisitos enterprise para la contraseña
+            if (!Regex.IsMatch(pwdNuevo, @"[A-Z]"))
             {
-                MostrarError("Las contrasenas no coinciden", txtConfirmar);
+                MarcarError(txtPasswordNuevo);
+                MostrarError("Debe contener al menos una mayúscula.");
+                return false;
+            }
+            if (!Regex.IsMatch(pwdNuevo, @"[a-z]"))
+            {
+                MarcarError(txtPasswordNuevo);
+                MostrarError("Debe contener al menos una minúscula.");
+                return false;
+            }
+            if (!Regex.IsMatch(pwdNuevo, @"[0-9]"))
+            {
+                MarcarError(txtPasswordNuevo);
+                MostrarError("Debe contener al menos un número.");
                 return false;
             }
 
-            if (txtPasswordTemp.Text == txtPasswordNuevo.Text)
+            if (pwdNuevo != txtConfirmar.Text)
             {
-                MostrarError("Tu nueva contrasena debe ser diferente al password temporal", txtPasswordNuevo);
+                MarcarError(txtConfirmar);
+                MostrarError("Las contraseñas no coinciden.");
+                return false;
+            }
+
+            if (txtPasswordTemp.Text == pwdNuevo)
+            {
+                MarcarError(txtPasswordNuevo);
+                MostrarError("Debe ser diferente al password temporal.");
                 return false;
             }
 
             return true;
         }
 
-        private void MostrarError(string mensaje, Control controlFoco = null)
+        private void MarcarError(TextBox txt)
+        {
+            txt.BackColor = Color.FromArgb(255, 235, 235);
+            txt.Focus();
+        }
+
+        private void RestaurarColor(TextBox txt)
+        {
+            if (txt.BackColor == Color.FromArgb(255, 235, 235))
+                txt.BackColor = Color.FromArgb(245, 245, 245);
+        }
+
+        private void RestaurarColores()
+        {
+            txtUsuario.BackColor = Color.FromArgb(245, 245, 245);
+            txtPasswordTemp.BackColor = Color.FromArgb(245, 245, 245);
+            txtPasswordNuevo.BackColor = Color.FromArgb(245, 245, 245);
+            txtConfirmar.BackColor = Color.FromArgb(245, 245, 245);
+        }
+
+        private void MostrarError(string mensaje)
         {
             lblError.Text = "! " + mensaje;
             lblError.Visible = true;
-            if (controlFoco != null)
-            {
-                if (controlFoco is TextBox txt)
-                    txt.BackColor = Color.FromArgb(255, 235, 235);
-                controlFoco.Focus();
-            }
         }
 
         private void LimpiarError()
@@ -158,20 +211,12 @@ namespace Laboratorio_del_Tema_5_2.Views
             }
         }
 
-        private void MarcarNormal(TextBox txt)
-        {
-            if (txt.BackColor == Color.FromArgb(255, 235, 235))
-                txt.BackColor = Color.FromArgb(245, 245, 245);
-        }
+        // ==================== LOADING ====================
 
         private void SetLoading(bool loading)
         {
             _isLoading = loading;
             btnActivar.Enabled = !loading;
-            btnActivar.BackColor = loading
-                ? Color.FromArgb(100, 140, 200)
-                : Color.FromArgb(0, 71, 160);
-
             txtUsuario.Enabled = !loading;
             txtPasswordTemp.Enabled = !loading;
             txtPasswordNuevo.Enabled = !loading;
@@ -179,8 +224,21 @@ namespace Laboratorio_del_Tema_5_2.Views
             chkMostrarTemp.Enabled = !loading;
             chkMostrarNuevo.Enabled = !loading;
 
-            btnActivar.Text = loading ? "Activando..." : "Activar mi Cuenta";
+            if (loading)
+            {
+                btnActivar.Text = "Activando...";
+                btnActivar.BackColor = Color.FromArgb(100, 140, 200);
+                Cursor = Cursors.WaitCursor;
+            }
+            else
+            {
+                btnActivar.Text = "Activar mi Cuenta";
+                btnActivar.BackColor = Color.FromArgb(0, 71, 160);
+                Cursor = Cursors.Default;
+            }
         }
+
+        // ==================== ACTIVAR ====================
 
         private async void btnActivar_Click(object sender, EventArgs e)
         {
@@ -196,27 +254,38 @@ namespace Laboratorio_del_Tema_5_2.Views
 
             try
             {
+                // Test de conexión rápido
+                bool conexionOk = await Task.Run(() =>
+                {
+                    try { using var conn = MySQLConnection.GetConnection(); conn.Open(); return true; }
+                    catch { return false; }
+                });
+
+                if (!conexionOk)
+                {
+                    MostrarError("Error de conexión con el servidor.");
+                    return;
+                }
+
                 var resultado = await Task.Run(() =>
                     _authController.ActivarCuenta(usuario, passwordTemp, passwordNuevo));
 
                 if (resultado.Success)
                 {
-                    MessageBox.Show(
-                        "Tu cuenta ha sido activada exitosamente.\n\nYa puedes usar el sistema.",
-                        "Cuenta Activada",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information);
+                    MessageBox.Show("¡Cuenta activada! Ya puedes iniciar sesión con tu nueva contraseña.",
+                        "Activación Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     this.DialogResult = DialogResult.OK;
                     this.Close();
                 }
                 else
                 {
-                    MostrarError(resultado.Message, txtPasswordTemp);
+                    MarcarError(txtPasswordTemp);
+                    MostrarError(resultado.Message);
                 }
             }
             catch
             {
-                MostrarError("Error de conexion. Verifica tu red.", txtUsuario);
+                MostrarError("Error de conexión. Verifica tu red.");
             }
             finally
             {
@@ -224,9 +293,25 @@ namespace Laboratorio_del_Tema_5_2.Views
             }
         }
 
+        // ==================== EVENTOS ====================
+
         private void btnCancelar_Click(object sender, EventArgs e)
         {
+            if (HayDatosIngresados())
+            {
+                var r = MessageBox.Show("¿Cancelar la activación? Los datos ingresados se perderán.",
+                    "Confirmar", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (r != DialogResult.Yes) return;
+            }
             this.Close();
+        }
+
+        private bool HayDatosIngresados()
+        {
+            return !string.IsNullOrWhiteSpace(txtUsuario.Text) ||
+                   !string.IsNullOrWhiteSpace(txtPasswordTemp.Text) ||
+                   !string.IsNullOrWhiteSpace(txtPasswordNuevo.Text) ||
+                   !string.IsNullOrWhiteSpace(txtConfirmar.Text);
         }
 
         private void chkMostrarTemp_CheckedChanged(object sender, EventArgs e)

@@ -148,7 +148,7 @@ namespace Laboratorio_del_Tema_5_2.Views
 
             var headers = new Dictionary<string, string>
             {
-                ["Nombre"] = "Nombre",
+                ["nombre"] = "nombre",
                 ["Fecha_Inicio"] = "Fecha Inicio",
                 ["Fecha_Fin"] = "Fecha Fin",
                 ["Status"] = "Estado"
@@ -157,7 +157,7 @@ namespace Laboratorio_del_Tema_5_2.Views
                 if (dgvProyectos.Columns.Contains(kv.Key))
                     dgvProyectos.Columns[kv.Key].HeaderText = kv.Value;
 
-            string[] orden = { "Nombre", "Fecha_Inicio", "Fecha_Fin", "Status" };
+            string[] orden = { "nombre", "Fecha_Inicio", "Fecha_Fin", "Status" };
             int idx = 0;
             foreach (var col in orden)
                 if (dgvProyectos.Columns.Contains(col))
@@ -212,7 +212,7 @@ namespace Laboratorio_del_Tema_5_2.Views
                 return;
             }
 
-            var nombre = dgvProyectos.SelectedRows[0].Cells["Nombre"]?.Value?.ToString() ?? "";
+            var nombre = dgvProyectos.SelectedRows[0].Cells["nombre"]?.Value?.ToString() ?? "";
 
             if (MessageBox.Show($"Eliminar '{nombre}'?\n\nEsto no se puede deshacer.",
                 "Confirmar eliminacion", MessageBoxButtons.YesNo, MessageBoxIcon.Question,
@@ -223,7 +223,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             {
                 if (controller.Delete(id))
                 {
-                    MostrarExito("Proyecto eliminado.");
+                    MostrarÉxito("Proyecto eliminado.");
                     CargarProyectos();
                 }
                 else
@@ -298,7 +298,7 @@ namespace Laboratorio_del_Tema_5_2.Views
 
             if (success)
             {
-                MostrarExito("Proyecto guardado.");
+                MostrarÉxito("Proyecto guardado.");
                 isEditing = false;
                 isNewRecord = false;
                 panelCardDatos.Visible = false;
@@ -477,7 +477,8 @@ namespace Laboratorio_del_Tema_5_2.Views
         private void MostrarAdvertencia(string msg) =>
             MessageBox.Show(msg, "Validacion", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
-        private void MostrarExito(string msg) =>
-            MessageBox.Show(msg, "Exito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        private void MostrarÉxito(string msg) =>
+            MessageBox.Show(msg, "éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
 }
+

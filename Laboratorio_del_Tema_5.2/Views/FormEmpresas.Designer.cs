@@ -141,7 +141,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.btnNavVolver.Padding = new System.Windows.Forms.Padding(11, 0, 0, 0);
             this.btnNavVolver.Size = new System.Drawing.Size(150, 34);
             this.btnNavVolver.TabIndex = 1;
-            this.btnNavVolver.Text = "\u2190  Volver al Menu";
+            this.btnNavVolver.Text = "\u2190  Volver al Menú";
             this.btnNavVolver.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnNavVolver.UseVisualStyleBackColor = false;
             this.btnNavVolver.Click += new System.EventHandler(this.btnCerrar_Click);
@@ -426,7 +426,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblTelefono.Name = "lblTelefono";
             this.lblTelefono.Size = new System.Drawing.Size(56, 15);
             this.lblTelefono.TabIndex = 17;
-            this.lblTelefono.Text = "Telefono";
+            this.lblTelefono.Text = "teléfono";
             // 
             // txtCP
             // 
@@ -518,7 +518,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblDireccion.Name = "lblDireccion";
             this.lblDireccion.Size = new System.Drawing.Size(62, 15);
             this.lblDireccion.TabIndex = 9;
-            this.lblDireccion.Text = "Direccion";
+            this.lblDireccion.Text = "Dirección";
             // 
             // txtRFC
             // 
@@ -795,12 +795,12 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.ClientSize = new System.Drawing.Size(825, 569);
             this.Controls.Add(this.panelMain);
             this.Controls.Add(this.panelSidebar);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
             this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.MinimumSize = new System.Drawing.Size(754, 495);
             this.Name = "FormEmpresas";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Gestion de Empresas - Modelo Dual";
+            this.Text = "Gestión de Empresas - Modelo Dual";
             this.panelSidebar.ResumeLayout(false);
             this.panelSidebar.PerformLayout();
             this.panelSidebarFooter.ResumeLayout(false);
@@ -880,3 +880,7 @@ namespace Laboratorio_del_Tema_5_2.Views
         private System.Windows.Forms.ToolTip toolTip;
     }
 }
+
+
+
+

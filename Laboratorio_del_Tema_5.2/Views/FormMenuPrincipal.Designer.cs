@@ -215,9 +215,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblNavSeccion.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(120)))), ((int)(((byte)(130)))), ((int)(((byte)(150)))));
             this.lblNavSeccion.Location = new System.Drawing.Point(15, 200);
             this.lblNavSeccion.Name = "lblNavSeccion";
-            this.lblNavSeccion.Size = new System.Drawing.Size(67, 15);
+            this.lblNavSeccion.Size = new System.Drawing.Size(54, 15);
             this.lblNavSeccion.TabIndex = 4;
-            this.lblNavSeccion.Text = "MODULOS";
+            this.lblNavSeccion.Text = "Módulos";
             // 
             // btnNavTemas
             // 
@@ -347,7 +347,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.btnNavGestionUsuarios.Padding = new System.Windows.Forms.Padding(15, 0, 0, 0);
             this.btnNavGestionUsuarios.Size = new System.Drawing.Size(240, 42);
             this.btnNavGestionUsuarios.TabIndex = 11;
-            this.btnNavGestionUsuarios.Text = "👥  Gestion Usuarios";
+            this.btnNavGestionUsuarios.Text = "👥  Gestión Usuarios";
             this.btnNavGestionUsuarios.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnNavGestionUsuarios.UseVisualStyleBackColor = false;
             this.btnNavGestionUsuarios.Click += new System.EventHandler(this.btnGestionUsuarios_Click);
@@ -433,7 +433,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblLogoSubtitulo.Name = "lblLogoSubtitulo";
             this.lblLogoSubtitulo.Size = new System.Drawing.Size(107, 15);
             this.lblLogoSubtitulo.TabIndex = 2;
-            this.lblLogoSubtitulo.Text = "Sistema de Gestion";
+            this.lblLogoSubtitulo.Text = "Sistema de Gestión";
             // 
             // lblLogoTexto
             // 
@@ -534,7 +534,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.tituloTestConnection.Name = "tituloTestConnection";
             this.tituloTestConnection.Size = new System.Drawing.Size(157, 25);
             this.tituloTestConnection.TabIndex = 2;
-            this.tituloTestConnection.Text = "Conexion MySQL";
+            this.tituloTestConnection.Text = "Conexión MySQL";
             // 
             // descTestConnection
             // 
@@ -544,7 +544,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.descTestConnection.Name = "descTestConnection";
             this.descTestConnection.Size = new System.Drawing.Size(200, 35);
             this.descTestConnection.TabIndex = 3;
-            this.descTestConnection.Text = "Probar conexion BD";
+            this.descTestConnection.Text = "Probar conexión BD";
             // 
             // permTestConnection
             // 
@@ -604,7 +604,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.tituloGestionUsuarios.Name = "tituloGestionUsuarios";
             this.tituloGestionUsuarios.Size = new System.Drawing.Size(155, 25);
             this.tituloGestionUsuarios.TabIndex = 2;
-            this.tituloGestionUsuarios.Text = "Gestion Usuarios";
+            this.tituloGestionUsuarios.Text = "Gestión Usuarios";
             // 
             // descGestionUsuarios
             // 
@@ -1034,7 +1034,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.descAlumnos.Name = "descAlumnos";
             this.descAlumnos.Size = new System.Drawing.Size(200, 35);
             this.descAlumnos.TabIndex = 3;
-            this.descAlumnos.Text = "Gestion de estudiantes";
+            this.descAlumnos.Text = "Gestión de estudiantes";
             // 
             // permAlumnos
             // 
@@ -1058,7 +1058,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblCardsSubtitulo.Name = "lblCardsSubtitulo";
             this.lblCardsSubtitulo.Size = new System.Drawing.Size(332, 19);
             this.lblCardsSubtitulo.TabIndex = 1;
-            this.lblCardsSubtitulo.Text = "Solo se muestran los modulos disponibles para tu rol";
+            this.lblCardsSubtitulo.Text = "Solo se muestran los módulos disponibles para tu rol";
             // 
             // lblCardsTitulo
             // 
@@ -1069,7 +1069,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblCardsTitulo.Name = "lblCardsTitulo";
             this.lblCardsTitulo.Size = new System.Drawing.Size(228, 30);
             this.lblCardsTitulo.TabIndex = 0;
-            this.lblCardsTitulo.Text = "Modulos del Sistema";
+            this.lblCardsTitulo.Text = "Módulos del Sistema";
             // 
             // panelTopBar
             // 
@@ -1143,7 +1143,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblPageSubtitulo.Name = "lblPageSubtitulo";
             this.lblPageSubtitulo.Size = new System.Drawing.Size(377, 19);
             this.lblPageSubtitulo.TabIndex = 1;
-            this.lblPageSubtitulo.Text = "Bienvenido al sistema. Selecciona un modulo para comenzar.";
+            this.lblPageSubtitulo.Text = "Bienvenido al sistema. Selecciona un módulo para comenzar.";
             // 
             // lblPageTitulo
             // 
@@ -1305,3 +1305,6 @@ namespace Laboratorio_del_Tema_5_2.Views
         private System.Windows.Forms.Label permTestConnection;
     }
 }
+
+
+

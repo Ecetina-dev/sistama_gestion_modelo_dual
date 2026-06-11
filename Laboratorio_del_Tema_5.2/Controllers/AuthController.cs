@@ -78,10 +78,11 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                 {
                                     TimeSpan restante = bloqueadoHasta - DateTime.Now;
                                     Logger.Warning($"Cuenta bloqueada: '{usernameBd}'. Restante: {restante.Minutes} min");
+                                    string msgBloqueo = $"Demasiados intentos fallidos. Reintenta en {restante.Minutes} minuto(s).";
                                     return new ResultadoLogin
                                     {
                                         Success = false,
-                                        Message = Seguridad.MsgCuentaBloqueada
+                                        Message = msgBloqueo
                                     };
                                 }
                             }
@@ -109,7 +110,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                             if (!BCrypt.Net.BCrypt.Verify(password, passwordHash))
                             {
                                 reader.Close();
-                                ActualizarIntentosFallidos(conn, idUsuario, intentosFallidos);
+                                IncrementarIntentosFallidos(conn, idUsuario, intentosFallidos);
                                 int restantes = Seguridad.MaxIntentosLogin - intentosFallidos - 1;
                                 Logger.Warning($"Contrasena incorrecta para '{usernameBd}'. Intentos restantes: {restantes}");
                                 return new ResultadoLogin
@@ -124,7 +125,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
                             reader.Close();
 
-                            ActualizarIntentosFallidos(conn, idUsuario, 0);
                             ActualizarUltimoLogin(conn, idUsuario);
 
                             Usuario usuario = ObtenerUsuarioPorId(conn, idUsuario);
@@ -406,9 +406,13 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             return (null, null);
         }
 
-        private void ActualizarIntentosFallidos(MySqlConnection conn, int idUsuario, int intentos)
+        /// <summary>
+        /// Incrementa el contador de intentos fallidos.
+        /// Cuando se supera el máximo, establece bloqueo_hasta.
+        /// </summary>
+        private void IncrementarIntentosFallidos(MySqlConnection conn, int idUsuario, int intentosActuales)
         {
-            int nuevosIntentos = intentos + 1;
+            int nuevosIntentos = intentosActuales + 1;
             DateTime? bloqueo = null;
 
             if (nuevosIntentos >= Seguridad.MaxIntentosLogin)
