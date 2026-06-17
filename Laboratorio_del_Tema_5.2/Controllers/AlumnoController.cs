@@ -22,6 +22,14 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 using (MySqlConnection conn = MySQLConnection.GetConnection())
                 {
                     conn.Open();
+
+                    // Validar formato de email (capa server-side, doble defensa)
+                    if (!string.IsNullOrEmpty(alumno.Email) && 
+                        !System.Text.RegularExpressions.Regex.IsMatch(alumno.Email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+                    {
+                        throw new CrudOperationException("El formato del email no es válido.", "Validate", alumno);
+                    }
+
                     string query = @"INSERT INTO Alumno 
                                      (no_control, nombre, apellido_paterno, apellido_materno, 
                                       email, telefono, fecha_nacimiento, status_alumno) 
@@ -58,6 +66,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                         cmd.Parameters.AddWithValue("@status_alumno", string.IsNullOrEmpty(alumno.Status_Alumno) ? Estatus.AlumnoActivo : alumno.Status_Alumno);
 
                         int rowsAffected = cmd.ExecuteNonQuery();
+                        if (rowsAffected > 0)
+                            InsertarBitacora(conn, "INSERT", alumno);
                         return rowsAffected > 0;
                     }
                 }
@@ -81,7 +91,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 using (MySqlConnection conn = MySQLConnection.GetConnection())
                 {
                     conn.Open();
-                    string query = "SELECT * FROM Alumno ORDER BY apellido_paterno, nombre";
+                    string query = "SELECT * FROM Alumno WHERE is_deleted = 0 ORDER BY apellido_paterno, nombre";
 
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     using (MySqlDataReader reader = cmd.ExecuteReader())
@@ -132,7 +142,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 using (MySqlConnection conn = MySQLConnection.GetConnection())
                 {
                     conn.Open();
-                    string query = "SELECT * FROM Alumno WHERE id_alumno = @id_alumno";
+                    string query = "SELECT * FROM Alumno WHERE id_alumno = @id_alumno AND is_deleted = 0";
 
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
@@ -187,6 +197,14 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 using (MySqlConnection conn = MySQLConnection.GetConnection())
                 {
                     conn.Open();
+
+                    // Validar formato de email (capa server-side, doble defensa)
+                    if (!string.IsNullOrEmpty(alumno.Email) && 
+                        !System.Text.RegularExpressions.Regex.IsMatch(alumno.Email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+                    {
+                        throw new CrudOperationException("El formato del email no es válido.", "Validate", alumno);
+                    }
+
                     string query = @"UPDATE Alumno SET 
                                      no_control = @no_control,
                                      nombre = @nombre,
@@ -196,7 +214,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                      telefono = @telefono,
                                      fecha_nacimiento = @fecha_nacimiento,
                                      status_alumno = @status_alumno
-                                     WHERE id_alumno = @id_alumno";
+                                     WHERE id_alumno = @id_alumno AND is_deleted = 0";
 
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
@@ -228,6 +246,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                         cmd.Parameters.AddWithValue("@status_alumno", string.IsNullOrEmpty(alumno.Status_Alumno) ? Estatus.AlumnoActivo : alumno.Status_Alumno);
 
                         int rowsAffected = cmd.ExecuteNonQuery();
+                        if (rowsAffected > 0)
+                            InsertarBitacora(conn, "UPDATE", alumno);
                         return rowsAffected > 0;
                     }
                 }
@@ -240,7 +260,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         }
 
         /// <summary>
-        /// Elimina un alumno de la base de datos por su ID.
+        /// Realiza un soft delete del alumno (no elimina físicamente).
         /// </summary>
         public bool Delete(int idAlumno)
         {
@@ -249,19 +269,25 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 using (MySqlConnection conn = MySQLConnection.GetConnection())
                 {
                     conn.Open();
-                    string query = "DELETE FROM Alumno WHERE id_alumno = @id_alumno";
+                    // SOFT DELETE — no borrar físicamente
+                    string query = @"UPDATE Alumno SET is_deleted = 1, deleted_at = NOW() 
+                                     WHERE id_alumno = @id_alumno AND is_deleted = 0";
 
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@id_alumno", idAlumno);
                         int rowsAffected = cmd.ExecuteNonQuery();
+                        
+                        if (rowsAffected > 0)
+                            InsertarBitacora(conn, "DELETE", idAlumno, $"Alumno ID: {idAlumno}");
+                        
                         return rowsAffected > 0;
                     }
                 }
             }
             catch (Exception ex)
             {
-                Logger.Error($"Error al eliminar alumno ID: {idAlumno}", ex);
+                Logger.Error($"Error al eliminar (soft) alumno ID: {idAlumno}", ex);
                 throw new CrudOperationException($"Error al eliminar el alumno: {ex.Message}", "Delete", null);
             }
         }
@@ -293,8 +319,9 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                     FROM Alumno a
                                     INNER JOIN Alumno_Empresa ae ON a.id_alumno = ae.id_alumno
                                     INNER JOIN Empresa e ON ae.id_empresa = e.id_empresa
-                                    WHERE ae.status_asignacion = @statusActivo
-                                    ORDER BY a.apellido_paterno, a.nombre";
+                                     WHERE ae.status_asignacion = @statusActivo
+                                     AND a.is_deleted = 0
+                                     ORDER BY a.apellido_paterno, a.nombre";
 
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
@@ -347,7 +374,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 using (MySqlConnection conn = MySQLConnection.GetConnection())
                 {
                     conn.Open();
-                    string query = "SELECT COUNT(*) FROM Alumno WHERE no_control = @no_control";
+                    string query = "SELECT COUNT(*) FROM Alumno WHERE no_control = @no_control AND is_deleted = 0";
                     if (excluirId.HasValue)
                         query += " AND id_alumno != @id";
 
@@ -365,6 +392,49 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 Logger.Error("Error al verificar no_control", ex);
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Registra una operacion en la bitacora del sistema.
+        /// </summary>
+        private void InsertarBitacora(MySqlConnection conn, string operacion, Alumno alumno)
+        {
+            try
+            {
+                string query = @"INSERT INTO bitacora (tabla_afectada, id_registro, operacion, usuario, datos_nuevos, fecha)
+                                 VALUES ('Alumno', @id, @op, @usr, @datos, NOW())";
+                using (var cmd = new MySqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", alumno.Id_Alumno > 0 ? alumno.Id_Alumno : 0);
+                    cmd.Parameters.AddWithValue("@op", operacion);
+                    cmd.Parameters.AddWithValue("@usr", SesionActiva.Instance?.Username ?? "sistema");
+                    string datos = $"{alumno.No_Control} - {alumno.Nombre} {alumno.Apellido_Paterno}";
+                    cmd.Parameters.AddWithValue("@datos", datos);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch { /* no bloquear CRUD por error de bitácora */ }
+        }
+
+        /// <summary>
+        /// Registra una eliminacion en la bitacora usando solo el ID.
+        /// </summary>
+        private void InsertarBitacora(MySqlConnection conn, string operacion, int idAlumno, string datos)
+        {
+            try
+            {
+                string query = @"INSERT INTO bitacora (tabla_afectada, id_registro, operacion, usuario, datos_nuevos, fecha)
+                                 VALUES ('Alumno', @id, @op, @usr, @datos, NOW())";
+                using (var cmd = new MySqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", idAlumno);
+                    cmd.Parameters.AddWithValue("@op", operacion);
+                    cmd.Parameters.AddWithValue("@usr", SesionActiva.Instance?.Username ?? "sistema");
+                    cmd.Parameters.AddWithValue("@datos", datos);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch { /* no bloquear CRUD por error de bitácora */ }
         }
     }
 

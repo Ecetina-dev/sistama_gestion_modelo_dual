@@ -5,6 +5,7 @@ using Laboratorio_del_Tema_5_2.Controllers;
 using Laboratorio_del_Tema_5_2.Data;
 using Laboratorio_del_Tema_5_2.Models;
 using Laboratorio_del_Tema_5_2.Utils;
+using MySqlConnector;
 
 namespace Laboratorio_del_Tema_5_2.Views
 {
@@ -36,6 +37,9 @@ namespace Laboratorio_del_Tema_5_2.Views
                 lblAvatar.Text = username.Substring(0, 1).ToUpper();
             }
 
+            // Saludo personalizado
+            lblPageTitulo.Text = $"¡Bienvenido, {CapitalizarPrimeraLetra(username)}!";
+
             if (SesionActiva.Instance.EsAdmin)
             {
                 lblPageSubtitulo.Text = "Tienes acceso completo al sistema como administrador.";
@@ -52,6 +56,15 @@ namespace Laboratorio_del_Tema_5_2.Views
             {
                 lblPageSubtitulo.Text = "Bienvenido al sistema. Selecciona un modulo para continuar.";
             }
+
+            // Último acceso
+            if (SesionActiva.Instance.Fecha_Login != default)
+            {
+                lblUltimoAcceso.Text = $"Último acceso: {SesionActiva.Instance.Fecha_Login:dd MMM yyyy — HH:mm}";
+            }
+
+            // Cargar estadísticas del dashboard
+            CargarEstadisticas();
 
             try
             {
@@ -188,6 +201,21 @@ namespace Laboratorio_del_Tema_5_2.Views
         {
             try
             {
+                // Highlight active nav button
+                string modulo = typeof(T).Name switch
+                {
+                    "FormAlumnos" => "Alumnos",
+                    "FormEmpresas" => "Empresas",
+                    "FormProyectos" => "Proyectos",
+                    "FormProfesores" => "Profesores",
+                    "FormMaterias" => "Materias",
+                    "FormTemas" => "Temas",
+                    "FormGestionUsuarios" => "Usuarios",
+                    _ => null
+                };
+                if (modulo != null)
+                    ResaltarNav(modulo);
+
                 T form = new T();
                 form.ShowDialog();
             }
@@ -200,6 +228,81 @@ namespace Laboratorio_del_Tema_5_2.Views
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
+        }
+
+        private void CargarEstadisticas()
+        {
+            try
+            {
+                using (var conn = MySQLConnection.GetConnection())
+                {
+                    conn.Open();
+                    string sql = @"
+                        SELECT 
+                            (SELECT COUNT(*) FROM v_alumnos_activos) AS total_alumnos,
+                            (SELECT COUNT(*) FROM v_empresas_activas) AS total_empresas,
+                            (SELECT COUNT(*) FROM v_profesores_activos) AS total_profesores,
+                            (SELECT COUNT(*) FROM Usuario WHERE debe_cambiar_password = 1 AND is_deleted = 0) AS pendientes_activacion";
+
+                    using (var cmd = new MySqlCommand(sql, conn))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            int alumnos = reader.IsDBNull(0) ? 0 : reader.GetInt32(0);
+                            int empresas = reader.IsDBNull(1) ? 0 : reader.GetInt32(1);
+                            int profesores = reader.IsDBNull(2) ? 0 : reader.GetInt32(2);
+                            int pendientes = reader.IsDBNull(3) ? 0 : reader.GetInt32(3);
+
+                            lblStatAlumnosNum.Text = alumnos.ToString();
+                            lblStatEmpresasNum.Text = empresas.ToString();
+                            lblStatProfesoresNum.Text = profesores.ToString();
+                            lblStatPendientesNum.Text = pendientes.ToString();
+
+                            // Update card descriptions with counts
+                            descAlumnos.Text = $"{alumnos} activos";
+                            descEmpresas.Text = $"{empresas} activas";
+                            descProfesores.Text = $"{profesores} activos";
+
+                            // Pendientes solo para admin
+                            statPendientes.Visible = SesionActiva.Instance.EsAdmin;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error al cargar estadísticas", ex);
+            }
+        }
+
+        private void ResaltarNav(string moduloActivo)
+        {
+            Color normal = Color.FromArgb(28, 35, 51);
+            Color activo = Color.FromArgb(0, 71, 160);
+            Color hoverColor = Color.FromArgb(35, 45, 65);
+
+            foreach (var btn in new[] { btnNavAlumnos, btnNavEmpresas, btnNavProyectos,
+                btnNavProfesores, btnNavMaterias, btnNavTemas, btnNavGestionUsuarios })
+            {
+                btn.BackColor = normal;
+                btn.FlatAppearance.MouseOverBackColor = hoverColor;
+            }
+
+            Button activoBtn = moduloActivo switch
+            {
+                "Alumnos" => btnNavAlumnos,
+                "Empresas" => btnNavEmpresas,
+                "Proyectos" => btnNavProyectos,
+                "Profesores" => btnNavProfesores,
+                "Materias" => btnNavMaterias,
+                "Temas" => btnNavTemas,
+                "Usuarios" => btnNavGestionUsuarios,
+                _ => null
+            };
+
+            if (activoBtn != null)
+                activoBtn.BackColor = activo;
         }
 
         private void btnTestConnection_Click(object sender, EventArgs e)

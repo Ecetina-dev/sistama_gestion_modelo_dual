@@ -42,6 +42,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
                     string query = @"SELECT u.id_usuario, u.username, u.email, u.password_hash, 
                                             u.id_rol, u.status, u.intentos_fallidos, u.bloqueado_hasta,
+                                            u.is_deleted, u.debe_cambiar_password, u.fecha_activacion,
+                                            u.deleted_at,
                                             r.nombre AS rol_nombre
                                      FROM Usuario u
                                      INNER JOIN Rol r ON u.id_rol = r.id_rol
@@ -68,8 +70,30 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                             string usernameBd = reader.GetString("username");
                             string passwordHash = reader.GetString("password_hash");
                             string status = reader.GetString("status");
-                            int intentosFallidos = reader.GetInt32("intentos_fallidos");
+                            int intentosFallidos = reader.IsDBNull(reader.GetOrdinal("intentos_fallidos")) ? 0 : reader.GetInt32("intentos_fallidos");
                             string rolNombre = reader.GetString("rol_nombre");
+
+                            // Enterprise: leer campos de soft delete y activacion
+                            bool isDeleted = !reader.IsDBNull(reader.GetOrdinal("is_deleted")) && reader.GetBoolean("is_deleted");
+                            bool debeCambiarPassword = !reader.IsDBNull(reader.GetOrdinal("debe_cambiar_password")) && reader.GetBoolean("debe_cambiar_password");
+                            DateTime? fechaActivacion = reader.IsDBNull(reader.GetOrdinal("fecha_activacion")) ? (DateTime?)null : reader.GetDateTime("fecha_activacion");
+                            DateTime? deletedAt = reader.IsDBNull(reader.GetOrdinal("deleted_at")) ? (DateTime?)null : reader.GetDateTime("deleted_at");
+
+                            // Check: cuenta eliminada (soft delete)
+                            if (isDeleted)
+                            {
+                                Logger.Warning($"Intento de login en cuenta eliminada: '{usernameBd}'");
+                                return new ResultadoLogin
+                                {
+                                    Success = false,
+                                    CuentaEliminada = true,
+                                    Message = "Esta cuenta ha sido eliminada. Contacta al administrador."
+                                };
+                            }
+
+                            // Usamos el parametro del sistema en lugar de la constante fija
+                            int minutosBloqueo = ParametroSistemaService.Instance.GetInt(
+                                Claves.TIEMPO_BLOQUEO_MINUTOS, Seguridad.MinutosBloqueo);
 
                             if (!reader.IsDBNull(reader.GetOrdinal("bloqueado_hasta")))
                             {
@@ -78,7 +102,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                 {
                                     TimeSpan restante = bloqueadoHasta - DateTime.Now;
                                     Logger.Warning($"Cuenta bloqueada: '{usernameBd}'. Restante: {restante.Minutes} min");
-                                    string msgBloqueo = $"Demasiados intentos fallidos. Reintenta en {restante.Minutes} minuto(s).";
+                                    string msgBloqueo = $"Demasiados intentos fallidos. Reintenta en {Math.Ceiling(restante.TotalMinutes)} minuto(s).";
                                     return new ResultadoLogin
                                     {
                                         Success = false,
@@ -111,7 +135,9 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                             {
                                 reader.Close();
                                 IncrementarIntentosFallidos(conn, idUsuario, intentosFallidos);
-                                int restantes = Seguridad.MaxIntentosLogin - intentosFallidos - 1;
+                                int maxIntentos = ParametroSistemaService.Instance.GetInt(
+                                    Claves.MAX_INTENTOS_LOGIN, Seguridad.MaxIntentosLogin);
+                                int restantes = maxIntentos - intentosFallidos - 1;
                                 Logger.Warning($"Contrasena incorrecta para '{usernameBd}'. Intentos restantes: {restantes}");
                                 return new ResultadoLogin
                                 {
@@ -119,8 +145,31 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                     // Mensaje generico - no revela info
                                     Message = restantes > 0
                                         ? $"{Seguridad.MsgCredencialesInvalidas} (Intentos restantes: {restantes})"
-                                        : Seguridad.MsgCuentaBloqueada
+                                        : Seguridad.MsgCuentaBloqueada,
+                                    IntentosRestantes = restantes
                                 };
+                            }
+
+                            // Enterprise: cuenta requiere activacion (password temporal)
+                            if (debeCambiarPassword)
+                            {
+                                reader.Close();
+                                Logger.Info($"Cuenta requiere activacion: '{usernameBd}'");
+                                return new ResultadoLogin
+                                {
+                                    Success = true,
+                                    RequiereActivacion = true,
+                                    Message = "Debes activar tu cuenta con una nueva contraseña."
+                                };
+                            }
+
+                            // Enterprise: verificar caducidad de password
+                            int diasCaducidad = ParametroSistemaService.Instance.GetInt(
+                                Claves.DIAS_CADUCIDAD_PASSWORD, Seguridad.DiasCaducidadPassword);
+                            bool passwordExpirado = false;
+                            if (fechaActivacion.HasValue)
+                            {
+                                passwordExpirado = (DateTime.Now - fechaActivacion.Value).TotalDays > diasCaducidad;
                             }
 
                             reader.Close();
@@ -135,6 +184,9 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
                             CrearSesion(conn, idUsuario);
 
+                            // Enterprise: registrar en bitacora
+                            InsertarBitacora(conn, "Usuario", idUsuario.ToString(), "LOGIN", usernameBd);
+
                             Logger.Info($"Login exitoso para usuario '{usernameBd}' (rol: {rolNombre})");
 
                             return new ResultadoLogin
@@ -142,7 +194,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                 Success = true,
                                 Message = "Login exitoso",
                                 Usuario = usuario,
-                                RequiereCambioPassword = usuario.Debe_Cambiar_Password
+                                RequiereCambioPassword = usuario.Debe_Cambiar_Password,
+                                PasswordExpirado = passwordExpirado
                             };
                         }
                     }
@@ -415,9 +468,14 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             int nuevosIntentos = intentosActuales + 1;
             DateTime? bloqueo = null;
 
-            if (nuevosIntentos >= Seguridad.MaxIntentosLogin)
+            int maxIntentos = ParametroSistemaService.Instance.GetInt(
+                Claves.MAX_INTENTOS_LOGIN, Seguridad.MaxIntentosLogin);
+            int minutosBloqueo = ParametroSistemaService.Instance.GetInt(
+                Claves.TIEMPO_BLOQUEO_MINUTOS, Seguridad.MinutosBloqueo);
+
+            if (nuevosIntentos >= maxIntentos)
             {
-                bloqueo = DateTime.Now.AddMinutes(Seguridad.MinutosBloqueo);
+                bloqueo = DateTime.Now.AddMinutes(minutosBloqueo);
             }
 
             string query = @"UPDATE Usuario SET intentos_fallidos = @intentos, bloqueado_hasta = @bloqueo 
@@ -444,18 +502,48 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
         private void CrearSesion(MySqlConnection conn, int idUsuario)
         {
-            string tokenSesion = Guid.NewGuid().ToString("N") + DateTime.Now.Ticks.ToString("X");
-            DateTime expiracion = DateTime.Now.AddHours(8);
+            string tokenSesion = Guid.NewGuid().ToString("N"); // 32 hex chars
+            DateTime expiracion = DateTime.Now.AddHours(Seguridad.DuracionSesionHoras);
 
-            string query = @"INSERT INTO Sesion (id_sesion, id_usuario, fecha_inicio, fecha_expiracion, status)
-                             VALUES (@token, @id_usuario, NOW(), @expiracion, 'activa')";
+            string query = @"INSERT INTO Sesion (id_sesion, id_usuario, fecha_inicio, fecha_expiracion, ip_address, user_agent, status)
+                             VALUES (@token, @id_usuario, NOW(), @expiracion, @ip, @user_agent, 'activa')";
 
             using (MySqlCommand cmd = new MySqlCommand(query, conn))
             {
                 cmd.Parameters.AddWithValue("@token", tokenSesion);
                 cmd.Parameters.AddWithValue("@id_usuario", idUsuario);
                 cmd.Parameters.AddWithValue("@expiracion", expiracion);
+                cmd.Parameters.AddWithValue("@ip", "127.0.0.1");
+                cmd.Parameters.AddWithValue("@user_agent", "WinForms App");
                 cmd.ExecuteNonQuery();
+            }
+        }
+
+        /// <summary>
+        /// Registra una operacion en la tabla bitacora (auditoria enterprise).
+        /// </summary>
+        private void InsertarBitacora(MySqlConnection conn, string tabla, string idRegistro, string operacion, string usuario)
+        {
+            try
+            {
+                string query = @"INSERT INTO bitacora (tabla_afectada, id_registro, operacion, usuario, ip_address, navegador, fecha)
+                                 VALUES (@tabla, @id_registro, @operacion, @usuario, @ip, @navegador, NOW())";
+
+                using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@tabla", tabla);
+                    cmd.Parameters.AddWithValue("@id_registro", idRegistro);
+                    cmd.Parameters.AddWithValue("@operacion", operacion);
+                    cmd.Parameters.AddWithValue("@usuario", usuario);
+                    cmd.Parameters.AddWithValue("@ip", "127.0.0.1");
+                    cmd.Parameters.AddWithValue("@navegador", "WinForms App");
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                // La bitacora no debe bloquear el login si falla
+                Logger.Error("Error al insertar en bitacora", ex);
             }
         }
 
@@ -810,15 +898,19 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 {
                     conn.Open();
 
-                    // Buscar usuario
-                    string query = @"SELECT id_usuario, username, email, password_temporal_hash, status
+                    // Buscar usuario con datos de bloqueo
+                    string query = @"SELECT id_usuario, username, email, password_temporal_hash, 
+                                            status, intentos_fallidos, bloqueado_hasta
                                      FROM Usuario
-                                     WHERE LOWER(username) = LOWER(@username)";
+                                     WHERE LOWER(username) = LOWER(@username)
+                                     AND is_deleted = 0";
 
                     int idUsuario;
                     string email;
                     string passwordTempHash;
                     string status;
+                    int intentosFallidos;
+                    DateTime? bloqueadoHasta;
                     bool yaActivado = false;
 
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
@@ -838,6 +930,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                             idUsuario = reader.GetInt32("id_usuario");
                             email = reader.GetString("email");
                             status = reader.GetString("status");
+                            intentosFallidos = reader.IsDBNull(reader.GetOrdinal("intentos_fallidos")) ? 0 : reader.GetInt32("intentos_fallidos");
+                            bloqueadoHasta = reader.IsDBNull(reader.GetOrdinal("bloqueado_hasta")) ? (DateTime?)null : reader.GetDateTime("bloqueado_hasta");
 
                             if (reader.IsDBNull(reader.GetOrdinal("password_temporal_hash")))
                             {
@@ -849,6 +943,18 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                 passwordTempHash = reader.GetString("password_temporal_hash");
                             }
                         }
+                    }
+
+                    // Enterprise: verificar bloqueo por intentos fallidos de activación
+                    if (bloqueadoHasta.HasValue && DateTime.Now < bloqueadoHasta.Value)
+                    {
+                        TimeSpan restante = bloqueadoHasta.Value - DateTime.Now;
+                        Logger.Warning($"Activación bloqueada para '{username}'. Restante: {Math.Ceiling(restante.TotalMinutes)} min");
+                        return new ResultadoLogin
+                        {
+                            Success = false,
+                            Message = $"Demasiados intentos fallidos. Reintenta en {Math.Ceiling(restante.TotalMinutes)} minuto(s)."
+                        };
                     }
 
                     if (status != "activo")
@@ -873,11 +979,19 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                     if (string.IsNullOrEmpty(passwordTempHash) ||
                         !BCrypt.Net.BCrypt.Verify(passwordTemporal, passwordTempHash))
                     {
-                        Logger.Warning($"Intento de activacion con password temporal invalido: '{username}'");
+                        // Enterprise: rate limiting en activación
+                        IncrementarIntentosFallidos(conn, idUsuario, intentosFallidos);
+                        int maxIntentos = ParametroSistemaService.Instance.GetInt(
+                            Claves.MAX_INTENTOS_LOGIN, Seguridad.MaxIntentosLogin);
+                        int restantes = maxIntentos - intentosFallidos - 1;
+                        Logger.Warning($"Intento de activacion con password temporal invalido: '{username}'. Restantes: {restantes}");
                         return new ResultadoLogin
                         {
                             Success = false,
-                            Message = "Credenciales invalidas"
+                            Message = restantes > 0
+                                ? $"Credenciales invalidas (Intentos restantes: {restantes})"
+                                : Seguridad.MsgCuentaBloqueada,
+                            IntentosRestantes = restantes
                         };
                     }
 
@@ -888,7 +1002,9 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                           SET password_hash = @nuevo_hash,
                                               password_temporal_hash = NULL,
                                               debe_cambiar_password = FALSE,
-                                              fecha_activacion = NOW()
+                                              fecha_activacion = NOW(),
+                                              intentos_fallidos = 0,
+                                              bloqueado_hasta = NULL
                                           WHERE id_usuario = @id";
 
                     using (MySqlCommand cmd = new MySqlCommand(updateQuery, conn))
@@ -897,6 +1013,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                         cmd.Parameters.AddWithValue("@id", idUsuario);
                         cmd.ExecuteNonQuery();
                     }
+
+                    InsertarBitacora(conn, "Usuario", idUsuario.ToString(), "ACTIVAR_CUENTA", username);
 
                     // Cargar usuario completo y sus privilegios para iniciar sesion
                     Usuario usuario = ObtenerUsuarioPorId(conn, idUsuario);

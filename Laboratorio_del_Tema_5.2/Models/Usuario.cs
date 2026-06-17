@@ -45,6 +45,11 @@ namespace Laboratorio_del_Tema_5_2.Models
 
         public int? Creado_Por { get; set; }
 
+        // Soft delete (enterprise feature)
+        public bool Is_Deleted { get; set; }
+        public DateTime? Deleted_At { get; set; }
+        public string Deleted_By { get; set; }
+
         public Rol Rol { get; set; }
 
         public List<Privilegio> Privilegios { get; set; }

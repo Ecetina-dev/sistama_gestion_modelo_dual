@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Laboratorio_del_Tema_5_2.Controllers;
@@ -25,12 +26,21 @@ namespace Laboratorio_del_Tema_5_2.Views
         private int _totalPaginas = 1;
         private List<Alumno> _alumnosFiltrados = new();
 
-        private const int MAX_NO_CONTROL = 8;
-        private const int EXT_MIN_NO_CONTROL = 8;
-        private const int MAX_NOMBRE = 50;
-        private const int MAX_APELLIDO = 25;
-        private const int MAX_EMAIL = 80;
-        private const int MAX_TELEFONO = 10;
+        // Ordenamiento de columnas
+        private string _ultimaColumnaOrden = "";
+        private bool _ordenAscendente = true;
+
+        // Sincronizado con BD: alumno.no_control VARCHAR(15)
+        private const int MAX_NO_CONTROL = 15;
+        private const int EXT_MIN_NO_CONTROL = 1;
+        // Sincronizado con BD: alumno.nombre VARCHAR(100)
+        private const int MAX_NOMBRE = 100;
+        // Sincronizado con BD: alumno.apellido_paterno/apellido_materno VARCHAR(80)
+        private const int MAX_APELLIDO = 80;
+        // Sincronizado con BD: alumno.email VARCHAR(254) — RFC 5321
+        private const int MAX_EMAIL = 254;
+        // Sincronizado con BD: alumno.telefono VARCHAR(15)
+        private const int MAX_TELEFONO = 15;
         private const int EXT_MIN_TELEFONO = 10;
 
         // DateTimePicker creado programaticamente (no necesita Designer)
@@ -97,7 +107,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             // Tooltip dinamico para No.Control
             txtNoControl.TextChanged += (s, e) =>
             {
-                toolTip.SetToolTip(txtNoControl, $"{txtNoControl.Text.Length}/{MAX_NO_CONTROL} - 8 dígitos");
+                toolTip.SetToolTip(txtNoControl, $"{txtNoControl.Text.Length}/{MAX_NO_CONTROL} - solo dígitos");
             };
 
             this.KeyPreview = true;
@@ -109,7 +119,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             };
 
             // Tooltips en campos
-            toolTip.SetToolTip(txtNoControl, "8 dígitos (ej: 20001234)");
+            toolTip.SetToolTip(txtNoControl, "Solo dígitos (ej: 2000123456)");
             toolTip.SetToolTip(txtNombre, "Nombre del alumno");
             toolTip.SetToolTip(txtApellidoPaterno, "Apellido paterno");
             toolTip.SetToolTip(txtApellidoMaterno, "Apellido materno (opcional)");
@@ -157,6 +167,50 @@ namespace Laboratorio_del_Tema_5_2.Views
 
             // Color de filas segun status
             dgvAlumnos.CellFormatting += DgvAlumnos_CellFormatting;
+
+            // Ordenamiento por clic en columna
+            dgvAlumnos.ColumnHeaderMouseClick += (s, e) =>
+            {
+                if (_alumnosFiltrados.Count == 0) return;
+                string colName = dgvAlumnos.Columns[e.ColumnIndex].DataPropertyName;
+
+                // Toggle sort direction
+                bool asc = true;
+                if (_ultimaColumnaOrden == colName)
+                    asc = !_ordenAscendente;
+
+                _ultimaColumnaOrden = colName;
+                _ordenAscendente = asc;
+
+                var propiedad = typeof(Alumno).GetProperty(colName);
+                if (propiedad == null) return;
+
+                _alumnosFiltrados = asc
+                    ? _alumnosFiltrados.OrderBy(a => propiedad.GetValue(a, null) ?? "").ToList()
+                    : _alumnosFiltrados.OrderByDescending(a => propiedad.GetValue(a, null) ?? "").ToList();
+
+                _paginaActual = 1;
+                AplicarPagina();
+
+                // Visual indicator on header
+                foreach (DataGridViewColumn col in dgvAlumnos.Columns)
+                    col.HeaderText = col.HeaderText.Replace(" ▲", "").Replace(" ▼", "");
+                dgvAlumnos.Columns[e.ColumnIndex].HeaderText += asc ? " ▲" : " ▼";
+            };
+
+            // Filtro por status
+            cmbFiltroStatus.SelectedIndex = 0;
+            cmbFiltroStatus.SelectedIndexChanged += (s, e) => AplicarFiltros();
+
+            // Limpiar busqueda
+            btnLimpiarBusqueda.Click += (s, e) =>
+            {
+                txtBuscar.Clear();
+                txtBuscar.Focus();
+            };
+
+            // Exportar CSV
+            btnExportarCSV.Click += (s, e) => ExportarCSV();
 
             txtNoControl.TabIndex = 0;
             txtNombre.TabIndex = 1;
@@ -227,12 +281,18 @@ namespace Laboratorio_del_Tema_5_2.Views
             panelToolbar.Location = new Point(0, 0);
             panelToolbar.Width = cw;
 
-            // Buscador SIEMPRE centrado en el toolbar
+            // Filtro de status a la izquierda
+            cmbFiltroStatus.Location = new Point(12, 12);
+
+            // Buscador centrado en el toolbar
             int searchW = 200;
-            int searchX = (cw - searchW) / 2;
+            int searchX = Math.Max(140, (cw - searchW) / 2);
             lblBuscarIcono.Location = new Point(searchX - 28, 14);
             txtBuscar.Location = new Point(searchX, 12);
             txtBuscar.Width = searchW;
+
+            // Boton limpiar busqueda a la derecha del search
+            btnLimpiarBusqueda.Location = new Point(searchX + searchW + 6, 14);
 
             int toolbarBottom = panelToolbar.Height + 5;
 
@@ -326,7 +386,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             try
             {
                 _alumnosCache = controller.Read() ?? new List<Alumno>();
-                AplicarFiltroBusqueda();
+                AplicarFiltros();
             }
             catch (Exception ex)
             {
@@ -347,20 +407,41 @@ namespace Laboratorio_del_Tema_5_2.Views
             }
         }
 
-        private void AplicarFiltroBusqueda()
+        private void AplicarFiltros()
         {
             string filtro = txtBuscar.Text.Trim().ToLower();
+            string statusFiltro = cmbFiltroStatus.SelectedItem?.ToString() ?? "Todos";
 
-            _alumnosFiltrados = string.IsNullOrEmpty(filtro)
-                ? _alumnosCache.ToList()
-                : _alumnosCache.Where(a =>
+            var query = _alumnosCache.AsEnumerable();
+
+            // Filtro texto
+            if (!string.IsNullOrEmpty(filtro))
+            {
+                query = query.Where(a =>
                     (a.No_Control?.ToLower().Contains(filtro) ?? false) ||
                     (a.Nombre?.ToLower().Contains(filtro) ?? false) ||
                     (a.Apellido_Paterno?.ToLower().Contains(filtro) ?? false) ||
                     (a.Apellido_Materno?.ToLower().Contains(filtro) ?? false) ||
                     (a.Email?.ToLower().Contains(filtro) ?? false)
-                ).ToList();
+                );
+            }
 
+            // Filtro status
+            if (statusFiltro != "Todos")
+            {
+                string statusKey = statusFiltro.ToLower() switch
+                {
+                    "activos" => Estatus.AlumnoActivo,
+                    "inactivos" => Estatus.AlumnoInactivo,
+                    "egresados" => Estatus.AlumnoEgresado,
+                    "suspendidos" => Estatus.AlumnoSuspendido,
+                    "baja" => Estatus.AlumnoBaja,
+                    _ => ""
+                };
+                query = query.Where(a => a.Status_Alumno?.ToLower() == statusKey);
+            }
+
+            _alumnosFiltrados = query.ToList();
             ActualizarContador();
         }
 
@@ -411,7 +492,7 @@ namespace Laboratorio_del_Tema_5_2.Views
         // ==================== NAVEGACION ====================
 
         private void btnCerrar_Click(object sender, EventArgs e) => this.Close();
-        private void txtBuscar_TextChanged(object sender, EventArgs e) => AplicarFiltroBusqueda();
+        private void txtBuscar_TextChanged(object sender, EventArgs e) => AplicarFiltros();
 
         // ==================== CRUD ====================
 
@@ -601,7 +682,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             string nc = txtNoControl.Text.Trim();
             if (string.IsNullOrEmpty(nc)) { MarcarError(txtNoControl); return "El número de control es obligatorio."; }
             if (nc.Length < EXT_MIN_NO_CONTROL) { MarcarError(txtNoControl); return $"Debe tener {EXT_MIN_NO_CONTROL} dígitos."; }
-            if (!System.Text.RegularExpressions.Regex.IsMatch(nc, @"^\d{8}$")) { MarcarError(txtNoControl); return "Debe tener 8 dígitos (ej: 20001234)."; }
+            if (!System.Text.RegularExpressions.Regex.IsMatch(nc, @"^\d+$")) { MarcarError(txtNoControl); return "Solo se permiten dígitos."; }
 
             if (string.IsNullOrWhiteSpace(txtNombre.Text)) { MarcarError(txtNombre); return "El nombre es obligatorio."; }
             if (txtNombre.Text.Trim().Length < 2) { MarcarError(txtNombre); return "Mínimo 2 caracteres."; }
@@ -617,8 +698,8 @@ namespace Laboratorio_del_Tema_5_2.Views
             if (!string.IsNullOrWhiteSpace(txtTelefono.Text))
             {
                 string soloDigitos = new string(txtTelefono.Text.Where(char.IsDigit).ToArray());
-                if (soloDigitos.Length != EXT_MIN_TELEFONO)
-                { MarcarError(txtTelefono); return $"El teléfono debe tener {EXT_MIN_TELEFONO} dígitos."; }
+                if (soloDigitos.Length < EXT_MIN_TELEFONO || soloDigitos.Length > MAX_TELEFONO)
+                { MarcarError(txtTelefono); return $"El teléfono debe tener entre {EXT_MIN_TELEFONO} y {MAX_TELEFONO} dígitos."; }
             }
 
             if (dtpFechaNacimiento.Checked)
@@ -689,6 +770,55 @@ namespace Laboratorio_del_Tema_5_2.Views
         private void MostrarError(string msg) => MessageBox.Show(msg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         private void MostrarAdvertencia(string msg) => MessageBox.Show(msg, "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         private void MostrarÉxito(string msg) => MessageBox.Show(msg, "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+        // ==================== EXPORTAR CSV ====================
+
+        private string EscapeCSV(string valor)
+        {
+            if (string.IsNullOrEmpty(valor)) return "";
+            // Proteger contra inyección de fórmulas (=, +, -, @)
+            if (valor.StartsWith("=") || valor.StartsWith("+") || valor.StartsWith("-") || valor.StartsWith("@"))
+                valor = "'" + valor;  // prefijo comilla simple neutraliza la fórmula
+            // Escapar comillas dobles
+            return "\"" + valor.Replace("\"", "\"\"") + "\"";
+        }
+
+        private void ExportarCSV()
+        {
+            if (_alumnosFiltrados.Count == 0)
+            {
+                MessageBox.Show("No hay datos para exportar.", "Exportar", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using (var sfd = new SaveFileDialog())
+            {
+                sfd.Filter = "CSV (*.csv)|*.csv";
+                sfd.FileName = $"Alumnos_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+                if (sfd.ShowDialog() != DialogResult.OK) return;
+
+                try
+                {
+                    using (var sw = new StreamWriter(sfd.FileName, false, System.Text.Encoding.UTF8))
+                    {
+                        // Header
+                        sw.WriteLine("No. Control,Nombre,Apellido Paterno,Apellido Materno,Email,Teléfono,Fecha Nacimiento,Status");
+
+                        // Data
+                        foreach (var a in _alumnosFiltrados)
+                        {
+                            string fecha = a.Fecha_Nacimiento?.ToString("yyyy-MM-dd") ?? "";
+                            sw.WriteLine($"{EscapeCSV(a.No_Control)},{EscapeCSV(a.Nombre)},{EscapeCSV(a.Apellido_Paterno)},{EscapeCSV(a.Apellido_Materno ?? "")},{EscapeCSV(a.Email ?? "")},{EscapeCSV(a.Telefono ?? "")},{EscapeCSV(fecha)},{EscapeCSV(a.Status_Alumno)}");
+                        }
+                    }
+                    MessageBox.Show($"Exportados {_alumnosFiltrados.Count} registros a:\n{sfd.FileName}", "Exportación Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    MostrarError("Error al exportar: " + ex.Message);
+                }
+            }
+        }
 
         // ==================== FILTROS DE ENTRADA ====================
 

@@ -12,6 +12,11 @@ namespace Laboratorio_del_Tema_5_2.Models
         public string Message { get; set; }
         public Usuario Usuario { get; set; }
         public bool RequiereCambioPassword { get; set; }
+        public bool RequiereActivacion { get; set; }
+        public bool PasswordExpirado { get; set; }
+        public bool CuentaEliminada { get; set; }
+        /// <summary>Intentos restantes (-1 si no aplica, 0 = bloqueado)</summary>
+        public int IntentosRestantes { get; set; } = -1;
     }
 
     public class SesionActiva
@@ -66,6 +71,24 @@ namespace Laboratorio_del_Tema_5_2.Models
 
         public void CerrarSesion()
         {
+            // Resetear intentos fallidos al cerrar sesión (el usuario ya salió del sistema)
+            if (_instance != null && _instance.Id_Usuario > 0)
+            {
+                try
+                {
+                    using (var conn = Laboratorio_del_Tema_5_2.Data.MySQLConnection.GetConnection())
+                    {
+                        conn.Open();
+                        using (var cmd = new MySqlConnector.MySqlCommand(
+                            "UPDATE Usuario SET intentos_fallidos = 0, bloqueado_hasta = NULL WHERE id_usuario = @id", conn))
+                        {
+                            cmd.Parameters.AddWithValue("@id", _instance.Id_Usuario);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+                catch { /* no bloquear el cierre por error de BD */ }
+            }
             _instance = null;
         }
 

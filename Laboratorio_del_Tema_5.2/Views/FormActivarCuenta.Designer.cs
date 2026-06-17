@@ -12,9 +12,16 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblSubtituloIzq = new System.Windows.Forms.Label();
             this.lblTituloIzq = new System.Windows.Forms.Label();
             this.panelFormulario = new System.Windows.Forms.Panel();
+            this.lblVolverLogin = new System.Windows.Forms.LinkLabel();
+            this.lblEstadoConexion = new System.Windows.Forms.Label();
             this.btnActivar = new System.Windows.Forms.Button();
             this.lblError = new System.Windows.Forms.Label();
             this.panelCampos = new System.Windows.Forms.Panel();
+            this.lblCheckEspecial = new System.Windows.Forms.Label();
+            this.lblCheckNumero = new System.Windows.Forms.Label();
+            this.lblCheckMinus = new System.Windows.Forms.Label();
+            this.lblCheckMayus = new System.Windows.Forms.Label();
+            this.lblCheckMinChars = new System.Windows.Forms.Label();
             this.lblFuerza = new System.Windows.Forms.Label();
             this.lblConfirmarTxt = new System.Windows.Forms.Label();
             this.lblNuevoPwdTxt = new System.Windows.Forms.Label();
@@ -45,7 +52,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelIzquierdo.Location = new System.Drawing.Point(0, 0);
             this.panelIzquierdo.Margin = new System.Windows.Forms.Padding(2);
             this.panelIzquierdo.Name = "panelIzquierdo";
-            this.panelIzquierdo.Size = new System.Drawing.Size(150, 455);
+            this.panelIzquierdo.Size = new System.Drawing.Size(150, 560);
             this.panelIzquierdo.TabIndex = 0;
             // 
             // lblIcono
@@ -86,6 +93,8 @@ namespace Laboratorio_del_Tema_5_2.Views
             // panelFormulario
             // 
             this.panelFormulario.BackColor = System.Drawing.Color.White;
+            this.panelFormulario.Controls.Add(this.lblVolverLogin);
+            this.panelFormulario.Controls.Add(this.lblEstadoConexion);
             this.panelFormulario.Controls.Add(this.btnActivar);
             this.panelFormulario.Controls.Add(this.lblError);
             this.panelFormulario.Controls.Add(this.panelCampos);
@@ -93,8 +102,32 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelFormulario.Location = new System.Drawing.Point(150, 0);
             this.panelFormulario.Margin = new System.Windows.Forms.Padding(2);
             this.panelFormulario.Name = "panelFormulario";
-            this.panelFormulario.Size = new System.Drawing.Size(450, 455);
+            this.panelFormulario.Size = new System.Drawing.Size(450, 560);
             this.panelFormulario.TabIndex = 1;
+            // 
+            // lblVolverLogin
+            // 
+            this.lblVolverLogin.AutoSize = true;
+            this.lblVolverLogin.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblVolverLogin.LinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(71)))), ((int)(((byte)(160)))));
+            this.lblVolverLogin.Location = new System.Drawing.Point(15, 528);
+            this.lblVolverLogin.Name = "lblVolverLogin";
+            this.lblVolverLogin.Size = new System.Drawing.Size(148, 15);
+            this.lblVolverLogin.TabIndex = 3;
+            this.lblVolverLogin.TabStop = true;
+            this.lblVolverLogin.Text = "← Volver al inicio de sesión";
+            this.lblVolverLogin.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lblVolverLogin_LinkClicked);
+            // 
+            // lblEstadoConexion
+            // 
+            this.lblEstadoConexion.AutoSize = true;
+            this.lblEstadoConexion.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.lblEstadoConexion.ForeColor = System.Drawing.Color.Gray;
+            this.lblEstadoConexion.Location = new System.Drawing.Point(15, 506);
+            this.lblEstadoConexion.Name = "lblEstadoConexion";
+            this.lblEstadoConexion.Size = new System.Drawing.Size(74, 13);
+            this.lblEstadoConexion.TabIndex = 4;
+            this.lblEstadoConexion.Text = "Verificando...";
             // 
             // btnActivar
             // 
@@ -104,7 +137,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.btnActivar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnActivar.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
             this.btnActivar.ForeColor = System.Drawing.Color.White;
-            this.btnActivar.Location = new System.Drawing.Point(15, 388);
+            this.btnActivar.Location = new System.Drawing.Point(15, 464);
             this.btnActivar.Margin = new System.Windows.Forms.Padding(2);
             this.btnActivar.Name = "btnActivar";
             this.btnActivar.Size = new System.Drawing.Size(420, 39);
@@ -117,7 +150,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             // 
             this.lblError.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.lblError.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(53)))), ((int)(((byte)(69)))));
-            this.lblError.Location = new System.Drawing.Point(15, 348);
+            this.lblError.Location = new System.Drawing.Point(15, 423);
             this.lblError.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblError.Name = "lblError";
             this.lblError.Size = new System.Drawing.Size(420, 29);
@@ -127,6 +160,11 @@ namespace Laboratorio_del_Tema_5_2.Views
             // panelCampos
             // 
             this.panelCampos.BackColor = System.Drawing.Color.White;
+            this.panelCampos.Controls.Add(this.lblCheckEspecial);
+            this.panelCampos.Controls.Add(this.lblCheckNumero);
+            this.panelCampos.Controls.Add(this.lblCheckMinus);
+            this.panelCampos.Controls.Add(this.lblCheckMayus);
+            this.panelCampos.Controls.Add(this.lblCheckMinChars);
             this.panelCampos.Controls.Add(this.lblFuerza);
             this.panelCampos.Controls.Add(this.lblConfirmarTxt);
             this.panelCampos.Controls.Add(this.lblNuevoPwdTxt);
@@ -145,8 +183,63 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelCampos.Location = new System.Drawing.Point(15, 24);
             this.panelCampos.Margin = new System.Windows.Forms.Padding(2);
             this.panelCampos.Name = "panelCampos";
-            this.panelCampos.Size = new System.Drawing.Size(420, 315);
+            this.panelCampos.Size = new System.Drawing.Size(420, 429);
             this.panelCampos.TabIndex = 0;
+            // 
+            // lblCheckEspecial
+            // 
+            this.lblCheckEspecial.AutoSize = true;
+            this.lblCheckEspecial.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.lblCheckEspecial.ForeColor = System.Drawing.Color.Gray;
+            this.lblCheckEspecial.Location = new System.Drawing.Point(1, 305);
+            this.lblCheckEspecial.Name = "lblCheckEspecial";
+            this.lblCheckEspecial.Size = new System.Drawing.Size(124, 13);
+            this.lblCheckEspecial.TabIndex = 16;
+            this.lblCheckEspecial.Text = "❌ Un carácter especial";
+            // 
+            // lblCheckNumero
+            // 
+            this.lblCheckNumero.AutoSize = true;
+            this.lblCheckNumero.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.lblCheckNumero.ForeColor = System.Drawing.Color.Gray;
+            this.lblCheckNumero.Location = new System.Drawing.Point(1, 288);
+            this.lblCheckNumero.Name = "lblCheckNumero";
+            this.lblCheckNumero.Size = new System.Drawing.Size(80, 13);
+            this.lblCheckNumero.TabIndex = 15;
+            this.lblCheckNumero.Text = "❌ Un número";
+            // 
+            // lblCheckMinus
+            // 
+            this.lblCheckMinus.AutoSize = true;
+            this.lblCheckMinus.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.lblCheckMinus.ForeColor = System.Drawing.Color.Gray;
+            this.lblCheckMinus.Location = new System.Drawing.Point(1, 270);
+            this.lblCheckMinus.Name = "lblCheckMinus";
+            this.lblCheckMinus.Size = new System.Drawing.Size(98, 13);
+            this.lblCheckMinus.TabIndex = 14;
+            this.lblCheckMinus.Text = "❌ Una minúscula";
+            // 
+            // lblCheckMayus
+            // 
+            this.lblCheckMayus.AutoSize = true;
+            this.lblCheckMayus.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.lblCheckMayus.ForeColor = System.Drawing.Color.Gray;
+            this.lblCheckMayus.Location = new System.Drawing.Point(1, 252);
+            this.lblCheckMayus.Name = "lblCheckMayus";
+            this.lblCheckMayus.Size = new System.Drawing.Size(99, 13);
+            this.lblCheckMayus.TabIndex = 13;
+            this.lblCheckMayus.Text = "❌ Una mayúscula";
+            // 
+            // lblCheckMinChars
+            // 
+            this.lblCheckMinChars.AutoSize = true;
+            this.lblCheckMinChars.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.lblCheckMinChars.ForeColor = System.Drawing.Color.Gray;
+            this.lblCheckMinChars.Location = new System.Drawing.Point(1, 234);
+            this.lblCheckMinChars.Name = "lblCheckMinChars";
+            this.lblCheckMinChars.Size = new System.Drawing.Size(124, 13);
+            this.lblCheckMinChars.TabIndex = 12;
+            this.lblCheckMinChars.Text = "❌ Mínimo 8 caracteres";
             // 
             // lblFuerza
             // 
@@ -164,7 +257,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblConfirmarTxt.AutoSize = true;
             this.lblConfirmarTxt.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
             this.lblConfirmarTxt.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
-            this.lblConfirmarTxt.Location = new System.Drawing.Point(3, 231);
+            this.lblConfirmarTxt.Location = new System.Drawing.Point(3, 322);
             this.lblConfirmarTxt.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblConfirmarTxt.Name = "lblConfirmarTxt";
             this.lblConfirmarTxt.Size = new System.Drawing.Size(154, 19);
@@ -212,7 +305,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.chkMostrarNuevo.AutoSize = true;
             this.chkMostrarNuevo.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.chkMostrarNuevo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(100)))), ((int)(((byte)(100)))));
-            this.chkMostrarNuevo.Location = new System.Drawing.Point(6, 287);
+            this.chkMostrarNuevo.Location = new System.Drawing.Point(6, 377);
             this.chkMostrarNuevo.Margin = new System.Windows.Forms.Padding(2);
             this.chkMostrarNuevo.Name = "chkMostrarNuevo";
             this.chkMostrarNuevo.Size = new System.Drawing.Size(198, 23);
@@ -225,7 +318,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.txtConfirmar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
             this.txtConfirmar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtConfirmar.Font = new System.Drawing.Font("Segoe UI", 13F);
-            this.txtConfirmar.Location = new System.Drawing.Point(0, 251);
+            this.txtConfirmar.Location = new System.Drawing.Point(0, 342);
             this.txtConfirmar.Margin = new System.Windows.Forms.Padding(2);
             this.txtConfirmar.Name = "txtConfirmar";
             this.txtConfirmar.PasswordChar = '*';
@@ -331,7 +424,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(600, 455);
+            this.ClientSize = new System.Drawing.Size(600, 560);
             this.Controls.Add(this.panelFormulario);
             this.Controls.Add(this.panelIzquierdo);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -344,6 +437,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelIzquierdo.ResumeLayout(false);
             this.panelIzquierdo.PerformLayout();
             this.panelFormulario.ResumeLayout(false);
+            this.panelFormulario.PerformLayout();
             this.panelCampos.ResumeLayout(false);
             this.panelCampos.PerformLayout();
             this.ResumeLayout(false);
@@ -370,9 +464,16 @@ namespace Laboratorio_del_Tema_5_2.Views
         private System.Windows.Forms.Label lblConfirmarTxt;
         private System.Windows.Forms.TextBox txtConfirmar;
         private System.Windows.Forms.CheckBox chkMostrarNuevo;
+        private System.Windows.Forms.Label lblCheckMinChars;
+        private System.Windows.Forms.Label lblCheckMayus;
+        private System.Windows.Forms.Label lblCheckMinus;
+        private System.Windows.Forms.Label lblCheckNumero;
+        private System.Windows.Forms.Label lblCheckEspecial;
         private System.Windows.Forms.Label lblFuerza;
         private System.Windows.Forms.Label lblError;
         private System.Windows.Forms.Button btnActivar;
+        private System.Windows.Forms.LinkLabel lblVolverLogin;
+        private System.Windows.Forms.Label lblEstadoConexion;
     }
 }
 

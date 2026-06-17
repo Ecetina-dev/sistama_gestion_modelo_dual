@@ -92,12 +92,30 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.permAlumnos = new System.Windows.Forms.Label();
             this.lblCardsSubtitulo = new System.Windows.Forms.Label();
             this.lblCardsTitulo = new System.Windows.Forms.Label();
+            this.panelDashboard = new System.Windows.Forms.Panel();
+            this.statAlumnos = new System.Windows.Forms.Panel();
+            this.barraStatAlumnos = new System.Windows.Forms.Panel();
+            this.lblStatAlumnosNum = new System.Windows.Forms.Label();
+            this.lblStatAlumnosLabel = new System.Windows.Forms.Label();
+            this.statEmpresas = new System.Windows.Forms.Panel();
+            this.barraStatEmpresas = new System.Windows.Forms.Panel();
+            this.lblStatEmpresasNum = new System.Windows.Forms.Label();
+            this.lblStatEmpresasLabel = new System.Windows.Forms.Label();
+            this.statProfesores = new System.Windows.Forms.Panel();
+            this.barraStatProfesores = new System.Windows.Forms.Panel();
+            this.lblStatProfesoresNum = new System.Windows.Forms.Label();
+            this.lblStatProfesoresLabel = new System.Windows.Forms.Label();
+            this.statPendientes = new System.Windows.Forms.Panel();
+            this.barraStatPendientes = new System.Windows.Forms.Panel();
+            this.lblStatPendientesNum = new System.Windows.Forms.Label();
+            this.lblStatPendientesLabel = new System.Windows.Forms.Label();
             this.panelTopBar = new System.Windows.Forms.Panel();
             this.btnTopSalir = new System.Windows.Forms.Button();
             this.btnTopCerrarSesion = new System.Windows.Forms.Button();
             this.btnTopCambiarPassword = new System.Windows.Forms.Button();
             this.lblPageSubtitulo = new System.Windows.Forms.Label();
             this.lblPageTitulo = new System.Windows.Forms.Label();
+            this.lblUltimoAcceso = new System.Windows.Forms.Label();
             this.panelSidebar.SuspendLayout();
             this.panelUsuarioSidebar.SuspendLayout();
             this.panelLogo.SuspendLayout();
@@ -111,6 +129,11 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.cardProyectos.SuspendLayout();
             this.cardEmpresas.SuspendLayout();
             this.cardAlumnos.SuspendLayout();
+            this.panelDashboard.SuspendLayout();
+            this.statAlumnos.SuspendLayout();
+            this.statEmpresas.SuspendLayout();
+            this.statProfesores.SuspendLayout();
+            this.statPendientes.SuspendLayout();
             this.panelTopBar.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -461,6 +484,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             // 
             this.panelMain.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(247)))), ((int)(((byte)(250)))));
             this.panelMain.Controls.Add(this.panelCards);
+            this.panelMain.Controls.Add(this.panelDashboard);
             this.panelMain.Controls.Add(this.panelTopBar);
             this.panelMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelMain.Location = new System.Drawing.Point(260, 0);
@@ -483,10 +507,10 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelCards.Controls.Add(this.lblCardsSubtitulo);
             this.panelCards.Controls.Add(this.lblCardsTitulo);
             this.panelCards.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panelCards.Location = new System.Drawing.Point(0, 100);
+            this.panelCards.Location = new System.Drawing.Point(0, 180);
             this.panelCards.Name = "panelCards";
             this.panelCards.Padding = new System.Windows.Forms.Padding(30, 20, 30, 20);
-            this.panelCards.Size = new System.Drawing.Size(1047, 620);
+            this.panelCards.Size = new System.Drawing.Size(1047, 540);
             this.panelCards.TabIndex = 1;
             // 
             // cardTestConnection
@@ -1071,6 +1095,191 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblCardsTitulo.TabIndex = 0;
             this.lblCardsTitulo.Text = "Módulos del Sistema";
             // 
+            // panelDashboard
+            // 
+            this.panelDashboard.BackColor = System.Drawing.Color.White;
+            this.panelDashboard.Controls.Add(this.statAlumnos);
+            this.panelDashboard.Controls.Add(this.statEmpresas);
+            this.panelDashboard.Controls.Add(this.statProfesores);
+            this.panelDashboard.Controls.Add(this.statPendientes);
+            this.panelDashboard.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panelDashboard.Location = new System.Drawing.Point(0, 100);
+            this.panelDashboard.Name = "panelDashboard";
+            this.panelDashboard.Size = new System.Drawing.Size(1047, 80);
+            this.panelDashboard.TabIndex = 2;
+            // 
+            // statAlumnos
+            // 
+            this.statAlumnos.BackColor = System.Drawing.Color.White;
+            this.statAlumnos.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.statAlumnos.Controls.Add(this.barraStatAlumnos);
+            this.statAlumnos.Controls.Add(this.lblStatAlumnosNum);
+            this.statAlumnos.Controls.Add(this.lblStatAlumnosLabel);
+            this.statAlumnos.Location = new System.Drawing.Point(30, 12);
+            this.statAlumnos.Name = "statAlumnos";
+            this.statAlumnos.Size = new System.Drawing.Size(220, 55);
+            this.statAlumnos.TabIndex = 0;
+            // 
+            // barraStatAlumnos
+            // 
+            this.barraStatAlumnos.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(120)))), ((int)(((byte)(215)))));
+            this.barraStatAlumnos.Dock = System.Windows.Forms.DockStyle.Left;
+            this.barraStatAlumnos.Location = new System.Drawing.Point(0, 0);
+            this.barraStatAlumnos.Name = "barraStatAlumnos";
+            this.barraStatAlumnos.Size = new System.Drawing.Size(3, 53);
+            this.barraStatAlumnos.TabIndex = 0;
+            // 
+            // lblStatAlumnosNum
+            // 
+            this.lblStatAlumnosNum.AutoSize = true;
+            this.lblStatAlumnosNum.Font = new System.Drawing.Font("Segoe UI", 22F, System.Drawing.FontStyle.Bold);
+            this.lblStatAlumnosNum.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(120)))), ((int)(((byte)(215)))));
+            this.lblStatAlumnosNum.Location = new System.Drawing.Point(15, 0);
+            this.lblStatAlumnosNum.Name = "lblStatAlumnosNum";
+            this.lblStatAlumnosNum.Size = new System.Drawing.Size(48, 41);
+            this.lblStatAlumnosNum.TabIndex = 1;
+            this.lblStatAlumnosNum.Text = "—";
+            // 
+            // lblStatAlumnosLabel
+            // 
+            this.lblStatAlumnosLabel.AutoSize = true;
+            this.lblStatAlumnosLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblStatAlumnosLabel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(108)))), ((int)(((byte)(117)))), ((int)(((byte)(125)))));
+            this.lblStatAlumnosLabel.Location = new System.Drawing.Point(15, 38);
+            this.lblStatAlumnosLabel.Name = "lblStatAlumnosLabel";
+            this.lblStatAlumnosLabel.Size = new System.Drawing.Size(95, 15);
+            this.lblStatAlumnosLabel.TabIndex = 2;
+            this.lblStatAlumnosLabel.Text = "Alumnos activos";
+            // 
+            // statEmpresas
+            // 
+            this.statEmpresas.BackColor = System.Drawing.Color.White;
+            this.statEmpresas.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.statEmpresas.Controls.Add(this.barraStatEmpresas);
+            this.statEmpresas.Controls.Add(this.lblStatEmpresasNum);
+            this.statEmpresas.Controls.Add(this.lblStatEmpresasLabel);
+            this.statEmpresas.Location = new System.Drawing.Point(265, 12);
+            this.statEmpresas.Name = "statEmpresas";
+            this.statEmpresas.Size = new System.Drawing.Size(220, 55);
+            this.statEmpresas.TabIndex = 1;
+            // 
+            // barraStatEmpresas
+            // 
+            this.barraStatEmpresas.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(167)))), ((int)(((byte)(69)))));
+            this.barraStatEmpresas.Dock = System.Windows.Forms.DockStyle.Left;
+            this.barraStatEmpresas.Location = new System.Drawing.Point(0, 0);
+            this.barraStatEmpresas.Name = "barraStatEmpresas";
+            this.barraStatEmpresas.Size = new System.Drawing.Size(3, 53);
+            this.barraStatEmpresas.TabIndex = 0;
+            // 
+            // lblStatEmpresasNum
+            // 
+            this.lblStatEmpresasNum.AutoSize = true;
+            this.lblStatEmpresasNum.Font = new System.Drawing.Font("Segoe UI", 22F, System.Drawing.FontStyle.Bold);
+            this.lblStatEmpresasNum.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(167)))), ((int)(((byte)(69)))));
+            this.lblStatEmpresasNum.Location = new System.Drawing.Point(15, 0);
+            this.lblStatEmpresasNum.Name = "lblStatEmpresasNum";
+            this.lblStatEmpresasNum.Size = new System.Drawing.Size(48, 41);
+            this.lblStatEmpresasNum.TabIndex = 1;
+            this.lblStatEmpresasNum.Text = "—";
+            // 
+            // lblStatEmpresasLabel
+            // 
+            this.lblStatEmpresasLabel.AutoSize = true;
+            this.lblStatEmpresasLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblStatEmpresasLabel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(108)))), ((int)(((byte)(117)))), ((int)(((byte)(125)))));
+            this.lblStatEmpresasLabel.Location = new System.Drawing.Point(15, 38);
+            this.lblStatEmpresasLabel.Name = "lblStatEmpresasLabel";
+            this.lblStatEmpresasLabel.Size = new System.Drawing.Size(96, 15);
+            this.lblStatEmpresasLabel.TabIndex = 2;
+            this.lblStatEmpresasLabel.Text = "Empresas activas";
+            // 
+            // statProfesores
+            // 
+            this.statProfesores.BackColor = System.Drawing.Color.White;
+            this.statProfesores.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.statProfesores.Controls.Add(this.barraStatProfesores);
+            this.statProfesores.Controls.Add(this.lblStatProfesoresNum);
+            this.statProfesores.Controls.Add(this.lblStatProfesoresLabel);
+            this.statProfesores.Location = new System.Drawing.Point(500, 12);
+            this.statProfesores.Name = "statProfesores";
+            this.statProfesores.Size = new System.Drawing.Size(220, 55);
+            this.statProfesores.TabIndex = 2;
+            // 
+            // barraStatProfesores
+            // 
+            this.barraStatProfesores.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(111)))), ((int)(((byte)(66)))), ((int)(((byte)(193)))));
+            this.barraStatProfesores.Dock = System.Windows.Forms.DockStyle.Left;
+            this.barraStatProfesores.Location = new System.Drawing.Point(0, 0);
+            this.barraStatProfesores.Name = "barraStatProfesores";
+            this.barraStatProfesores.Size = new System.Drawing.Size(3, 53);
+            this.barraStatProfesores.TabIndex = 0;
+            // 
+            // lblStatProfesoresNum
+            // 
+            this.lblStatProfesoresNum.AutoSize = true;
+            this.lblStatProfesoresNum.Font = new System.Drawing.Font("Segoe UI", 22F, System.Drawing.FontStyle.Bold);
+            this.lblStatProfesoresNum.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(111)))), ((int)(((byte)(66)))), ((int)(((byte)(193)))));
+            this.lblStatProfesoresNum.Location = new System.Drawing.Point(15, 0);
+            this.lblStatProfesoresNum.Name = "lblStatProfesoresNum";
+            this.lblStatProfesoresNum.Size = new System.Drawing.Size(48, 41);
+            this.lblStatProfesoresNum.TabIndex = 1;
+            this.lblStatProfesoresNum.Text = "—";
+            // 
+            // lblStatProfesoresLabel
+            // 
+            this.lblStatProfesoresLabel.AutoSize = true;
+            this.lblStatProfesoresLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblStatProfesoresLabel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(108)))), ((int)(((byte)(117)))), ((int)(((byte)(125)))));
+            this.lblStatProfesoresLabel.Location = new System.Drawing.Point(15, 38);
+            this.lblStatProfesoresLabel.Name = "lblStatProfesoresLabel";
+            this.lblStatProfesoresLabel.Size = new System.Drawing.Size(102, 15);
+            this.lblStatProfesoresLabel.TabIndex = 2;
+            this.lblStatProfesoresLabel.Text = "Profesores activos";
+            // 
+            // statPendientes
+            // 
+            this.statPendientes.BackColor = System.Drawing.Color.White;
+            this.statPendientes.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.statPendientes.Controls.Add(this.barraStatPendientes);
+            this.statPendientes.Controls.Add(this.lblStatPendientesNum);
+            this.statPendientes.Controls.Add(this.lblStatPendientesLabel);
+            this.statPendientes.Location = new System.Drawing.Point(735, 12);
+            this.statPendientes.Name = "statPendientes";
+            this.statPendientes.Size = new System.Drawing.Size(220, 55);
+            this.statPendientes.TabIndex = 3;
+            // 
+            // barraStatPendientes
+            // 
+            this.barraStatPendientes.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(253)))), ((int)(((byte)(126)))), ((int)(((byte)(20)))));
+            this.barraStatPendientes.Dock = System.Windows.Forms.DockStyle.Left;
+            this.barraStatPendientes.Location = new System.Drawing.Point(0, 0);
+            this.barraStatPendientes.Name = "barraStatPendientes";
+            this.barraStatPendientes.Size = new System.Drawing.Size(3, 53);
+            this.barraStatPendientes.TabIndex = 0;
+            // 
+            // lblStatPendientesNum
+            // 
+            this.lblStatPendientesNum.AutoSize = true;
+            this.lblStatPendientesNum.Font = new System.Drawing.Font("Segoe UI", 22F, System.Drawing.FontStyle.Bold);
+            this.lblStatPendientesNum.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(253)))), ((int)(((byte)(126)))), ((int)(((byte)(20)))));
+            this.lblStatPendientesNum.Location = new System.Drawing.Point(15, 0);
+            this.lblStatPendientesNum.Name = "lblStatPendientesNum";
+            this.lblStatPendientesNum.Size = new System.Drawing.Size(48, 41);
+            this.lblStatPendientesNum.TabIndex = 1;
+            this.lblStatPendientesNum.Text = "—";
+            // 
+            // lblStatPendientesLabel
+            // 
+            this.lblStatPendientesLabel.AutoSize = true;
+            this.lblStatPendientesLabel.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblStatPendientesLabel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(108)))), ((int)(((byte)(117)))), ((int)(((byte)(125)))));
+            this.lblStatPendientesLabel.Location = new System.Drawing.Point(15, 38);
+            this.lblStatPendientesLabel.Name = "lblStatPendientesLabel";
+            this.lblStatPendientesLabel.Size = new System.Drawing.Size(94, 15);
+            this.lblStatPendientesLabel.TabIndex = 2;
+            this.lblStatPendientesLabel.Text = "Pend. activación";
+            // 
             // panelTopBar
             // 
             this.panelTopBar.BackColor = System.Drawing.Color.White;
@@ -1079,6 +1288,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelTopBar.Controls.Add(this.btnTopCambiarPassword);
             this.panelTopBar.Controls.Add(this.lblPageSubtitulo);
             this.panelTopBar.Controls.Add(this.lblPageTitulo);
+            this.panelTopBar.Controls.Add(this.lblUltimoAcceso);
             this.panelTopBar.Dock = System.Windows.Forms.DockStyle.Top;
             this.panelTopBar.Location = new System.Drawing.Point(0, 0);
             this.panelTopBar.Name = "panelTopBar";
@@ -1139,7 +1349,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblPageSubtitulo.AutoSize = true;
             this.lblPageSubtitulo.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.lblPageSubtitulo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(108)))), ((int)(((byte)(117)))), ((int)(((byte)(125)))));
-            this.lblPageSubtitulo.Location = new System.Drawing.Point(30, 62);
+            this.lblPageSubtitulo.Location = new System.Drawing.Point(32, 53);
             this.lblPageSubtitulo.Name = "lblPageSubtitulo";
             this.lblPageSubtitulo.Size = new System.Drawing.Size(377, 19);
             this.lblPageSubtitulo.TabIndex = 1;
@@ -1150,11 +1360,22 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblPageTitulo.AutoSize = true;
             this.lblPageTitulo.Font = new System.Drawing.Font("Segoe UI", 22F, System.Drawing.FontStyle.Bold);
             this.lblPageTitulo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(37)))), ((int)(((byte)(41)))));
-            this.lblPageTitulo.Location = new System.Drawing.Point(30, 20);
+            this.lblPageTitulo.Location = new System.Drawing.Point(30, 11);
             this.lblPageTitulo.Name = "lblPageTitulo";
             this.lblPageTitulo.Size = new System.Drawing.Size(226, 41);
             this.lblPageTitulo.TabIndex = 0;
             this.lblPageTitulo.Text = "Panel Principal";
+            // 
+            // lblUltimoAcceso
+            // 
+            this.lblUltimoAcceso.AutoSize = true;
+            this.lblUltimoAcceso.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.lblUltimoAcceso.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(108)))), ((int)(((byte)(117)))), ((int)(((byte)(125)))));
+            this.lblUltimoAcceso.Location = new System.Drawing.Point(33, 78);
+            this.lblUltimoAcceso.Name = "lblUltimoAcceso";
+            this.lblUltimoAcceso.Size = new System.Drawing.Size(95, 13);
+            this.lblUltimoAcceso.TabIndex = 5;
+            this.lblUltimoAcceso.Text = "Último acceso: —";
             // 
             // FormMenuPrincipal
             // 
@@ -1194,6 +1415,15 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.cardEmpresas.PerformLayout();
             this.cardAlumnos.ResumeLayout(false);
             this.cardAlumnos.PerformLayout();
+            this.panelDashboard.ResumeLayout(false);
+            this.statAlumnos.ResumeLayout(false);
+            this.statAlumnos.PerformLayout();
+            this.statEmpresas.ResumeLayout(false);
+            this.statEmpresas.PerformLayout();
+            this.statProfesores.ResumeLayout(false);
+            this.statProfesores.PerformLayout();
+            this.statPendientes.ResumeLayout(false);
+            this.statPendientes.PerformLayout();
             this.panelTopBar.ResumeLayout(false);
             this.panelTopBar.PerformLayout();
             this.ResumeLayout(false);
@@ -1303,6 +1533,26 @@ namespace Laboratorio_del_Tema_5_2.Views
         private System.Windows.Forms.Label tituloTestConnection;
         private System.Windows.Forms.Label descTestConnection;
         private System.Windows.Forms.Label permTestConnection;
+
+        // Dashboard stats panel
+        private System.Windows.Forms.Panel panelDashboard;
+        private System.Windows.Forms.Panel statAlumnos;
+        private System.Windows.Forms.Panel barraStatAlumnos;
+        private System.Windows.Forms.Label lblStatAlumnosNum;
+        private System.Windows.Forms.Label lblStatAlumnosLabel;
+        private System.Windows.Forms.Panel statEmpresas;
+        private System.Windows.Forms.Panel barraStatEmpresas;
+        private System.Windows.Forms.Label lblStatEmpresasNum;
+        private System.Windows.Forms.Label lblStatEmpresasLabel;
+        private System.Windows.Forms.Panel statProfesores;
+        private System.Windows.Forms.Panel barraStatProfesores;
+        private System.Windows.Forms.Label lblStatProfesoresNum;
+        private System.Windows.Forms.Label lblStatProfesoresLabel;
+        private System.Windows.Forms.Panel statPendientes;
+        private System.Windows.Forms.Panel barraStatPendientes;
+        private System.Windows.Forms.Label lblStatPendientesNum;
+        private System.Windows.Forms.Label lblStatPendientesLabel;
+        private System.Windows.Forms.Label lblUltimoAcceso;
     }
 }
 

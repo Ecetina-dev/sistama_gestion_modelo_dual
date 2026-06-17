@@ -16,6 +16,8 @@ namespace Laboratorio_del_Tema_5_2.Views
         private readonly AuthController _authController;
         private bool _isLoading = false;
 
+        public string UsuarioPreLlenado { get; set; }
+
         public FormActivarCuenta()
         {
             InitializeComponent();
@@ -26,12 +28,26 @@ namespace Laboratorio_del_Tema_5_2.Views
         private void ConfigurarControles()
         {
             // Limites realistas segun el tipo de campo y la BD
-            txtUsuario.MaxLength = 25;       // Matrícula o usuario
-            txtPasswordTemp.MaxLength = 50;  // Password temporal generado
-            txtPasswordNuevo.MaxLength = 50; // Contraseña nueva
-            txtConfirmar.MaxLength = 50;     // Confirmación
+            txtUsuario.MaxLength = Seguridad.UsernameMaxLength;       // Usuario (50)
+            txtPasswordTemp.MaxLength = Seguridad.PasswordMaxLength;  // Password temporal (128)
+            txtPasswordNuevo.MaxLength = Seguridad.PasswordMaxLength; // Contraseña nueva (100)
+            txtConfirmar.MaxLength = Seguridad.PasswordMaxLength;     // Confirmación (100)
 
-            this.Shown += (s, e) => txtUsuario.Focus();
+            this.Shown += (s, e) =>
+            {
+                if (!string.IsNullOrEmpty(UsuarioPreLlenado))
+                {
+                    txtUsuario.Text = UsuarioPreLlenado;
+                    txtUsuario.ReadOnly = true;
+                    txtUsuario.BackColor = Color.FromArgb(235, 235, 235);
+                    txtPasswordTemp.Focus();
+                }
+                else
+                {
+                    txtUsuario.Focus();
+                }
+                _ = VerificarEstadoConexion();
+            };
 
             // Restaurar color al escribir
             txtUsuario.TextChanged += (s, e) => { LimpiarError(); RestaurarColor(txtUsuario); };
@@ -42,6 +58,7 @@ namespace Laboratorio_del_Tema_5_2.Views
                 RestaurarColor(txtPasswordNuevo);
                 RestaurarColor(txtConfirmar);
                 ActualizarFuerza();
+                ActualizarChecklist();
             };
             txtConfirmar.TextChanged += (s, e) => LimpiarError();
 
@@ -58,6 +75,47 @@ namespace Laboratorio_del_Tema_5_2.Views
         }
 
         // ==================== INDICADOR DE FUERZA ====================
+
+        private void ActualizarChecklist()
+        {
+            string pwd = txtPasswordNuevo.Text;
+            int minChars = ParametroSistemaService.Instance.GetInt(Claves.MIN_CARACTERES_PASSWORD, 8);
+            bool exigirMayus = ParametroSistemaService.Instance.GetBool(Claves.EXIGIR_MAYUSCULAS_PASSWORD, true);
+            bool exigirNums = ParametroSistemaService.Instance.GetBool(Claves.EXIGIR_NUMEROS_PASSWORD, true);
+            bool exigirEspecial = ParametroSistemaService.Instance.GetBool(Claves.EXIGIR_CARACTER_ESPECIAL_PASSWORD, true);
+
+            ActualizarItemChecklist(lblCheckMinChars, pwd.Length >= minChars, $"Mínimo {minChars} caracteres");
+            ActualizarItemChecklist(lblCheckMayus, Regex.IsMatch(pwd, @"[A-Z]"), "Una mayúscula");
+            ActualizarItemChecklist(lblCheckMinus, Regex.IsMatch(pwd, @"[a-z]"), "Una minúscula");
+            if (exigirNums) ActualizarItemChecklist(lblCheckNumero, Regex.IsMatch(pwd, @"[0-9]"), "Un número");
+            if (exigirEspecial) ActualizarItemChecklist(lblCheckEspecial, Regex.IsMatch(pwd, @"[^a-zA-Z0-9]"), "Un carácter especial");
+
+            lblCheckNumero.Visible = exigirNums;
+            lblCheckEspecial.Visible = exigirEspecial;
+        }
+
+        private void ActualizarItemChecklist(Label lbl, bool cumple, string texto)
+        {
+            lbl.Text = $"{(cumple ? "✅" : "❌")} {texto}";
+            lbl.ForeColor = cumple ? Color.FromArgb(40, 167, 69) : Color.FromArgb(220, 53, 69);
+        }
+
+        private async Task VerificarEstadoConexion()
+        {
+            try
+            {
+                bool conectado = await Task.Run(() =>
+                {
+                    try { using var conn = MySQLConnection.GetConnection(); conn.Open(); return true; }
+                    catch { return false; }
+                });
+                lblEstadoConexion.Text = conectado ? "🟢  Servidor conectado" : "🔴  Sin conexión";
+                lblEstadoConexion.ForeColor = conectado ? Color.FromArgb(40, 167, 69) : Color.FromArgb(220, 53, 69);
+            }
+            catch { lblEstadoConexion.Text = "🔴  Sin conexión"; lblEstadoConexion.ForeColor = Color.FromArgb(220, 53, 69); }
+        }
+
+        // ==================== INDICADOR DE FUERZA (LEGACY) ====================
 
         private void ActualizarFuerza()
         {
@@ -92,9 +150,11 @@ namespace Laboratorio_del_Tema_5_2.Views
         {
             if (string.IsNullOrEmpty(password)) return 0;
             int score = 0;
-            if (password.Length >= 6) score++;
-            if (password.Length >= 8) score++;
-            if (password.Length >= 12) score++;
+            int minChars = ParametroSistemaService.Instance.GetInt(
+                Claves.MIN_CARACTERES_PASSWORD, Seguridad.PasswordMinLength);
+            if (password.Length >= minChars) score++;
+            if (password.Length >= Math.Max(minChars + 2, 8)) score++;
+            if (password.Length >= Math.Max(minChars + 4, 12)) score++;
             if (Regex.IsMatch(password, @"[a-z]")) score++;
             if (Regex.IsMatch(password, @"[A-Z]")) score++;
             if (Regex.IsMatch(password, @"[0-9]")) score++;
@@ -132,15 +192,25 @@ namespace Laboratorio_del_Tema_5_2.Views
                 return false;
             }
 
-            if (pwdNuevo.Length < Seguridad.PasswordMinLength)
+            int minPasswordLength = ParametroSistemaService.Instance.GetInt(
+                Claves.MIN_CARACTERES_PASSWORD, Seguridad.PasswordMinLength);
+
+            if (pwdNuevo.Length < minPasswordLength)
             {
                 MarcarError(txtPasswordNuevo);
-                MostrarError("Mínimo " + Seguridad.PasswordMinLength + " caracteres.");
+                MostrarError("Mínimo " + minPasswordLength + " caracteres.");
                 return false;
             }
 
             // Requisitos enterprise para la contraseña
-            if (!Regex.IsMatch(pwdNuevo, @"[A-Z]"))
+            bool exigirMayus = ParametroSistemaService.Instance.GetBool(
+                Claves.EXIGIR_MAYUSCULAS_PASSWORD, true);
+            bool exigirNums = ParametroSistemaService.Instance.GetBool(
+                Claves.EXIGIR_NUMEROS_PASSWORD, true);
+            bool exigirEspecial = ParametroSistemaService.Instance.GetBool(
+                Claves.EXIGIR_CARACTER_ESPECIAL_PASSWORD, Seguridad.ExigirCaracterEspecialPassword);
+
+            if (exigirMayus && !Regex.IsMatch(pwdNuevo, @"[A-Z]"))
             {
                 MarcarError(txtPasswordNuevo);
                 MostrarError("Debe contener al menos una mayúscula.");
@@ -152,10 +222,16 @@ namespace Laboratorio_del_Tema_5_2.Views
                 MostrarError("Debe contener al menos una minúscula.");
                 return false;
             }
-            if (!Regex.IsMatch(pwdNuevo, @"[0-9]"))
+            if (exigirNums && !Regex.IsMatch(pwdNuevo, @"[0-9]"))
             {
                 MarcarError(txtPasswordNuevo);
                 MostrarError("Debe contener al menos un número.");
+                return false;
+            }
+            if (exigirEspecial && !Regex.IsMatch(pwdNuevo, @"[^a-zA-Z0-9]"))
+            {
+                MarcarError(txtPasswordNuevo);
+                MostrarError("Debe contener al menos un carácter especial (!@#$%...).");
                 return false;
             }
 
@@ -196,10 +272,32 @@ namespace Laboratorio_del_Tema_5_2.Views
             txtConfirmar.BackColor = Color.FromArgb(245, 245, 245);
         }
 
-        private void MostrarError(string mensaje)
+        private void MostrarError(string mensaje, int intentosRestantes = -1)
         {
             lblError.Text = "! " + mensaje;
             lblError.Visible = true;
+
+            // Aviso progresivo de intentos restantes (mismo patrón que login)
+            if (mensaje.Contains("bloquead") || mensaje.Contains("Bloquead"))
+            {
+                lblError.ForeColor = Color.FromArgb(220, 53, 69);
+            }
+            else if (intentosRestantes == 1)
+            {
+                lblError.ForeColor = Color.FromArgb(220, 53, 69);
+            }
+            else if (intentosRestantes == 2)
+            {
+                lblError.ForeColor = Color.FromArgb(255, 140, 0);
+            }
+            else if (intentosRestantes >= 3)
+            {
+                lblError.ForeColor = Color.FromArgb(220, 53, 69);
+            }
+            else
+            {
+                lblError.ForeColor = Color.FromArgb(220, 53, 69);
+            }
         }
 
         private void LimpiarError()
@@ -280,7 +378,7 @@ namespace Laboratorio_del_Tema_5_2.Views
                 else
                 {
                     MarcarError(txtPasswordTemp);
-                    MostrarError(resultado.Message);
+                    MostrarError(resultado.Message, resultado.IntentosRestantes);
                 }
             }
             catch
@@ -360,6 +458,17 @@ namespace Laboratorio_del_Tema_5_2.Views
                 e.SuppressKeyPress = true;
                 btnActivar_Click(sender, e);
             }
+        }
+
+        private void lblVolverLogin_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            if (HayDatosIngresados())
+            {
+                var r = MessageBox.Show("¿Volver al inicio de sesión? Los datos se perderán.",
+                    "Confirmar", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (r != DialogResult.Yes) return;
+            }
+            this.Close();
         }
     }
 }

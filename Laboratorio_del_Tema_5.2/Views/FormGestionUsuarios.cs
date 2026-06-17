@@ -37,6 +37,10 @@ namespace Laboratorio_del_Tema_5_2.Views
 
         private void Inicializar()
         {
+            // Validacion de longitud
+            txtUsername.MaxLength = Seguridad.UsernameMaxLength;
+            txtEmail.MaxLength = Seguridad.EmailMaxLength;
+
             CargarDatos();
             CargarUsuarios();
             ConfigurarEventos();

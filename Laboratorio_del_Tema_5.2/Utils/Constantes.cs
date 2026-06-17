@@ -22,6 +22,7 @@ namespace Laboratorio_del_Tema_5_2.Utils
         public const string AlumnoInactivo = "inactivo";
         public const string AlumnoEgresado = "egresado";
         public const string AlumnoSuspendido = "suspendido";
+        public const string AlumnoBaja = "baja";
 
         // ============================================
         // Status de Profesor
@@ -97,6 +98,10 @@ namespace Laboratorio_del_Tema_5_2.Utils
     /// <summary>
     /// Constantes de seguridad y autenticacion.
     /// Centralizadas para facil mantenimiento.
+    /// 
+    /// IMPORTANTE: Estos valores son fallbacks por defecto.
+    /// Los valores reales se obtienen de la tabla parametro_sistema
+    /// a traves de ParametroSistemaService.Instance cuando la BD esta disponible.
     /// </summary>
     public static class Seguridad
     {
@@ -117,7 +122,7 @@ namespace Laboratorio_del_Tema_5_2.Utils
         public const string TipoSinVincular = "none";
 
         // ============================================
-        // Limites de seguridad
+        // Limites de seguridad (fallbacks - DB manda)
         // ============================================
         public const int MaxIntentosLogin = 5;
         public const int MinutosBloqueo = 1;
@@ -125,14 +130,20 @@ namespace Laboratorio_del_Tema_5_2.Utils
         public const int DuracionSesionHoras = 8;
 
         // ============================================
-        // Validaciones de input
+        // Validaciones de input (fallbacks - DB manda)
         // ============================================
         public const int UsernameMinLength = 3;
         public const int UsernameMaxLength = 50;
-        public const int EmailMaxLength = 120;
-        public const int PasswordMinLength = 6;
-        public const int PasswordMaxLength = 100;
-        public const int LoginMaxLength = 120; // username o email
+        public const int EmailMaxLength = 254;       // RFC 5321
+        public const int PasswordMinLength = 8;       // NIST SP 800-63B
+        public const int PasswordMaxLength = 128;     // OWASP ASVS 4.0
+        public const int LoginMaxLength = 254;        // username o email (email max RFC 5321)
+
+        // ============================================
+        // Password requirements (fallbacks)
+        // ============================================
+        public const bool ExigirCaracterEspecialPassword = true;
+        public const int DiasCaducidadPassword = 90;
 
         // ============================================
         // Mensajes de error genericos (no leak info)
@@ -140,7 +151,7 @@ namespace Laboratorio_del_Tema_5_2.Utils
         public const string MsgCredencialesInvalidas = "Usuario o contrasena incorrectos";
         public const string MsgErrorConexion = "No se pudo conectar al servidor. Verifica tu conexion.";
         public const string MsgErrorGenerico = "Ocurrio un error inesperado. Intenta de nuevo.";
-        public const string MsgCuentaBloqueada = "Demasiados intentos fallidos. Cuenta bloqueada por 1 minuto.";
+        public const string MsgCuentaBloqueada = "Demasiados intentos fallidos. Cuenta bloqueada temporalmente.";
         public const string MsgCuentaInactiva = "Cuenta inactiva. Contacta al administrador.";
         public const string MsgSesionExpirada = "Tu sesion ha expirado. Inicia sesion de nuevo.";
 
@@ -155,7 +166,7 @@ namespace Laboratorio_del_Tema_5_2.Utils
         public const string MsgEmailFormato = "Formato de email invalido";
         public const string MsgEmailExiste = "El email ya esta registrado";
         public const string MsgPasswordRequerido = "La contrasena es requerida";
-        public const string MsgPasswordLongitud = "Entre 6 y 100 caracteres";
+        public const string MsgPasswordLongitud = "Minimo 8 caracteres";
         public const string MsgPasswordCoincide = "Las contrasenas no coinciden";
     }
 }

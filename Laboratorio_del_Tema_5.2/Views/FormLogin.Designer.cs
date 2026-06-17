@@ -17,6 +17,8 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblCapsLock = new System.Windows.Forms.Label();
             this.lnkRecuperar = new System.Windows.Forms.LinkLabel();
             this.lnkCrearCuenta = new System.Windows.Forms.LinkLabel();
+            this.lblEstadoConexion = new System.Windows.Forms.Label();
+            this.lblFooter = new System.Windows.Forms.Label();
             this.btnIniciarSesion = new System.Windows.Forms.Button();
             this.txtPassword = new System.Windows.Forms.TextBox();
             this.txtLogin = new System.Windows.Forms.TextBox();
@@ -46,6 +48,8 @@ namespace Laboratorio_del_Tema_5_2.Views
             // 
             this.panelForm.BackColor = System.Drawing.Color.White;
             this.panelForm.Controls.Add(this.picLoading);
+            this.panelForm.Controls.Add(this.lblFooter);
+            this.panelForm.Controls.Add(this.lblEstadoConexion);
             this.panelForm.Controls.Add(this.lblError);
             this.panelForm.Controls.Add(this.picError);
             this.panelForm.Controls.Add(this.chkMostrarPassword);
@@ -128,7 +132,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblCapsLock.AutoSize = true;
             this.lblCapsLock.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.lblCapsLock.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(140)))), ((int)(((byte)(0)))));
-            this.lblCapsLock.Location = new System.Drawing.Point(165, 240);
+            this.lblCapsLock.Location = new System.Drawing.Point(165, 244);
             this.lblCapsLock.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblCapsLock.Name = "lblCapsLock";
             this.lblCapsLock.Size = new System.Drawing.Size(98, 15);
@@ -155,13 +159,13 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lnkCrearCuenta.AutoSize = true;
             this.lnkCrearCuenta.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.lnkCrearCuenta.LinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(71)))), ((int)(((byte)(160)))));
-            this.lnkCrearCuenta.Location = new System.Drawing.Point(127, 333);
+            this.lnkCrearCuenta.Location = new System.Drawing.Point(85, 333);
             this.lnkCrearCuenta.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lnkCrearCuenta.Name = "lnkCrearCuenta";
-            this.lnkCrearCuenta.Size = new System.Drawing.Size(124, 20);
+            this.lnkCrearCuenta.Size = new System.Drawing.Size(210, 20);
             this.lnkCrearCuenta.TabIndex = 7;
             this.lnkCrearCuenta.TabStop = true;
-            this.lnkCrearCuenta.Text = "Activar mi cuenta";
+            this.lnkCrearCuenta.Text = "¿Primera vez aquí? Activar cuenta";
             this.lnkCrearCuenta.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkCrearCuenta_LinkClicked);
             // 
             // btnIniciarSesion
@@ -189,7 +193,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.txtPassword.Location = new System.Drawing.Point(38, 207);
             this.txtPassword.Margin = new System.Windows.Forms.Padding(2);
             this.txtPassword.Name = "txtPassword";
-            this.txtPassword.PasswordChar = '*';
+            this.txtPassword.PasswordChar = '\u25CF';
             this.txtPassword.Size = new System.Drawing.Size(300, 31);
             this.txtPassword.TabIndex = 4;
             // 
@@ -273,6 +277,30 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.pictureBoxLogo.TabIndex = 0;
             this.pictureBoxLogo.TabStop = false;
             // 
+            // lblEstadoConexion
+            // 
+            this.lblEstadoConexion.AutoSize = true;
+            this.lblEstadoConexion.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.lblEstadoConexion.ForeColor = System.Drawing.Color.Gray;
+            this.lblEstadoConexion.Location = new System.Drawing.Point(38, 375);
+            this.lblEstadoConexion.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.lblEstadoConexion.Name = "lblEstadoConexion";
+            this.lblEstadoConexion.Size = new System.Drawing.Size(100, 13);
+            this.lblEstadoConexion.TabIndex = 12;
+            this.lblEstadoConexion.Text = "Verificando...";
+            // 
+            // lblFooter
+            // 
+            this.lblFooter.AutoSize = true;
+            this.lblFooter.Font = new System.Drawing.Font("Segoe UI", 7F);
+            this.lblFooter.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.lblFooter.Location = new System.Drawing.Point(38, 420);
+            this.lblFooter.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.lblFooter.Name = "lblFooter";
+            this.lblFooter.Size = new System.Drawing.Size(180, 12);
+            this.lblFooter.TabIndex = 13;
+            this.lblFooter.Text = "v2.4.1 | © 2026 Modelo Dual";
+            // 
             // FormLogin
             // 
             this.AcceptButton = this.btnIniciarSesion;
@@ -288,7 +316,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.MinimizeBox = false;
             this.Name = "FormLogin";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Modelo Dual - Iniciar Sesion";
+            this.Text = "Modelo Dual - Iniciar Sesión";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormLogin_FormClosing);
             this.panelForm.ResumeLayout(false);
             this.panelForm.PerformLayout();
@@ -319,6 +347,8 @@ namespace Laboratorio_del_Tema_5_2.Views
         private System.Windows.Forms.Label lblCapsLock;
         private System.Windows.Forms.Label lblTituloLogo;
         private System.Windows.Forms.Label lblSubtituloLogo;
+        private System.Windows.Forms.Label lblEstadoConexion;
+        private System.Windows.Forms.Label lblFooter;
     }
 }
 

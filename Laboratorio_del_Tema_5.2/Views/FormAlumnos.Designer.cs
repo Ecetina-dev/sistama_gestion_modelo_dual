@@ -23,6 +23,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.btnEliminar = new System.Windows.Forms.Button();
             this.btnActualizar = new System.Windows.Forms.Button();
             this.btnVerEmpresas = new System.Windows.Forms.Button();
+            this.btnExportarCSV = new System.Windows.Forms.Button();
             this.lblSideTitulo = new System.Windows.Forms.Label();
             this.panelMain = new System.Windows.Forms.Panel();
             this.panelContent = new System.Windows.Forms.Panel();
@@ -51,6 +52,8 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblNoControl = new System.Windows.Forms.Label();
             this.dgvAlumnos = new System.Windows.Forms.DataGridView();
             this.panelToolbar = new System.Windows.Forms.Panel();
+            this.cmbFiltroStatus = new System.Windows.Forms.ComboBox();
+            this.btnLimpiarBusqueda = new System.Windows.Forms.Label();
             this.txtBuscar = new System.Windows.Forms.TextBox();
             this.lblBuscarIcono = new System.Windows.Forms.Label();
             this.panelTopBar = new System.Windows.Forms.Panel();
@@ -138,6 +141,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelSidebarNav.Controls.Add(this.btnEliminar);
             this.panelSidebarNav.Controls.Add(this.btnActualizar);
             this.panelSidebarNav.Controls.Add(this.btnVerEmpresas);
+            this.panelSidebarNav.Controls.Add(this.btnExportarCSV);
             this.panelSidebarNav.Location = new System.Drawing.Point(0, 57);
             this.panelSidebarNav.Margin = new System.Windows.Forms.Padding(2);
             this.panelSidebarNav.Name = "panelSidebarNav";
@@ -245,6 +249,23 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.toolTip.SetToolTip(this.btnVerEmpresas, "Alternar vista empresas");
             this.btnVerEmpresas.UseVisualStyleBackColor = false;
             this.btnVerEmpresas.Click += new System.EventHandler(this.btnVerEmpresas_Click);
+            // 
+            // btnExportarCSV
+            // 
+            this.btnExportarCSV.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(35)))), ((int)(((byte)(51)))));
+            this.btnExportarCSV.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnExportarCSV.FlatAppearance.BorderSize = 0;
+            this.btnExportarCSV.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnExportarCSV.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+            this.btnExportarCSV.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(225)))), ((int)(((byte)(235)))));
+            this.btnExportarCSV.Location = new System.Drawing.Point(8, 241);
+            this.btnExportarCSV.Margin = new System.Windows.Forms.Padding(2);
+            this.btnExportarCSV.Name = "btnExportarCSV";
+            this.btnExportarCSV.Size = new System.Drawing.Size(145, 36);
+            this.btnExportarCSV.TabIndex = 7;
+            this.btnExportarCSV.Text = "📥  Exportar CSV";
+            this.toolTip.SetToolTip(this.btnExportarCSV, "Exportar lista a archivo CSV");
+            this.btnExportarCSV.UseVisualStyleBackColor = false;
             // 
             // lblSideTitulo
             // 
@@ -617,6 +638,8 @@ namespace Laboratorio_del_Tema_5_2.Views
             // 
             this.panelToolbar.BackColor = System.Drawing.Color.White;
             this.panelToolbar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelToolbar.Controls.Add(this.cmbFiltroStatus);
+            this.panelToolbar.Controls.Add(this.btnLimpiarBusqueda);
             this.panelToolbar.Controls.Add(this.txtBuscar);
             this.panelToolbar.Controls.Add(this.lblBuscarIcono);
             this.panelToolbar.Dock = System.Windows.Forms.DockStyle.Top;
@@ -627,12 +650,40 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelToolbar.Size = new System.Drawing.Size(622, 45);
             this.panelToolbar.TabIndex = 0;
             // 
+            // cmbFiltroStatus
+            // 
+            this.cmbFiltroStatus.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbFiltroStatus.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.cmbFiltroStatus.Items.AddRange(new object[] {
+            "Todos",
+            "Activos",
+            "Inactivos",
+            "Egresados",
+            "Suspendidos",
+            "Baja"});
+            this.cmbFiltroStatus.Location = new System.Drawing.Point(12, 12);
+            this.cmbFiltroStatus.Name = "cmbFiltroStatus";
+            this.cmbFiltroStatus.Size = new System.Drawing.Size(110, 23);
+            this.cmbFiltroStatus.TabIndex = 3;
+            // 
+            // btnLimpiarBusqueda
+            // 
+            this.btnLimpiarBusqueda.AutoSize = true;
+            this.btnLimpiarBusqueda.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnLimpiarBusqueda.Font = new System.Drawing.Font("Segoe UI", 10F);
+            this.btnLimpiarBusqueda.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(150)))), ((int)(((byte)(150)))));
+            this.btnLimpiarBusqueda.Location = new System.Drawing.Point(585, 14);
+            this.btnLimpiarBusqueda.Name = "btnLimpiarBusqueda";
+            this.btnLimpiarBusqueda.Size = new System.Drawing.Size(20, 19);
+            this.btnLimpiarBusqueda.TabIndex = 2;
+            this.btnLimpiarBusqueda.Text = "✕";
+            // 
             // txtBuscar
             // 
             this.txtBuscar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
             this.txtBuscar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtBuscar.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this.txtBuscar.Location = new System.Drawing.Point(108, 10);
+            this.txtBuscar.Location = new System.Drawing.Point(136, 10);
             this.txtBuscar.Margin = new System.Windows.Forms.Padding(2);
             this.txtBuscar.Name = "txtBuscar";
             this.txtBuscar.Size = new System.Drawing.Size(429, 27);
@@ -750,6 +801,8 @@ namespace Laboratorio_del_Tema_5_2.Views
         private System.Windows.Forms.Label lblSeparador;
         private System.Windows.Forms.Panel panelContent;
         private System.Windows.Forms.Panel panelToolbar;
+        private System.Windows.Forms.ComboBox cmbFiltroStatus;
+        private System.Windows.Forms.Label btnLimpiarBusqueda;
         private System.Windows.Forms.TextBox txtBuscar;
         private System.Windows.Forms.Label lblBuscarIcono;
         private System.Windows.Forms.DataGridView dgvAlumnos;
@@ -781,6 +834,7 @@ namespace Laboratorio_del_Tema_5_2.Views
         private System.Windows.Forms.Button btnEliminar;
         private System.Windows.Forms.Button btnActualizar;
         private System.Windows.Forms.Button btnVerEmpresas;
+        private System.Windows.Forms.Button btnExportarCSV;
         private System.Windows.Forms.ToolTip toolTip;
     }
 }

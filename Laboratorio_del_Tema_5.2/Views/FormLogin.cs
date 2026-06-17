@@ -17,6 +17,7 @@ namespace Laboratorio_del_Tema_5_2.Views
         private readonly AuthController _authController;
         private bool _isLoading = false;
         private bool _capsLockOn = false;
+        private bool _skipClearError = false;  // evita que TextChanged borre el error durante Clear()
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
         private static extern short GetKeyState(int keyCode);
@@ -35,8 +36,8 @@ namespace Laboratorio_del_Tema_5_2.Views
 
         private void ConfigurarControles()
         {
-            txtLogin.MaxLength = 25;        // Usuario/email
-            txtPassword.MaxLength = 50;      // Contraseña
+            txtLogin.MaxLength = Seguridad.LoginMaxLength;     // Usuario/email (120)
+            txtPassword.MaxLength = Seguridad.PasswordMaxLength;  // Contraseña (100)
 
             this.Shown += (s, e) =>
             {
@@ -45,6 +46,7 @@ namespace Laboratorio_del_Tema_5_2.Views
                 else
                     txtPassword.Focus();
                 VerificarCapsLock();
+                _ = VerificarEstadoConexion();
             };
 
             // Restaurar color al escribir
@@ -57,6 +59,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             };
             txtPassword.TextChanged += (s, e) =>
             {
+                if (_skipClearError) return;
                 LimpiarError();
                 VerificarCapsLock();
                 if (txtPassword.BackColor == Color.FromArgb(255, 235, 235))
@@ -130,6 +133,30 @@ namespace Laboratorio_del_Tema_5_2.Views
             catch { }
         }
 
+        // ==================== ESTADO DE CONEXIÓN ====================
+
+        private async Task VerificarEstadoConexion()
+        {
+            try
+            {
+                bool conectado = await Task.Run(() =>
+                {
+                    try { using var conn = MySQLConnection.GetConnection(); conn.Open(); return true; }
+                    catch { return false; }
+                });
+
+                lblEstadoConexion.Text = conectado ? "🟢  Servidor conectado" : "🔴  Sin conexión";
+                lblEstadoConexion.ForeColor = conectado
+                    ? Color.FromArgb(40, 167, 69)
+                    : Color.FromArgb(220, 53, 69);
+            }
+            catch
+            {
+                lblEstadoConexion.Text = "🔴  Sin conexión";
+                lblEstadoConexion.ForeColor = Color.FromArgb(220, 53, 69);
+            }
+        }
+
         // ==================== LOGO ====================
 
         private void CargarLogo()
@@ -176,7 +203,8 @@ namespace Laboratorio_del_Tema_5_2.Views
                 return false;
             }
 
-            if (txtPassword.Text.Length < Seguridad.PasswordMinLength)
+            if (txtPassword.Text.Length < ParametroSistemaService.Instance.GetInt(
+                Claves.MIN_CARACTERES_PASSWORD, Seguridad.PasswordMinLength))
             {
                 MarcarError(txtPassword);
                 MostrarError($"La contraseña debe tener al menos {Seguridad.PasswordMinLength} caracteres.");
@@ -198,10 +226,38 @@ namespace Laboratorio_del_Tema_5_2.Views
             txtPassword.BackColor = Color.FromArgb(245, 245, 245);
         }
 
-        private void MostrarError(string mensaje)
+        private void MostrarError(string mensaje, int intentosRestantes = -1)
         {
             lblError.Text = mensaje;
             lblError.Visible = true;
+            picError.Visible = true;
+
+            // Prioridad: bloqueo > último intento > advertencia > error normal
+            if (mensaje.Contains("bloquead") || mensaje.Contains("Bloquead"))
+            {
+                lblError.ForeColor = Color.FromArgb(220, 53, 69);   // rojo intenso
+                picError.Text = "🔒";
+            }
+            else if (intentosRestantes == 1)
+            {
+                lblError.ForeColor = Color.FromArgb(220, 53, 69);   // rojo: ÚLTIMO intento
+                picError.Text = "⚠";
+            }
+            else if (intentosRestantes == 2)
+            {
+                lblError.ForeColor = Color.FromArgb(255, 140, 0);   // naranja: advertencia
+                picError.Text = "⚠";
+            }
+            else if (intentosRestantes >= 3)
+            {
+                lblError.ForeColor = Color.FromArgb(220, 53, 69);   // rojo normal
+                picError.Text = "!";
+            }
+            else
+            {
+                lblError.ForeColor = Color.FromArgb(220, 53, 69);   // error normal
+                picError.Text = "!";
+            }
         }
 
         private void LimpiarError()
@@ -210,6 +266,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             {
                 lblError.Visible = false;
                 lblError.Text = "";
+                picError.Visible = false;
             }
         }
 
@@ -271,15 +328,43 @@ namespace Laboratorio_del_Tema_5_2.Views
 
                 if (resultado.Success)
                 {
+                    if (resultado.RequiereActivacion)
+                    {
+                        // El usuario debe activar su cuenta (tiene password temporal)
+                        SetLoading(false);
+                        using var formActivar = new FormActivarCuenta
+                        {
+                            UsuarioPreLlenado = login
+                        };
+                        formActivar.ShowDialog();
+                        txtLogin.Clear();
+                        txtPassword.Clear();
+                        txtLogin.Focus();
+                        return;
+                    }
+
                     GuardarUsuarioRecordado();
                     this.DialogResult = DialogResult.OK;
                     this.Close();
                 }
-                else
+                else if (resultado.CuentaEliminada)
+                {
+                    MarcarError(txtLogin);
+                    MostrarError("Esta cuenta ha sido eliminada. Contacta al administrador.");
+                }
+                else if (resultado.PasswordExpirado)
                 {
                     MarcarError(txtPassword);
-                    MostrarError(resultado.Message);
+                    MostrarError("Tu contraseña ha expirado. Contacta al administrador para renovarla.");
+                }
+                else
+                {
+                    // Primero mostrar el error, luego limpiar password SIN que TextChanged lo borre
+                    MarcarError(txtPassword);
+                    MostrarError(resultado.Message, resultado.IntentosRestantes);
+                    _skipClearError = true;
                     txtPassword.Clear();
+                    _skipClearError = false;
                     txtPassword.Focus();
                 }
             }
@@ -298,7 +383,7 @@ namespace Laboratorio_del_Tema_5_2.Views
 
         private void chkMostrarPassword_CheckedChanged(object sender, EventArgs e)
         {
-            txtPassword.PasswordChar = chkMostrarPassword.Checked ? '\0' : '*';
+            txtPassword.PasswordChar = chkMostrarPassword.Checked ? '\0' : '\u25CF';
         }
 
         private void lnkCrearCuenta_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -316,8 +401,12 @@ namespace Laboratorio_del_Tema_5_2.Views
 
         private void lnkRecuperar_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            MessageBox.Show("Contacta al administrador del sistema para recuperar tu contraseña.",
-                "Recuperar Contraseña", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            var result = MessageBox.Show(
+                "Para recuperar tu contraseña, contacta al administrador del sistema.\n\n" +
+                "¿Deseas abrir la ventana de activación por si tienes un código temporal?",
+                "Recuperar Contraseña", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (result == DialogResult.Yes)
+                lnkCrearCuenta_LinkClicked(sender, e);
         }
 
         private void FormLogin_FormClosing(object sender, FormClosingEventArgs e)
