@@ -1,24 +1,24 @@
 using System;
 using System.Configuration;
+using System.Threading.Tasks;
+using Laboratorio_del_Tema_5_2.Utils;
 using MySqlConnector;
 
 namespace Laboratorio_del_Tema_5_2.Data
 {
     /// <summary>
     /// Proporciona metodos para gestionar la conexion a la base de datos MySQL.
+    /// Soporta operaciones sincronas y asincronas para enterprise-grade performance.
     /// </summary>
     public static class MySQLConnection
     {
-        /// <summary>
-        /// Obtiene la cadena de conexion desde App.config.
-        /// </summary>
         private static string ConnectionString
         {
             get
             {
                 try
                 {
-                    return ConfigurationManager.ConnectionStrings["MySQL"]?.ConnectionString 
+                    return ConfigurationManager.ConnectionStrings["MySQL"]?.ConnectionString
                         ?? throw new InvalidOperationException("No se encontro la cadena de conexion 'MySQL' en App.config.");
                 }
                 catch (Exception ex)
@@ -29,17 +29,21 @@ namespace Laboratorio_del_Tema_5_2.Data
             }
         }
 
-        /// <summary>
-        /// Obtiene una nueva conexion a la base de datos.
-        /// </summary>
         public static MySqlConnection GetConnection()
         {
             return new MySqlConnection(ConnectionString);
         }
 
         /// <summary>
-        /// Verifica si la conexion a MySQL funciona correctamente.
+        /// Abre una conexión de forma asíncrona para operaciones no bloqueantes.
         /// </summary>
+        public static async Task<MySqlConnection> GetOpenConnectionAsync()
+        {
+            var conn = new MySqlConnection(ConnectionString);
+            await conn.OpenAsync().ConfigureAwait(false);
+            return conn;
+        }
+
         public static bool TestConnection()
         {
             try
@@ -47,20 +51,16 @@ namespace Laboratorio_del_Tema_5_2.Data
                 using (MySqlConnection conn = GetConnection())
                 {
                     conn.Open();
-                    Console.WriteLine("Conexion a MySQL exitosa!");
                     return true;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error de conexion: " + ex.Message);
+                Logger.Error("Test de conexión fallido", ex);
                 return false;
             }
         }
 
-        /// <summary>
-        /// Obtiene la version del servidor MySQL.
-        /// </summary>
         public static string GetMySQLVersion()
         {
             try
@@ -77,9 +77,6 @@ namespace Laboratorio_del_Tema_5_2.Data
             }
         }
 
-        /// <summary>
-        /// Obtiene el timeout de conexion configurado.
-        /// </summary>
         public static int GetTimeout()
         {
             try

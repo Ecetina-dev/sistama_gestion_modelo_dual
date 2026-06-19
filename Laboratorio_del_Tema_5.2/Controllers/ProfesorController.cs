@@ -9,9 +9,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 {
     public class ProfesorController
     {
-        // ============================================
-        // CREATE - Insertar nuevo profesor
-        // ============================================
         public bool Create(Profesor profesor)
         {
             try
@@ -71,9 +68,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
         }
 
-        // ============================================
-        // READ - Obtener todos los profesores
-        // ============================================
         public List<Profesor> Read()
         {
             List<Profesor> profesores = new List<Profesor>();
@@ -127,9 +121,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             return profesores;
         }
 
-        // ============================================
-        // READ by ID - Obtener profesor específico
-        // ============================================
         public Profesor ReadById(int idProfesor)
         {
             try
@@ -185,9 +176,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             return null;
         }
 
-        // ============================================
-        // UPDATE - Actualizar profesor
-        // ============================================
         public bool Update(Profesor profesor)
         {
             try
@@ -253,9 +241,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
         }
 
-        // ============================================
-        // DELETE - Eliminar profesor
-        // ============================================
         public bool Delete(int idProfesor)
         {
             try
@@ -280,9 +265,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
         }
 
-        // ============================================
-        // EXISTS - Verificar si ya existe el No_Empleado
-        // ============================================
         public bool ExisteNoEmpleado(string noEmpleado, int? excluirId = null)
         {
             try
@@ -310,9 +292,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
         }
 
-        // ============================================
-        // JOIN: Profesores con Proyectos (como directores/asesores)
-        // ============================================
         public List<ProfesorConProyectos> GetProfesoresConProyectos()
         {
             List<ProfesorConProyectos> lista = new List<ProfesorConProyectos>();
@@ -379,9 +358,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         }
     }
 
-    // ============================================
-    // CLASE AUXILIAR PARA EL JOIN
-    // ============================================
     public class ProfesorConProyectos
     {
         public int Id_Profesor { get; set; }

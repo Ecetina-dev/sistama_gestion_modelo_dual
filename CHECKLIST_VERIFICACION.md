@@ -56,16 +56,25 @@ Verificar manualmente que toda la UI funciona correctamente con el nuevo sistema
 
 ---
 
-### 👨‍🎓 CRUD ALUMNOS (10 min)
+### 👨‍🎓 CRUD ALUMNOS (15 min)
 
-- [ ] **A1**: Abrir FormAlumnos → carga lista
+- [ ] **A1**: Abrir FormAlumnos → carga lista y grid muestra solo columnas legacy (No. Control, Nombre, Ap. Paterno, Ap. Materno, Email, Teléfono, Status)
 - [ ] **A2**: Click "Nuevo" → limpia formulario
 - [ ] **A3**: Llenar campos y guardar → aparece en lista
 - [ ] **A4**: Seleccionar alumno de la lista → se carga en formulario
 - [ ] **A5**: Modificar campos y guardar → lista se actualiza
-- [ ] **A6**: Seleccionar y eliminar → confirma antes de borrar
+- [ ] **A6**: Seleccionar y eliminar → solicita motivo de eliminación → confirma → alumno desaparece de la lista (soft delete)
 - [ ] **A7**: Intentar guardar con número de control duplicado → error
 - [ ] **A8**: Validar campos obligatorios
+- [ ] **A9**: Crear alumno con CURP válida (formato y checksum correctos) → se guarda y `created_by` se llena
+- [ ] **A10**: Crear alumno con CURP inválida (checksum incorrecto) → rechazada con mensaje "El CURP no es válido"
+- [ ] **A11**: Intentar crear alumno con `no_control` de un registro previamente eliminado (soft-deleted) → rechazada como "El número de control ya está registrado (incluyendo registros eliminados)"
+- [ ] **A12**: Cambiar status de un alumno a "baja" sin proporcionar `motivo_baja` → rechazada con mensaje de motivo requerido
+- [ ] **A13**: Intentar eliminar (soft-delete) un alumno que tiene asignaciones activas en `Alumno_Empresa` → rechazada con mensaje de asignaciones activas
+- [ ] **A14**: Modificar el email de un alumno que tiene vínculo `Usuario_Entidad` → verificar que `Usuario.email` se sincroniza con el nuevo valor
+- [ ] **A15**: Abrir FormAlumnos → en el grid NO son visibles CURP, RFC, NSS, dirección, ni campos de contacto de emergencia (Phase 1 los almacena pero no los muestra)
+
+---
 
 ---
 
@@ -136,6 +145,12 @@ Verificar manualmente que toda la UI funciona correctamente con el nuevo sistema
 
 ---
 
+### 🎓 CARRERA (5 min)
+
+- [ ] **C1**: CRUD completo de carreras funciona (crear, leer, actualizar, eliminar lógicamente via status = 'inactiva')
+
+---
+
 ### 🔍 SEGURIDAD (5 min)
 
 - [ ] **SE1**: Inspeccionar logs en `bin/Debug/net472/Logs/app_YYYYMMDD.log`
@@ -153,7 +168,7 @@ Verificar manualmente que toda la UI funciona correctamente con el nuevo sistema
 | Login | 10 | ___ | ___ | |
 | Creación cuentas | 15 | ___ | ___ | |
 | Menú principal | 5 | ___ | ___ | |
-| CRUD Alumnos | 8 | ___ | ___ | |
+| CRUD Alumnos | 15 | ___ | ___ | Phase 1 enterprise fields: A9-A15 |
 | CRUD Profesores | 5 | ___ | ___ | |
 | CRUD Empresas | 5 | ___ | ___ | |
 | CRUD Materias | 4 | ___ | ___ | |
@@ -162,7 +177,8 @@ Verificar manualmente que toda la UI funciona correctamente con el nuevo sistema
 | Cambio contraseña | 5 | ___ | ___ | |
 | Sesión | 5 | ___ | ___ | |
 | Seguridad | 5 | ___ | ___ | |
-| **TOTAL** | **75** | **___** | **___** | |
+| Carrera | 1 | ___ | ___ | Phase 1 new entity |
+| **TOTAL** | **83** | **___** | **___** | |
 
 ---
 

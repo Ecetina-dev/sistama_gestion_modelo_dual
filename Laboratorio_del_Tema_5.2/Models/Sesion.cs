@@ -37,6 +37,39 @@ namespace Laboratorio_del_Tema_5_2.Models
 
         private SesionActiva() { }
 
+        /// <summary>
+        /// Fuerza el flag de cambio de password cuando está expirado,
+        /// preservando el resto de la sesión (rol, privilegios, entidad).
+        /// </summary>
+        public void IniciarSesionForzarCambioPassword(Usuario usuario, string nombreRol, string tipoEntidad, int? idEntidad, List<string> privilegios)
+        {
+            if (usuario == null)
+                throw new ArgumentNullException(nameof(usuario));
+
+            Id_Usuario = usuario.Id_Usuario;
+            Username = usuario.Username;
+            Email = usuario.Email;
+            Id_Rol = usuario.Id_Rol;
+            Nombre_Rol = nombreRol;
+            Tipo_Entidad = tipoEntidad;
+            Id_Entidad = idEntidad;
+            Privilegios = privilegios ?? new List<string>();
+            Fecha_Login = DateTime.Now;
+            Debe_Cambiar_Password = true;
+        }
+
+        /// <summary>
+        /// Sobrecarga mínima: solo setea identidad y marca cambio obligatorio.
+        /// Usar solo si NO se dispone de los datos de rol/entidad.
+        /// </summary>
+        public void IniciarSesionForzarCambioPassword(int idUsuario, string username)
+        {
+            Id_Usuario = idUsuario;
+            Username = username;
+            Debe_Cambiar_Password = true;
+            Fecha_Login = DateTime.Now;
+        }
+
         public static SesionActiva Instance
         {
             get
@@ -102,5 +135,15 @@ namespace Laboratorio_del_Tema_5_2.Models
         public bool EsAlumno => Nombre_Rol == "alumno";
         public bool EsProfesor => Nombre_Rol == "profesor";
         public bool EsEmpresa => Nombre_Rol == "empresa";
+
+        /// <summary>
+        /// Verifica si la sesión actual ha expirado por tiempo.
+        /// </summary>
+        public bool IsSesionExpirada(int duracionHoras = 8)
+        {
+            if (Id_Usuario == 0 || Fecha_Login == default)
+                return false;
+            return DateTime.Now > Fecha_Login.AddHours(duracionHoras);
+        }
     }
 }

@@ -9,9 +9,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 {
     public class TemaController
     {
-        // ============================================
-        // CREATE - Insertar nuevo tema
-        // ============================================
         public bool Create(Tema tema)
         {
             try
@@ -44,9 +41,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
         }
 
-        // ============================================
-        // READ - Obtener todos los temas
-        // ============================================
         public List<Tema> Read()
         {
             List<Tema> temas = new List<Tema>();
@@ -94,9 +88,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             return temas;
         }
 
-        // ============================================
-        // READ by ID - Obtener tema específico
-        // ============================================
         public Tema ReadById(int idTema)
         {
             try
@@ -146,9 +137,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             return null;
         }
 
-        // ============================================
         // READ by Materia - Obtener temas de una materia
-        // ============================================
         public List<Tema> ReadByMateria(int idMateria)
         {
             List<Tema> temas = new List<Tema>();
@@ -201,9 +190,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             return temas;
         }
 
-        // ============================================
-        // UPDATE - Actualizar tema
-        // ============================================
         public bool Update(Tema tema)
         {
             try
@@ -240,9 +226,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
         }
 
-        // ============================================
-        // DELETE - Eliminar tema
-        // ============================================
         public bool Delete(int idTema)
         {
             try

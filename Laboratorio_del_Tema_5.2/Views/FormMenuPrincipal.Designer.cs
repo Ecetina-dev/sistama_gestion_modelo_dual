@@ -42,12 +42,12 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblLogoIcono = new System.Windows.Forms.Label();
             this.panelMain = new System.Windows.Forms.Panel();
             this.panelCards = new System.Windows.Forms.Panel();
-            this.cardTestConnection = new System.Windows.Forms.Panel();
-            this.barraTestConnection = new System.Windows.Forms.Panel();
-            this.iconoTestConnection = new System.Windows.Forms.Label();
-            this.tituloTestConnection = new System.Windows.Forms.Label();
-            this.descTestConnection = new System.Windows.Forms.Label();
-            this.permTestConnection = new System.Windows.Forms.Label();
+            this.cardMigracionBD = new System.Windows.Forms.Panel();
+            this.barraMigracionBD = new System.Windows.Forms.Panel();
+            this.iconoMigracionBD = new System.Windows.Forms.Label();
+            this.tituloMigracionBD = new System.Windows.Forms.Label();
+            this.descMigracionBD = new System.Windows.Forms.Label();
+            this.permMigracionBD = new System.Windows.Forms.Label();
             this.cardGestionUsuarios = new System.Windows.Forms.Panel();
             this.barraGestionUsuarios = new System.Windows.Forms.Panel();
             this.iconoGestionUsuarios = new System.Windows.Forms.Label();
@@ -121,7 +121,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelLogo.SuspendLayout();
             this.panelMain.SuspendLayout();
             this.panelCards.SuspendLayout();
-            this.cardTestConnection.SuspendLayout();
+            this.cardMigracionBD.SuspendLayout();
             this.cardGestionUsuarios.SuspendLayout();
             this.cardTemas.SuspendLayout();
             this.cardMaterias.SuspendLayout();
@@ -496,7 +496,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             // 
             this.panelCards.AutoScroll = true;
             this.panelCards.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(247)))), ((int)(((byte)(250)))));
-            this.panelCards.Controls.Add(this.cardTestConnection);
+            this.panelCards.Controls.Add(this.cardMigracionBD);
             this.panelCards.Controls.Add(this.cardGestionUsuarios);
             this.panelCards.Controls.Add(this.cardTemas);
             this.panelCards.Controls.Add(this.cardMaterias);
@@ -513,75 +513,75 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelCards.Size = new System.Drawing.Size(1047, 540);
             this.panelCards.TabIndex = 1;
             // 
-            // cardTestConnection
+            // cardMigracionBD
             // 
-            this.cardTestConnection.BackColor = System.Drawing.Color.White;
-            this.cardTestConnection.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.cardTestConnection.Controls.Add(this.barraTestConnection);
-            this.cardTestConnection.Controls.Add(this.iconoTestConnection);
-            this.cardTestConnection.Controls.Add(this.tituloTestConnection);
-            this.cardTestConnection.Controls.Add(this.descTestConnection);
-            this.cardTestConnection.Controls.Add(this.permTestConnection);
-            this.cardTestConnection.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.cardTestConnection.Location = new System.Drawing.Point(777, 275);
-            this.cardTestConnection.Name = "cardTestConnection";
-            this.cardTestConnection.Size = new System.Drawing.Size(243, 160);
-            this.cardTestConnection.TabIndex = 0;
-            this.cardTestConnection.Click += new System.EventHandler(this.btnTestConnection_Click);
+            this.cardMigracionBD.BackColor = System.Drawing.Color.White;
+            this.cardMigracionBD.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.cardMigracionBD.Controls.Add(this.barraMigracionBD);
+            this.cardMigracionBD.Controls.Add(this.iconoMigracionBD);
+            this.cardMigracionBD.Controls.Add(this.tituloMigracionBD);
+            this.cardMigracionBD.Controls.Add(this.descMigracionBD);
+            this.cardMigracionBD.Controls.Add(this.permMigracionBD);
+            this.cardMigracionBD.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.cardMigracionBD.Location = new System.Drawing.Point(777, 275);
+            this.cardMigracionBD.Name = "cardMigracionBD";
+            this.cardMigracionBD.Size = new System.Drawing.Size(243, 160);
+            this.cardMigracionBD.TabIndex = 0;
+            this.cardMigracionBD.Click += new System.EventHandler(this.btnMigracionBD_Click);
             // 
-            // barraTestConnection
+            // barraMigracionBD
             // 
-            this.barraTestConnection.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(167)))), ((int)(((byte)(69)))));
-            this.barraTestConnection.Dock = System.Windows.Forms.DockStyle.Left;
-            this.barraTestConnection.Location = new System.Drawing.Point(0, 0);
-            this.barraTestConnection.Name = "barraTestConnection";
-            this.barraTestConnection.Size = new System.Drawing.Size(5, 158);
-            this.barraTestConnection.TabIndex = 0;
+            this.barraMigracionBD.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(89)))), ((int)(((byte)(149)))));
+            this.barraMigracionBD.Dock = System.Windows.Forms.DockStyle.Left;
+            this.barraMigracionBD.Location = new System.Drawing.Point(0, 0);
+            this.barraMigracionBD.Name = "barraMigracionBD";
+            this.barraMigracionBD.Size = new System.Drawing.Size(5, 158);
+            this.barraMigracionBD.TabIndex = 0;
             // 
-            // iconoTestConnection
+            // iconoMigracionBD
             // 
-            this.iconoTestConnection.AutoSize = true;
-            this.iconoTestConnection.Font = new System.Drawing.Font("Segoe UI Emoji", 30F);
-            this.iconoTestConnection.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(167)))), ((int)(((byte)(69)))));
-            this.iconoTestConnection.Location = new System.Drawing.Point(15, 15);
-            this.iconoTestConnection.Name = "iconoTestConnection";
-            this.iconoTestConnection.Size = new System.Drawing.Size(78, 53);
-            this.iconoTestConnection.TabIndex = 1;
-            this.iconoTestConnection.Text = "🔌";
+            this.iconoMigracionBD.AutoSize = true;
+            this.iconoMigracionBD.Font = new System.Drawing.Font("Segoe UI Emoji", 30F);
+            this.iconoMigracionBD.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(89)))), ((int)(((byte)(149)))));
+            this.iconoMigracionBD.Location = new System.Drawing.Point(15, 15);
+            this.iconoMigracionBD.Name = "iconoMigracionBD";
+            this.iconoMigracionBD.Size = new System.Drawing.Size(78, 53);
+            this.iconoMigracionBD.TabIndex = 1;
+            this.iconoMigracionBD.Text = "🗄️";
             // 
-            // tituloTestConnection
+            // tituloMigracionBD
             // 
-            this.tituloTestConnection.AutoSize = true;
-            this.tituloTestConnection.Font = new System.Drawing.Font("Segoe UI", 13F, System.Drawing.FontStyle.Bold);
-            this.tituloTestConnection.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(37)))), ((int)(((byte)(41)))));
-            this.tituloTestConnection.Location = new System.Drawing.Point(87, 18);
-            this.tituloTestConnection.Name = "tituloTestConnection";
-            this.tituloTestConnection.Size = new System.Drawing.Size(157, 25);
-            this.tituloTestConnection.TabIndex = 2;
-            this.tituloTestConnection.Text = "Conexión MySQL";
+            this.tituloMigracionBD.AutoSize = true;
+            this.tituloMigracionBD.Font = new System.Drawing.Font("Segoe UI", 13F, System.Drawing.FontStyle.Bold);
+            this.tituloMigracionBD.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(37)))), ((int)(((byte)(41)))));
+            this.tituloMigracionBD.Location = new System.Drawing.Point(87, 18);
+            this.tituloMigracionBD.Name = "tituloMigracionBD";
+            this.tituloMigracionBD.Size = new System.Drawing.Size(157, 25);
+            this.tituloMigracionBD.TabIndex = 2;
+            this.tituloMigracionBD.Text = "Migración BD";
             // 
-            // descTestConnection
+            // descMigracionBD
             // 
-            this.descTestConnection.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.descTestConnection.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(108)))), ((int)(((byte)(117)))), ((int)(((byte)(125)))));
-            this.descTestConnection.Location = new System.Drawing.Point(15, 80);
-            this.descTestConnection.Name = "descTestConnection";
-            this.descTestConnection.Size = new System.Drawing.Size(200, 35);
-            this.descTestConnection.TabIndex = 3;
-            this.descTestConnection.Text = "Probar conexión BD";
+            this.descMigracionBD.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.descMigracionBD.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(108)))), ((int)(((byte)(117)))), ((int)(((byte)(125)))));
+            this.descMigracionBD.Location = new System.Drawing.Point(15, 80);
+            this.descMigracionBD.Name = "descMigracionBD";
+            this.descMigracionBD.Size = new System.Drawing.Size(200, 35);
+            this.descMigracionBD.TabIndex = 3;
+            this.descMigracionBD.Text = "Migrar MySQL → SQL Server";
             // 
-            // permTestConnection
+            // permMigracionBD
             // 
-            this.permTestConnection.AutoSize = true;
-            this.permTestConnection.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
-            this.permTestConnection.Font = new System.Drawing.Font("Segoe UI", 8F);
-            this.permTestConnection.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(108)))), ((int)(((byte)(117)))), ((int)(((byte)(125)))));
-            this.permTestConnection.Location = new System.Drawing.Point(15, 125);
-            this.permTestConnection.Name = "permTestConnection";
-            this.permTestConnection.Padding = new System.Windows.Forms.Padding(5, 2, 5, 2);
-            this.permTestConnection.Size = new System.Drawing.Size(120, 17);
-            this.permTestConnection.TabIndex = 4;
-            this.permTestConnection.Text = "🔒 admin.crud_todo";
+            this.permMigracionBD.AutoSize = true;
+            this.permMigracionBD.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
+            this.permMigracionBD.Font = new System.Drawing.Font("Segoe UI", 8F);
+            this.permMigracionBD.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(108)))), ((int)(((byte)(117)))), ((int)(((byte)(125)))));
+            this.permMigracionBD.Location = new System.Drawing.Point(15, 125);
+            this.permMigracionBD.Name = "permMigracionBD";
+            this.permMigracionBD.Padding = new System.Windows.Forms.Padding(5, 2, 5, 2);
+            this.permMigracionBD.Size = new System.Drawing.Size(120, 17);
+            this.permMigracionBD.TabIndex = 4;
+            this.permMigracionBD.Text = "🔒 admin.crud_todo";
             // 
             // cardGestionUsuarios
             // 
@@ -1399,8 +1399,8 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelMain.ResumeLayout(false);
             this.panelCards.ResumeLayout(false);
             this.panelCards.PerformLayout();
-            this.cardTestConnection.ResumeLayout(false);
-            this.cardTestConnection.PerformLayout();
+            this.cardMigracionBD.ResumeLayout(false);
+            this.cardMigracionBD.PerformLayout();
             this.cardGestionUsuarios.ResumeLayout(false);
             this.cardGestionUsuarios.PerformLayout();
             this.cardTemas.ResumeLayout(false);
@@ -1483,7 +1483,7 @@ namespace Laboratorio_del_Tema_5_2.Views
         private System.Windows.Forms.Panel cardMaterias;
         private System.Windows.Forms.Panel cardTemas;
         private System.Windows.Forms.Panel cardGestionUsuarios;
-        private System.Windows.Forms.Panel cardTestConnection;
+        private System.Windows.Forms.Panel cardMigracionBD;
 
         // Hijos de las cards (todos editables)
         private System.Windows.Forms.Panel barraAlumnos;
@@ -1528,11 +1528,11 @@ namespace Laboratorio_del_Tema_5_2.Views
         private System.Windows.Forms.Label descGestionUsuarios;
         private System.Windows.Forms.Label permGestionUsuarios;
 
-        private System.Windows.Forms.Panel barraTestConnection;
-        private System.Windows.Forms.Label iconoTestConnection;
-        private System.Windows.Forms.Label tituloTestConnection;
-        private System.Windows.Forms.Label descTestConnection;
-        private System.Windows.Forms.Label permTestConnection;
+        private System.Windows.Forms.Panel barraMigracionBD;
+        private System.Windows.Forms.Label iconoMigracionBD;
+        private System.Windows.Forms.Label tituloMigracionBD;
+        private System.Windows.Forms.Label descMigracionBD;
+        private System.Windows.Forms.Label permMigracionBD;
 
         // Dashboard stats panel
         private System.Windows.Forms.Panel panelDashboard;

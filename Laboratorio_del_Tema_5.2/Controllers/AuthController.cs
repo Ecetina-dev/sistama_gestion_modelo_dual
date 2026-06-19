@@ -4,6 +4,7 @@ using MySqlConnector;
 using Laboratorio_del_Tema_5_2.Data;
 using Laboratorio_del_Tema_5_2.Models;
 using Laboratorio_del_Tema_5_2.Utils;
+using Laboratorio_del_Tema_5_2.Controllers.Services;
 
 namespace Laboratorio_del_Tema_5_2.Controllers
 {
@@ -40,14 +41,14 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 {
                     conn.Open();
 
-                    string query = @"SELECT u.id_usuario, u.username, u.email, u.password_hash, 
+                    string query = @"SELECT u.id_usuario, u.username, u.email, u.password_hash,
                                             u.id_rol, u.status, u.intentos_fallidos, u.bloqueado_hasta,
                                             u.is_deleted, u.debe_cambiar_password, u.fecha_activacion,
                                             u.deleted_at,
                                             r.nombre AS rol_nombre
                                      FROM Usuario u
                                      INNER JOIN Rol r ON u.id_rol = r.id_rol
-                                     WHERE u.username = @login OR u.email = @login";
+                                     WHERE (LOWER(u.username) = LOWER(@login) OR LOWER(u.email) = LOWER(@login))";
 
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
@@ -57,8 +58,9 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                         {
                             if (!reader.Read())
                             {
+                                // Timing-safe: ejecutar BCrypt con dummy hash para mismo timing
+                                try { BCrypt.Net.BCrypt.Verify("dummy", "$2a$11$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"); } catch { }
                                 // No revelar si el usuario existe o no
-                                Logger.Warning($"Intento de login con usuario inexistente: '{login}'");
                                 return new ResultadoLogin
                                 {
                                     Success = false,
@@ -184,7 +186,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
                             CrearSesion(conn, idUsuario);
 
-                            // Enterprise: registrar en bitacora
                             InsertarBitacora(conn, "Usuario", idUsuario.ToString(), "LOGIN", usernameBd);
 
                             Logger.Info($"Login exitoso para usuario '{usernameBd}' (rol: {rolNombre})");
@@ -271,14 +272,14 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
                             if (!string.IsNullOrEmpty(tipoEntidad) && idEntidad > 0)
                             {
-                                string queryVinculo = @"INSERT INTO Usuario_Entidad (id_usuario, tipo_entidad, id_entidad)
-                                                        VALUES (@id_usuario, @tipo_entidad, @id_entidad)";
-                                using (MySqlCommand cmd = new MySqlCommand(queryVinculo, conn, transaction))
+                                string tablaVinculo = ObtenerTablaVinculo(tipoEntidad);
+                                string columnaVinculo = ObtenerColumnaVinculo(tipoEntidad);
+                                string queryVinculo = $"INSERT INTO {tablaVinculo} (id_usuario, {columnaVinculo}) VALUES (@id_usuario, @id_entidad)";
+                                using (MySqlCommand cmd2 = new MySqlCommand(queryVinculo, conn, transaction))
                                 {
-                                    cmd.Parameters.AddWithValue("@id_usuario", idUsuario);
-                                    cmd.Parameters.AddWithValue("@tipo_entidad", tipoEntidad);
-                                    cmd.Parameters.AddWithValue("@id_entidad", idEntidad);
-                                    cmd.ExecuteNonQuery();
+                                    cmd2.Parameters.AddWithValue("@id_usuario", idUsuario);
+                                    cmd2.Parameters.AddWithValue("@id_entidad", idEntidad);
+                                    cmd2.ExecuteNonQuery();
                                 }
                             }
 
@@ -320,12 +321,20 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 {
                     conn.Open();
 
-                    string query = "SELECT password_hash FROM Usuario WHERE id_usuario = @id_usuario";
+                    string query = "SELECT password_hash, username, email FROM Usuario WHERE id_usuario = @id_usuario";
                     string hashActual;
+                    string username;
+                    string email;
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@id_usuario", idUsuario);
-                        hashActual = cmd.ExecuteScalar()?.ToString();
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (!reader.Read()) return false;
+                            hashActual = reader.GetString("password_hash");
+                            username = reader.GetString("username");
+                            email = reader.IsDBNull(reader.GetOrdinal("email")) ? null : reader.GetString("email");
+                        }
                     }
 
                     if (hashActual == null || !BCrypt.Net.BCrypt.Verify(passwordActual, hashActual))
@@ -333,19 +342,75 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                         return false;
                     }
 
-                    string hashNuevo = BCrypt.Net.BCrypt.HashPassword(passwordNuevo, Seguridad.BcryptCostFactor);
-                    string updateQuery = "UPDATE Usuario SET password_hash = @hash WHERE id_usuario = @id_usuario";
-
-                    using (MySqlCommand cmd = new MySqlCommand(updateQuery, conn))
+                    // No permitir que el nuevo sea igual al actual
+                    if (BCrypt.Net.BCrypt.Verify(passwordNuevo, hashActual))
                     {
-                        cmd.Parameters.AddWithValue("@hash", hashNuevo);
-                        cmd.Parameters.AddWithValue("@id_usuario", idUsuario);
-                        cmd.ExecuteNonQuery();
+                        Logger.Warning($"Intento de cambiar password por el mismo: usuario {idUsuario}");
+                        return false;
                     }
 
+                    // Validar contra diccionario de comunes
+                    var validacionComun = PasswordValidator.Validar(passwordNuevo, username, email);
+                    if (!validacionComun.EsValido)
+                    {
+                        Logger.Warning($"Cambio de password débil rechazado: usuario {idUsuario}. Razón: {validacionComun.Razon}");
+                        throw new InvalidOperationException(validacionComun.Razon);
+                    }
+
+                    // Validar contra historial de passwords reutilizados
+                    if (EsPasswordReutilizado(conn, idUsuario, passwordNuevo))
+                    {
+                        Logger.Warning($"Cambio de password rechazado: reutilización (usuario {idUsuario})");
+                        throw new InvalidOperationException("No podés reutilizar una contraseña reciente. Elegí una diferente.");
+                    }
+
+                    string hashNuevo = BCrypt.Net.BCrypt.HashPassword(passwordNuevo, Seguridad.BcryptCostFactor);
+
+                    using (MySqlTransaction transaction = conn.BeginTransaction())
+                    {
+                        try
+                        {
+                            string updateQuery = "UPDATE Usuario SET password_hash = @hash WHERE id_usuario = @id_usuario";
+                            using (MySqlCommand cmd = new MySqlCommand(updateQuery, conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@hash", hashNuevo);
+                                cmd.Parameters.AddWithValue("@id_usuario", idUsuario);
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            // Guardar hash anterior en historial
+                            RegistrarEnHistorial(conn, transaction, idUsuario, hashActual);
+
+                            // Auditar cambio de password
+                            try
+                            {
+                                string queryBitacora = @"INSERT INTO bitacora (tabla_afectada, id_registro, operacion, usuario, ip_address, navegador, fecha)
+                                                         VALUES (@tabla, @id_registro, @operacion, @usuario, @ip, @navegador, NOW())";
+                                using (MySqlCommand cmd = new MySqlCommand(queryBitacora, conn, transaction))
+                                {
+                                    cmd.Parameters.AddWithValue("@tabla", "Usuario");
+                                    cmd.Parameters.AddWithValue("@id_registro", idUsuario.ToString());
+                                    cmd.Parameters.AddWithValue("@operacion", "CAMBIO_PASSWORD");
+                                    cmd.Parameters.AddWithValue("@usuario", username);
+                                    cmd.Parameters.AddWithValue("@ip", "127.0.0.1");
+                                    cmd.Parameters.AddWithValue("@navegador", "WinForms App");
+                                    cmd.ExecuteNonQuery();
+                                }
+                            }
+                            catch (Exception ex) { Logger.Error("Error al auditar CAMBIO_PASSWORD", ex); }
+
+                            transaction.Commit();
+                        }
+                        catch
+                        {
+                            try { transaction.Rollback(); } catch { }
+                            throw;
+                        }
+                    }
                     return true;
                 }
             }
+            catch (InvalidOperationException) { throw; }
             catch (Exception ex)
             {
                 Logger.Error("Error al cambiar password", ex);
@@ -441,21 +506,36 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
         private (string tipoEntidad, int? idEntidad) ObtenerEntidadVinculada(MySqlConnection conn, int idUsuario)
         {
-            string query = @"SELECT tipo_entidad, id_entidad FROM Usuario_Entidad WHERE id_usuario = @id_usuario LIMIT 1";
-
-            using (MySqlCommand cmd = new MySqlCommand(query, conn))
+            // Usuario_Alumno (nueva tabla con FK real)
+            string queryAlumno = "SELECT id_alumno FROM Usuario_Alumno WHERE id_usuario = @id LIMIT 1";
+            using (var cmd = new MySqlCommand(queryAlumno, conn))
             {
-                cmd.Parameters.AddWithValue("@id_usuario", idUsuario);
-                using (MySqlDataReader reader = cmd.ExecuteReader())
-                {
-                    if (reader.Read())
-                    {
-                        string tipo = reader.GetString("tipo_entidad");
-                        int id = reader.GetInt32("id_entidad");
-                        return (tipo, id);
-                    }
-                }
+                cmd.Parameters.AddWithValue("@id", idUsuario);
+                var result = cmd.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
+                    return ("alumno", Convert.ToInt32(result));
             }
+
+            // Usuario_Profesor
+            string queryProf = "SELECT id_profesor FROM Usuario_Profesor WHERE id_usuario = @id LIMIT 1";
+            using (var cmd = new MySqlCommand(queryProf, conn))
+            {
+                cmd.Parameters.AddWithValue("@id", idUsuario);
+                var result = cmd.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
+                    return ("profesor", Convert.ToInt32(result));
+            }
+
+            // Usuario_Empresa
+            string queryEmp = "SELECT id_empresa FROM Usuario_Empresa WHERE id_usuario = @id LIMIT 1";
+            using (var cmd = new MySqlCommand(queryEmp, conn))
+            {
+                cmd.Parameters.AddWithValue("@id", idUsuario);
+                var result = cmd.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
+                    return ("empresa", Convert.ToInt32(result));
+            }
+
             return (null, null);
         }
 
@@ -464,6 +544,11 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         /// Cuando se supera el máximo, establece bloqueo_hasta.
         /// </summary>
         private void IncrementarIntentosFallidos(MySqlConnection conn, int idUsuario, int intentosActuales)
+        {
+            IncrementarIntentosFallidos(conn, null, idUsuario, intentosActuales);
+        }
+
+        private void IncrementarIntentosFallidos(MySqlConnection conn, MySqlTransaction transaction, int idUsuario, int intentosActuales)
         {
             int nuevosIntentos = intentosActuales + 1;
             DateTime? bloqueo = null;
@@ -478,10 +563,10 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 bloqueo = DateTime.Now.AddMinutes(minutosBloqueo);
             }
 
-            string query = @"UPDATE Usuario SET intentos_fallidos = @intentos, bloqueado_hasta = @bloqueo 
+            string query = @"UPDATE Usuario SET intentos_fallidos = @intentos, bloqueado_hasta = @bloqueo
                              WHERE id_usuario = @id_usuario";
 
-            using (MySqlCommand cmd = new MySqlCommand(query, conn))
+            using (MySqlCommand cmd = new MySqlCommand(query, conn, transaction))
             {
                 cmd.Parameters.AddWithValue("@intentos", nuevosIntentos);
                 cmd.Parameters.AddWithValue("@bloqueo", bloqueo.HasValue ? (object)bloqueo.Value : DBNull.Value);
@@ -520,16 +605,77 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         }
 
         /// <summary>
+        /// Valida que el nuevo password no esté en el historial reciente del usuario.
+        /// Por defecto verifica las últimas 5 contraseñas.
+        /// </summary>
+        private bool EsPasswordReutilizado(MySqlConnection conn, int idUsuario, string passwordNuevo, int ultimas = 5)
+        {
+            try
+            {
+                string query = @"SELECT password_hash FROM password_history
+                                 WHERE id_usuario = @id
+                                 ORDER BY fecha_cambio DESC
+                                 LIMIT @limite";
+                using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", idUsuario);
+                    cmd.Parameters.AddWithValue("@limite", ultimas);
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string hashAnterior = reader.GetString("password_hash");
+                            if (BCrypt.Net.BCrypt.Verify(passwordNuevo, hashAnterior))
+                                return true;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error al validar historial de passwords", ex);
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Registra el cambio de password en el historial.
+        /// </summary>
+        private void RegistrarEnHistorial(MySqlConnection conn, MySqlTransaction transaction, int idUsuario, string passwordHashAnterior)
+        {
+            if (string.IsNullOrEmpty(passwordHashAnterior)) return;
+            try
+            {
+                string query = @"INSERT INTO password_history (id_usuario, password_hash) VALUES (@id, @hash)";
+                using (MySqlCommand cmd = new MySqlCommand(query, conn, transaction))
+                {
+                    cmd.Parameters.AddWithValue("@id", idUsuario);
+                    cmd.Parameters.AddWithValue("@hash", passwordHashAnterior);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error al registrar password en historial", ex);
+            }
+        }
+
+        /// <summary>
         /// Registra una operacion en la tabla bitacora (auditoria enterprise).
         /// </summary>
         private void InsertarBitacora(MySqlConnection conn, string tabla, string idRegistro, string operacion, string usuario)
+        {
+            InsertarBitacora(conn, null, tabla, idRegistro, operacion, usuario);
+        }
+
+        private void InsertarBitacora(MySqlConnection conn, MySqlTransaction transaction, string tabla, string idRegistro, string operacion, string usuario)
         {
             try
             {
                 string query = @"INSERT INTO bitacora (tabla_afectada, id_registro, operacion, usuario, ip_address, navegador, fecha)
                                  VALUES (@tabla, @id_registro, @operacion, @usuario, @ip, @navegador, NOW())";
 
-                using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                using (MySqlCommand cmd = new MySqlCommand(query, conn, transaction))
                 {
                     cmd.Parameters.AddWithValue("@tabla", tabla);
                     cmd.Parameters.AddWithValue("@id_registro", idRegistro);
@@ -647,10 +793,23 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 using (MySqlConnection conn = MySQLConnection.GetConnection())
                 {
                     conn.Open();
-                    string query = "SELECT COUNT(*) FROM Usuario_Entidad WHERE tipo_entidad = @tipo AND id_entidad = @id";
+                    string tabla = tipoEntidad switch
+                    {
+                        "alumno" => "Usuario_Alumno",
+                        "profesor" => "Usuario_Profesor",
+                        "empresa" => "Usuario_Empresa",
+                        _ => throw new ArgumentException($"Tipo de entidad no válido: {tipoEntidad}")
+                    };
+                    string columna = tipoEntidad switch
+                    {
+                        "alumno" => "id_alumno",
+                        "profesor" => "id_profesor",
+                        "empresa" => "id_empresa",
+                        _ => "id_entidad"
+                    };
+                    string query = $"SELECT COUNT(*) FROM {tabla} WHERE {columna} = @id";
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
-                        cmd.Parameters.AddWithValue("@tipo", tipoEntidad);
                         cmd.Parameters.AddWithValue("@id", idEntidad);
                         int count = Convert.ToInt32(cmd.ExecuteScalar());
                         return count == 0;
@@ -722,21 +881,13 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
         }
 
-        // ============================================================
-        // FLUJO PROFESIONAL: Gestion de usuarios por admin
-        // ============================================================
 
         /// <summary>
         /// Genera un password temporal aleatorio de longitud dada.
         /// </summary>
         public string GenerarPasswordTemporal(int longitud = 10)
         {
-            const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%";
-            var random = new Random();
-            var pwd = new char[longitud];
-            for (int i = 0; i < longitud; i++)
-                pwd[i] = chars[random.Next(chars.Length)];
-            return new string(pwd);
+            return PasswordService.GenerarPasswordTemporal(longitud);
         }
 
         /// <summary>
@@ -822,12 +973,12 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                             // Vincular con entidad si corresponde
                             if (!string.IsNullOrEmpty(tipoEntidad) && idEntidad.HasValue && idEntidad.Value > 0)
                             {
-                                string queryVinculo = @"INSERT INTO Usuario_Entidad (id_usuario, tipo_entidad, id_entidad)
-                                                        VALUES (@id_usuario, @tipo_entidad, @id_entidad)";
+                                string tablaVinculo2 = ObtenerTablaVinculo(tipoEntidad);
+                                string columnaVinculo2 = ObtenerColumnaVinculo(tipoEntidad);
+                                string queryVinculo = $"INSERT INTO {tablaVinculo2} (id_usuario, {columnaVinculo2}) VALUES (@id_usuario, @id_entidad)";
                                 using (MySqlCommand cmd = new MySqlCommand(queryVinculo, conn, transaction))
                                 {
                                     cmd.Parameters.AddWithValue("@id_usuario", idUsuario);
-                                    cmd.Parameters.AddWithValue("@tipo_entidad", tipoEntidad);
                                     cmd.Parameters.AddWithValue("@id_entidad", idEntidad.Value);
                                     cmd.ExecuteNonQuery();
                                 }
@@ -890,164 +1041,209 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 };
             }
 
+            // Validar contra diccionario de passwords comunes
+            var validacionComun = PasswordValidator.Validar(passwordNuevo, username, null);
+            if (!validacionComun.EsValido)
+            {
+                Logger.Warning($"Intento de activar cuenta con password débil: '{username}'. Razón: {validacionComun.Razon}");
+                return new ResultadoLogin
+                {
+                    Success = false,
+                    Message = validacionComun.Razon
+                };
+            }
+
             username = username.Trim();
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
             try
             {
                 using (MySqlConnection conn = MySQLConnection.GetConnection())
                 {
                     conn.Open();
-
-                    // Buscar usuario con datos de bloqueo
-                    string query = @"SELECT id_usuario, username, email, password_temporal_hash, 
-                                            status, intentos_fallidos, bloqueado_hasta
-                                     FROM Usuario
-                                     WHERE LOWER(username) = LOWER(@username)
-                                     AND is_deleted = 0";
-
-                    int idUsuario;
-                    string email;
-                    string passwordTempHash;
-                    string status;
-                    int intentosFallidos;
-                    DateTime? bloqueadoHasta;
-                    bool yaActivado = false;
-
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (MySqlTransaction transaction = conn.BeginTransaction(System.Data.IsolationLevel.Serializable))
                     {
-                        cmd.Parameters.AddWithValue("@username", username);
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        try
                         {
-                            if (!reader.Read())
+                            // Buscar usuario con datos de bloqueo (FOR UPDATE para prevenir race conditions)
+                            string query = @"SELECT id_usuario, username, email, password_temporal_hash,
+                                                    status, intentos_fallidos, bloqueado_hasta
+                                             FROM Usuario
+                                             WHERE LOWER(username) = LOWER(@username)
+                                             AND is_deleted = 0
+                                             FOR UPDATE";
+
+                            int idUsuario;
+                            string email;
+                            string passwordTempHash;
+                            string status;
+                            int intentosFallidos;
+                            DateTime? bloqueadoHasta;
+                            bool yaActivado = false;
+
+                            using (MySqlCommand cmd = new MySqlCommand(query, conn, transaction))
                             {
+                                cmd.Parameters.AddWithValue("@username", username);
+                                using (MySqlDataReader reader = cmd.ExecuteReader())
+                                {
+                                    if (!reader.Read())
+                                    {
+                                        transaction.Rollback();
+                                        return new ResultadoLogin
+                                        {
+                                            Success = false,
+                                            Message = "Credenciales invalidas"
+                                        };
+                                    }
+
+                                    idUsuario = reader.GetInt32("id_usuario");
+                                    email = reader.GetString("email");
+                                    status = reader.GetString("status");
+                                    intentosFallidos = reader.IsDBNull(reader.GetOrdinal("intentos_fallidos")) ? 0 : reader.GetInt32("intentos_fallidos");
+                                    bloqueadoHasta = reader.IsDBNull(reader.GetOrdinal("bloqueado_hasta")) ? (DateTime?)null : reader.GetDateTime("bloqueado_hasta");
+
+                                    if (reader.IsDBNull(reader.GetOrdinal("password_temporal_hash")))
+                                    {
+                                        yaActivado = true;
+                                        passwordTempHash = null;
+                                    }
+                                    else
+                                    {
+                                        passwordTempHash = reader.GetString("password_temporal_hash");
+                                    }
+                                }
+                            }
+
+                            // Enterprise: verificar bloqueo por intentos fallidos de activación
+                            if (bloqueadoHasta.HasValue && DateTime.Now < bloqueadoHasta.Value)
+                            {
+                                TimeSpan restante = bloqueadoHasta.Value - DateTime.Now;
+                                transaction.Rollback();
+                                Logger.Warning($"Activación bloqueada para '{username}'. Restante: {Math.Ceiling(restante.TotalMinutes)} min");
                                 return new ResultadoLogin
                                 {
                                     Success = false,
-                                    Message = "Credenciales invalidas"
+                                    Message = $"Demasiados intentos fallidos. Reintenta en {Math.Ceiling(restante.TotalMinutes)} minuto(s)."
                                 };
                             }
 
-                            idUsuario = reader.GetInt32("id_usuario");
-                            email = reader.GetString("email");
-                            status = reader.GetString("status");
-                            intentosFallidos = reader.IsDBNull(reader.GetOrdinal("intentos_fallidos")) ? 0 : reader.GetInt32("intentos_fallidos");
-                            bloqueadoHasta = reader.IsDBNull(reader.GetOrdinal("bloqueado_hasta")) ? (DateTime?)null : reader.GetDateTime("bloqueado_hasta");
+                            if (status != "activo")
+                            {
+                                transaction.Rollback();
+                                return new ResultadoLogin
+                                {
+                                    Success = false,
+                                    Message = "Tu cuenta no esta activa. Contacta al administrador."
+                                };
+                            }
 
-                            if (reader.IsDBNull(reader.GetOrdinal("password_temporal_hash")))
+                            if (yaActivado)
                             {
-                                yaActivado = true;
-                                passwordTempHash = null;
+                                transaction.Rollback();
+                                return new ResultadoLogin
+                                {
+                                    Success = false,
+                                    Message = "Esta cuenta ya fue activada. Usa el login normal."
+                                };
                             }
-                            else
+
+                            // Verificar password temporal
+                            if (string.IsNullOrEmpty(passwordTempHash) ||
+                                !BCrypt.Net.BCrypt.Verify(passwordTemporal, passwordTempHash))
                             {
-                                passwordTempHash = reader.GetString("password_temporal_hash");
+                                // Enterprise: rate limiting en activación
+                                IncrementarIntentosFallidos(conn, transaction, idUsuario, intentosFallidos);
+                                int maxIntentos = ParametroSistemaService.Instance.GetInt(
+                                    Claves.MAX_INTENTOS_LOGIN, Seguridad.MaxIntentosLogin);
+                                int restantes = maxIntentos - intentosFallidos - 1;
+                                InsertarBitacora(conn, transaction, "Usuario", idUsuario.ToString(), "LOGIN_FALLIDO", username);
+                                transaction.Commit();
+                                Logger.Warning($"Intento de activacion con password temporal invalido: '{username}'. Restantes: {restantes}");
+                                return new ResultadoLogin
+                                {
+                                    Success = false,
+                                    Message = restantes > 0
+                                        ? $"Credenciales invalidas (Intentos restantes: {restantes})"
+                                        : Seguridad.MsgCuentaBloqueada,
+                                    IntentosRestantes = restantes
+                                };
                             }
+
+                            // Activar cuenta: hashear nuevo password y limpiar password temporal
+                            string nuevoHash = BCrypt.Net.BCrypt.HashPassword(passwordNuevo, Seguridad.BcryptCostFactor);
+
+                            // Validar contra historial de passwords reutilizados
+                            if (EsPasswordReutilizado(conn, idUsuario, passwordNuevo))
+                            {
+                                transaction.Rollback();
+                                Logger.Warning($"Activación rechazada: password reutilizado de las últimas 5 (usuario {username})");
+                                return new ResultadoLogin
+                                {
+                                    Success = false,
+                                    Message = "No podés reutilizar una contraseña reciente. Elegí una diferente."
+                                };
+                            }
+
+                            string updateQuery = @"UPDATE Usuario
+                                                  SET password_hash = @nuevo_hash,
+                                                      password_temporal_hash = NULL,
+                                                      debe_cambiar_password = FALSE,
+                                                      fecha_activacion = NOW(),
+                                                      intentos_fallidos = 0,
+                                                      bloqueado_hasta = NULL
+                                                  WHERE id_usuario = @id";
+
+                            using (MySqlCommand cmd = new MySqlCommand(updateQuery, conn, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@nuevo_hash", nuevoHash);
+                                cmd.Parameters.AddWithValue("@id", idUsuario);
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            // Guardar en historial (no se inserta la temporal como histórica)
+                            InsertarBitacora(conn, transaction, "Usuario", idUsuario.ToString(), "ACTIVAR_CUENTA", username);
+
+                            transaction.Commit();
+
+                            // Post-commit: cargar datos de sesión (lectura, no necesita lock)
+                            Usuario usuario = ObtenerUsuarioPorId(conn, idUsuario);
+                            usuario.Debe_Cambiar_Password = false;
+
+                            List<string> privilegios = ObtenerPrivilegios(conn, usuario.Id_Rol);
+                            var (tipoEntidad, idEntidad) = ObtenerEntidadVinculada(conn, idUsuario);
+
+                            string nombreRol = "";
+                            using (MySqlCommand cmd = new MySqlCommand("SELECT nombre FROM Rol WHERE id_rol = @id", conn))
+                            {
+                                cmd.Parameters.AddWithValue("@id", usuario.Id_Rol);
+                                nombreRol = cmd.ExecuteScalar()?.ToString() ?? "";
+                            }
+
+                            SesionActiva.Instance.IniciarSesion(usuario, nombreRol, tipoEntidad, idEntidad, privilegios);
+                            CrearSesion(conn, idUsuario);
+
+                            Logger.Info($"Cuenta activada: '{username}' (tomó {stopwatch.ElapsedMilliseconds}ms)");
+
+                            return new ResultadoLogin
+                            {
+                                Success = true,
+                                Message = "Cuenta activada exitosamente",
+                                Usuario = usuario,
+                                RequiereCambioPassword = false
+                            };
+                        }
+                        catch
+                        {
+                            try { transaction.Rollback(); } catch { }
+                            throw;
                         }
                     }
-
-                    // Enterprise: verificar bloqueo por intentos fallidos de activación
-                    if (bloqueadoHasta.HasValue && DateTime.Now < bloqueadoHasta.Value)
-                    {
-                        TimeSpan restante = bloqueadoHasta.Value - DateTime.Now;
-                        Logger.Warning($"Activación bloqueada para '{username}'. Restante: {Math.Ceiling(restante.TotalMinutes)} min");
-                        return new ResultadoLogin
-                        {
-                            Success = false,
-                            Message = $"Demasiados intentos fallidos. Reintenta en {Math.Ceiling(restante.TotalMinutes)} minuto(s)."
-                        };
-                    }
-
-                    if (status != "activo")
-                    {
-                        return new ResultadoLogin
-                        {
-                            Success = false,
-                            Message = "Tu cuenta no esta activa. Contacta al administrador."
-                        };
-                    }
-
-                    if (yaActivado)
-                    {
-                        return new ResultadoLogin
-                        {
-                            Success = false,
-                            Message = "Esta cuenta ya fue activada. Usa el login normal."
-                        };
-                    }
-
-                    // Verificar password temporal
-                    if (string.IsNullOrEmpty(passwordTempHash) ||
-                        !BCrypt.Net.BCrypt.Verify(passwordTemporal, passwordTempHash))
-                    {
-                        // Enterprise: rate limiting en activación
-                        IncrementarIntentosFallidos(conn, idUsuario, intentosFallidos);
-                        int maxIntentos = ParametroSistemaService.Instance.GetInt(
-                            Claves.MAX_INTENTOS_LOGIN, Seguridad.MaxIntentosLogin);
-                        int restantes = maxIntentos - intentosFallidos - 1;
-                        Logger.Warning($"Intento de activacion con password temporal invalido: '{username}'. Restantes: {restantes}");
-                        return new ResultadoLogin
-                        {
-                            Success = false,
-                            Message = restantes > 0
-                                ? $"Credenciales invalidas (Intentos restantes: {restantes})"
-                                : Seguridad.MsgCuentaBloqueada,
-                            IntentosRestantes = restantes
-                        };
-                    }
-
-                    // Activar cuenta: hashear nuevo password y limpiar password temporal
-                    string nuevoHash = BCrypt.Net.BCrypt.HashPassword(passwordNuevo, Seguridad.BcryptCostFactor);
-
-                    string updateQuery = @"UPDATE Usuario
-                                          SET password_hash = @nuevo_hash,
-                                              password_temporal_hash = NULL,
-                                              debe_cambiar_password = FALSE,
-                                              fecha_activacion = NOW(),
-                                              intentos_fallidos = 0,
-                                              bloqueado_hasta = NULL
-                                          WHERE id_usuario = @id";
-
-                    using (MySqlCommand cmd = new MySqlCommand(updateQuery, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@nuevo_hash", nuevoHash);
-                        cmd.Parameters.AddWithValue("@id", idUsuario);
-                        cmd.ExecuteNonQuery();
-                    }
-
-                    InsertarBitacora(conn, "Usuario", idUsuario.ToString(), "ACTIVAR_CUENTA", username);
-
-                    // Cargar usuario completo y sus privilegios para iniciar sesion
-                    Usuario usuario = ObtenerUsuarioPorId(conn, idUsuario);
-                    usuario.Debe_Cambiar_Password = false;
-
-                    List<string> privilegios = ObtenerPrivilegios(conn, usuario.Id_Rol);
-                    var (tipoEntidad, idEntidad) = ObtenerEntidadVinculada(conn, idUsuario);
-
-                    // Obtener nombre del rol
-                    string nombreRol = "";
-                    using (MySqlCommand cmd = new MySqlCommand("SELECT nombre FROM Rol WHERE id_rol = @id", conn))
-                    {
-                        cmd.Parameters.AddWithValue("@id", usuario.Id_Rol);
-                        nombreRol = cmd.ExecuteScalar()?.ToString() ?? "";
-                    }
-
-                    SesionActiva.Instance.IniciarSesion(usuario, nombreRol, tipoEntidad, idEntidad, privilegios);
-                    CrearSesion(conn, idUsuario);
-
-                    Logger.Info($"Cuenta activada: '{username}'");
-
-                    return new ResultadoLogin
-                    {
-                        Success = true,
-                        Message = "Cuenta activada exitosamente",
-                        Usuario = usuario,
-                        RequiereCambioPassword = false
-                    };
                 }
             }
             catch (Exception ex)
             {
-                Logger.Error("Error al activar cuenta", ex);
+                stopwatch.Stop();
+                Logger.Error($"Error al activar cuenta (tomó {stopwatch.ElapsedMilliseconds}ms)", ex);
                 return new ResultadoLogin
                 {
                     Success = false,
@@ -1189,6 +1385,71 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 Logger.Error($"Error al cambiar status de usuario {idUsuario}", ex);
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Prepara la sesión cuando el password del usuario expiró pero ya validó
+        /// su identidad. Carga rol, privilegios y entidad vinculada para que el
+        /// menú principal pueda aplicar la autorización correctamente.
+        /// </summary>
+        public bool IniciarSesionPorPasswordExpirado(Usuario usuario)
+        {
+            if (usuario == null) return false;
+            try
+            {
+                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                {
+                    conn.Open();
+                    List<string> privilegios = ObtenerPrivilegios(conn, usuario.Id_Rol);
+                    var (tipoEntidad, idEntidad) = ObtenerEntidadVinculada(conn, usuario.Id_Usuario);
+
+                    string nombreRol = "";
+                    using (MySqlCommand cmd = new MySqlCommand("SELECT nombre FROM Rol WHERE id_rol = @id", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", usuario.Id_Rol);
+                        nombreRol = cmd.ExecuteScalar()?.ToString() ?? "";
+                    }
+
+                    SesionActiva.Instance.IniciarSesionForzarCambioPassword(
+                        usuario, nombreRol, tipoEntidad, idEntidad, privilegios);
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error al iniciar sesión por password expirado", ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Versión asíncrona de ValidarCredenciales para operaciones no bloqueantes.
+        /// </summary>
+        public async System.Threading.Tasks.Task<ResultadoLogin> ValidarCredencialesAsync(string login, string password)
+        {
+            return await System.Threading.Tasks.Task.Run(() => ValidarCredenciales(login, password));
+        }
+
+        private static string ObtenerTablaVinculo(string tipoEntidad)
+        {
+            return tipoEntidad switch
+            {
+                "alumno" => "Usuario_Alumno",
+                "profesor" => "Usuario_Profesor",
+                "empresa" => "Usuario_Empresa",
+                _ => throw new ArgumentException($"Tipo de entidad no válido: {tipoEntidad}")
+            };
+        }
+
+        private static string ObtenerColumnaVinculo(string tipoEntidad)
+        {
+            return tipoEntidad switch
+            {
+                "alumno" => "id_alumno",
+                "profesor" => "id_profesor",
+                "empresa" => "id_empresa",
+                _ => throw new ArgumentException($"Tipo de entidad no válido: {tipoEntidad}")
+            };
         }
     }
 

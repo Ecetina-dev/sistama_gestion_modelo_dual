@@ -100,7 +100,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             bool puedeMaterias = esAdmin || esProfesor;
             bool puedeTemas = esAdmin || esProfesor;
             bool puedeGestionUsuarios = esAdmin;
-            bool puedeTestConnection = esAdmin;
+            bool puedeMigracionBD = esAdmin;
 
             // Visibilidad de cards
             cardAlumnos.Visible = puedeAlumnos;
@@ -110,7 +110,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             cardMaterias.Visible = puedeMaterias;
             cardTemas.Visible = puedeTemas;
             cardGestionUsuarios.Visible = puedeGestionUsuarios;
-            cardTestConnection.Visible = puedeTestConnection;
+            cardMigracionBD.Visible = puedeMigracionBD;
 
             // Visibilidad de nav buttons
             btnNavAlumnos.Visible = puedeAlumnos;
@@ -305,23 +305,17 @@ namespace Laboratorio_del_Tema_5_2.Views
                 activoBtn.BackColor = activo;
         }
 
-        private void btnTestConnection_Click(object sender, EventArgs e)
+        private void btnMigracionBD_Click(object sender, EventArgs e)
         {
-            if (MySQLConnection.TestConnection())
+            if (!SesionActiva.Instance.EsAdmin)
             {
-                MessageBox.Show(
-                    "Conexión a MySQL exitosa!\n\nVersion: " + MySQLConnection.GetMySQLVersion(),
-                    "Conexión OK",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
+                MessageBox.Show("Solo el administrador puede acceder a esta sección.",
+                    "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
-            else
+            using (var form = new FormMigracionBD())
             {
-                MessageBox.Show(
-                    "No se pudo conectar a MySQL.\n\nVerifica que:\n1. MySQL este ejecutándose\n2. El password en App.config sea correcto",
-                    "Error de Conexión",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
+                form.ShowDialog();
             }
         }
 

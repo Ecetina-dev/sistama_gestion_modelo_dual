@@ -9,9 +9,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 {
     public class MateriaController
     {
-        // ============================================
-        // CREATE - Insertar nueva materia
-        // ============================================
         public bool Create(Materia materia)
         {
             try
@@ -49,9 +46,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
         }
 
-        // ============================================
-        // READ - Obtener todas las materias
-        // ============================================
         public List<Materia> Read()
         {
             List<Materia> materias = new List<Materia>();
@@ -99,9 +93,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             return materias;
         }
 
-        // ============================================
-        // READ by ID - Obtener materia específica
-        // ============================================
         public Materia ReadById(int idMateria)
         {
             try
@@ -151,9 +142,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             return null;
         }
 
-        // ============================================
-        // UPDATE - Actualizar materia
-        // ============================================
         public bool Update(Materia materia)
         {
             try
@@ -196,9 +184,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
         }
 
-        // ============================================
-        // DELETE - Eliminar materia
-        // ============================================
         public bool Delete(int idMateria)
         {
             try
@@ -223,9 +208,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
         }
 
-        // ============================================
-        // EXISTS - Verificar si ya existe la clave
-        // ============================================
         public bool ExisteClave(string clave, int? excluirId = null)
         {
             try
@@ -253,9 +235,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
         }
 
-        // ============================================
-        // JOIN: Materias con Proyectos
-        // ============================================
         public List<MateriaConProyectos> GetMateriasConProyectos()
         {
             List<MateriaConProyectos> lista = new List<MateriaConProyectos>();
@@ -315,9 +294,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         }
     }
 
-    // ============================================
-    // CLASE AUXILIAR PARA EL JOIN
-    // ============================================
     public class MateriaConProyectos
     {
         public int Id_Materia { get; set; }

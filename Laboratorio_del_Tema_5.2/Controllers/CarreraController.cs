@@ -1,0 +1,139 @@
+using System;
+using System.Collections.Generic;
+using MySqlConnector;
+using Laboratorio_del_Tema_5_2.Data;
+using Laboratorio_del_Tema_5_2.Models;
+using Laboratorio_del_Tema_5_2.Utils;
+
+namespace Laboratorio_del_Tema_5_2.Controllers
+{
+    /// <summary>
+    /// Read-only career catalog controller for combo-box data binding.
+    /// Full CRUD is deferred to a later slice; this controller exposes only
+    /// the queries required by the student form and other consumers.
+    /// </summary>
+    public class CarreraController
+    {
+        /// <summary>
+        /// Returns all careers (active and inactive) ordered by name.
+        /// </summary>
+        public List<Carrera> Read()
+        {
+            List<Carrera> carreras = new List<Carrera>();
+
+            try
+            {
+                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                {
+                    conn.Open();
+                    string query = "SELECT * FROM Carrera ORDER BY nombre";
+
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            carreras.Add(MapCarreraFromReader(reader));
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error reading carreras", ex);
+                throw new CrudOperationException("Ocurrio un error al obtener las carreras.", "Read", null);
+            }
+
+            return carreras;
+        }
+
+        /// <summary>
+        /// Returns only active careers ordered by name, suitable for combo boxes
+        /// where inactive careers should not be selectable.
+        /// </summary>
+        public List<Carrera> ReadActivas()
+        {
+            List<Carrera> carreras = new List<Carrera>();
+
+            try
+            {
+                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                {
+                    conn.Open();
+                    string query = "SELECT * FROM Carrera WHERE status = @status ORDER BY nombre";
+
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@status", Estatus.CarreraActiva);
+
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                carreras.Add(MapCarreraFromReader(reader));
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error reading active carreras", ex);
+                throw new CrudOperationException("Ocurrio un error al obtener las carreras activas.", "Read", null);
+            }
+
+            return carreras;
+        }
+
+        /// <summary>
+        /// Returns a single career by ID, or null if not found.
+        /// </summary>
+        public Carrera ReadById(int idCarrera)
+        {
+            try
+            {
+                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                {
+                    conn.Open();
+                    string query = "SELECT * FROM Carrera WHERE id_carrera = @id_carrera";
+
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id_carrera", idCarrera);
+
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                                return MapCarreraFromReader(reader);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error reading carrera ID: {idCarrera}", ex);
+                throw new CrudOperationException("Ocurrio un error al buscar la carrera.", "ReadById", null);
+            }
+
+            return null;
+        }
+
+        private Carrera MapCarreraFromReader(MySqlDataReader reader)
+        {
+            Carrera carrera = new Carrera();
+            carrera.Id_Carrera = reader.GetInt32("id_carrera");
+            carrera.Clave = reader.GetString("clave");
+            carrera.Nombre = reader.GetString("nombre");
+
+            int idxDescripcion = reader.GetOrdinal("descripcion");
+            carrera.Descripcion = reader.IsDBNull(idxDescripcion) ? null : reader.GetString(idxDescripcion);
+
+            carrera.Duracion_Semestres = reader.GetInt32("duracion_semestres");
+            carrera.Status = reader.GetString("status");
+            carrera.Created_At = reader.GetDateTime("created_at");
+            carrera.Updated_At = reader.GetDateTime("updated_at");
+
+            return carrera;
+        }
+    }
+}

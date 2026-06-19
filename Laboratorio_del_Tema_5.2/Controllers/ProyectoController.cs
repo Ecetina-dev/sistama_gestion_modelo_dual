@@ -9,9 +9,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 {
     public class ProyectoController
     {
-        // ============================================
-        // CREATE - Insertar nuevo proyecto
-        // ============================================
         public bool Create(Proyecto proyecto)
         {
             try
@@ -54,9 +51,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
         }
 
-        // ============================================
-        // READ - Obtener todos los proyectos
-        // ============================================
         public List<Proyecto> Read()
         {
             List<Proyecto> proyectos = new List<Proyecto>();
@@ -108,9 +102,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             return proyectos;
         }
 
-        // ============================================
-        // READ by ID - Obtener proyecto específico
-        // ============================================
         public Proyecto ReadById(int idProyecto)
         {
             try
@@ -164,9 +155,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             return null;
         }
 
-        // ============================================
-        // UPDATE - Actualizar proyecto
-        // ============================================
         public bool Update(Proyecto proyecto)
         {
             try
@@ -211,9 +199,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
         }
 
-        // ============================================
-        // DELETE - Eliminar proyecto
-        // ============================================
         public bool Delete(int idProyecto)
         {
             try

@@ -1,10 +1,11 @@
-#pragma warning disable CS0414
 using System;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text;
 using Laboratorio_del_Tema_5_2.Controllers;
 using Laboratorio_del_Tema_5_2.Models;
 using Laboratorio_del_Tema_5_2.Utils;
@@ -92,7 +93,10 @@ namespace Laboratorio_del_Tema_5_2.Views
                 if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
                 if (File.Exists(_recordarPath))
                 {
-                    string usuario = File.ReadAllText(_recordarPath).Trim();
+                    byte[] encryptedData = File.ReadAllBytes(_recordarPath);
+                    byte[] decryptedBytes = ProtectedData.Unprotect(encryptedData, null,
+                        DataProtectionScope.CurrentUser);
+                    string usuario = Encoding.UTF8.GetString(decryptedBytes).Trim();
                     if (!string.IsNullOrEmpty(usuario))
                     {
                         txtLogin.Text = usuario;
@@ -100,7 +104,7 @@ namespace Laboratorio_del_Tema_5_2.Views
                     }
                 }
             }
-            catch { /* ignorar errores de archivo */ }
+            catch { }
         }
 
         private void GuardarUsuarioRecordado()
@@ -110,11 +114,16 @@ namespace Laboratorio_del_Tema_5_2.Views
                 string dir = Path.GetDirectoryName(_recordarPath);
                 if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
                 if (chkRecordar.Checked)
-                    File.WriteAllText(_recordarPath, txtLogin.Text.Trim());
+                {
+                    byte[] bytes = Encoding.UTF8.GetBytes(txtLogin.Text.Trim());
+                    byte[] encrypted = ProtectedData.Protect(bytes, null,
+                        DataProtectionScope.CurrentUser);
+                    File.WriteAllBytes(_recordarPath, encrypted);
+                }
                 else if (File.Exists(_recordarPath))
                     File.Delete(_recordarPath);
             }
-            catch { /* ignorar errores de archivo */ }
+            catch { }
         }
 
         // ==================== CAPS LOCK ====================
@@ -328,9 +337,29 @@ namespace Laboratorio_del_Tema_5_2.Views
 
                 if (resultado.Success)
                 {
+                    if (resultado.PasswordExpirado)
+                    {
+                        SetLoading(false);
+                        MessageBox.Show(
+                            "Tu contraseña ha expirado (>90 días).\n" +
+                            "Por seguridad, debés cambiarla antes de continuar.",
+                            "Contraseña Expirada",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning);
+                        // Cargar sesión completa (rol, privilegios, entidad) para que
+                        // la autorización del menú funcione durante el cambio de password
+                        if (!_authController.IniciarSesionPorPasswordExpirado(resultado.Usuario))
+                        {
+                            MostrarError("No se pudo preparar la sesión para cambio de contraseña.");
+                            return;
+                        }
+                        this.DialogResult = DialogResult.OK;
+                        this.Close();
+                        return;
+                    }
+
                     if (resultado.RequiereActivacion)
                     {
-                        // El usuario debe activar su cuenta (tiene password temporal)
                         SetLoading(false);
                         using var formActivar = new FormActivarCuenta
                         {
@@ -351,11 +380,6 @@ namespace Laboratorio_del_Tema_5_2.Views
                 {
                     MarcarError(txtLogin);
                     MostrarError("Esta cuenta ha sido eliminada. Contacta al administrador.");
-                }
-                else if (resultado.PasswordExpirado)
-                {
-                    MarcarError(txtPassword);
-                    MostrarError("Tu contraseña ha expirado. Contacta al administrador para renovarla.");
                 }
                 else
                 {

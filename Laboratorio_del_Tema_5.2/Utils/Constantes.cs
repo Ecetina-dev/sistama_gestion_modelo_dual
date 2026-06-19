@@ -25,6 +25,12 @@ namespace Laboratorio_del_Tema_5_2.Utils
         public const string AlumnoBaja = "baja";
 
         // ============================================
+        // Status de Carrera
+        // ============================================
+        public const string CarreraActiva = "activa";
+        public const string CarreraInactiva = "inactiva";
+
+        // ============================================
         // Status de Profesor
         // ============================================
         public const string ProfesorActivo = "activo";
@@ -59,6 +65,88 @@ namespace Laboratorio_del_Tema_5_2.Utils
         public const string TemaDisponible = "disponible";
         public const string TemaAsignado = "asignado";
         public const string TemaCompletado = "completado";
+    }
+
+    // ============================================
+    // Genero
+    // ============================================
+    public static class Genero
+    {
+        public const string Masculino = "Masculino";
+        public const string Femenino = "Femenino";
+        public const string NoBinario = "No binario";
+        public const string PrefieroNoDecir = "Prefiero no decir";
+    }
+
+    // ============================================
+    // Turno
+    // ============================================
+    public static class Turno
+    {
+        public const string Matutino = "matutino";
+        public const string Vespertino = "vespertino";
+        public const string Nocturno = "nocturno";
+        public const string Mixto = "mixto";
+    }
+
+    // ============================================
+    // Tipos de documento de alumno
+    // ============================================
+    public static class DocumentoTipo
+    {
+        public const string Ine = "INE";
+        public const string CurpPdf = "CURP_PDF";
+        public const string ActaNacimiento = "Acta_Nacimiento";
+        public const string ComprobanteDomicilio = "Comprobante_Domicilio";
+        public const string CertificadoPreparatoria = "Certificado_Preparatoria";
+        public const string ConstanciaEstudios = "Constancia_Estudios";
+        public const string Fotografia = "Fotografia";
+    }
+
+    // ============================================
+    // Motivos de baja / cambio de estado
+    // ============================================
+    public static class MotivoBaja
+    {
+        public const string SolicitudAlumno = "Solicitud del alumno";
+        public const string BajaAcademica = "Baja academica";
+        public const string BajaAdministrativa = "Baja administrativa";
+        public const string Reingreso = "Reingreso";
+    }
+
+    // ============================================
+    // Privilegios relacionados con alumnos
+    // ============================================
+    public static class Privilegio
+    {
+        public const string AdminCrudTodo = "admin.crud_todo";
+        public const string AlumnoCrud = "profesor.crud_alumno";
+        public const string AlumnoVerPropio = "alumno.ver_propio";
+        public const string AlumnoEditarPropio = "alumno.editar_propio";
+        public const string AlumnoVerProyectos = "alumno.ver_proyectos";
+        public const string ProfesorCrudAlumno = "profesor.crud_alumno";
+    }
+
+    // ============================================
+    // Configuracion de validaciones de alumno
+    // ============================================
+    public static class AlumnoConfig
+    {
+        public const int NoControlMinLength = 8;
+        public const int NoControlMaxLength = 15;
+        public const int CurpLength = 18;
+        public const int RfcLength = 13;
+        public const int TelefonoLength = 10;
+        public const int CodigoPostalLength = 5;
+        public const int EdadMinAlumno = 15;
+        public const int EdadMaxAlumno = 100;
+
+        public const string CurpPattern = "^[A-Z]{1}[AEIOUX]{1}[A-Z]{2}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])[HM]{1}(AS|BC|BS|CC|CS|CH|CL|CM|DF|DG|GT|GR|HG|JC|MC|MN|MS|NT|NL|OC|PL|QT|QR|SP|SL|SR|TC|TS|TL|VZ|YN|ZS|NE)[B-DF-HJ-NP-TV-Z]{3}[0-9A-Z]{1}[0-9]{1}$";
+        public const string RfcPattern = "^[A-ZÑ&]{4}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])[A-Z0-9]{3}$";
+        public const string EmailPattern = "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$";
+        public const string TelefonoPattern = "^[0-9]{10}$";
+        public const string NoControlPattern = "^[0-9]{8,15}$";
+        public const string CodigoPostalPattern = "^[0-9]{5}$";
     }
 
     /// <summary>
@@ -168,5 +256,28 @@ namespace Laboratorio_del_Tema_5_2.Utils
         public const string MsgPasswordRequerido = "La contrasena es requerida";
         public const string MsgPasswordLongitud = "Minimo 8 caracteres";
         public const string MsgPasswordCoincide = "Las contrasenas no coinciden";
+    }
+
+    /// <summary>
+    /// Mensajes de validacion del modulo Alumno.
+    /// </summary>
+    public static class MensajesAlumno
+    {
+        public const string CurpInvalido = "El CURP no es valido.";
+        public const string RfcInvalido = "El RFC no es valido.";
+        public const string NoControlExiste = "El numero de control ya esta registrado.";
+        public const string NoControlReservado = "El numero de control ya esta registrado (incluyendo registros eliminados).";
+        public const string CurpExiste = "El CURP ya esta registrado.";
+        public const string CurpReservado = "El CURP ya esta registrado (incluyendo registros eliminados).";
+        public const string EmailExiste = "El email ya esta registrado.";
+        public const string EmailReservado = "El email ya esta registrado (incluyendo registros eliminados).";
+        public const string EmailInvalido = "El formato del email no es valido.";
+        public const string TransicionStatusNoPermitida = "La transicion de estado no esta permitida.";
+        public const string MotivoBajaRequerido = "El motivo de baja es requerido para dar de baja un alumno.";
+        public const string MotivoEliminacionRequerido = "El motivo de eliminacion es requerido.";
+        public const string AlumnoConAsignaciones = "No se puede eliminar el alumno porque tiene asignaciones activas.";
+        public const string NoControlInvalido = "El numero de control debe contener entre 8 y 15 digitos.";
+        public const string TelefonoInvalido = "El telefono debe contener 10 digitos.";
+        public const string SemestreInvalido = "El semestre no es valido para la carrera.";
     }
 }

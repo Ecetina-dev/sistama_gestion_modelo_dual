@@ -83,8 +83,16 @@ node_modules/
 # ===========================================
 .atl/
 .opencode/
+openspec/
 skill-registry/
 *_cache*
+
+# ============================================================
+# 🗄️ BACKUPS DE BD (no versionar)
+# ============================================================
+Laboratorio_del_Tema_5.2/Database/backups/
+*.bak
+*.backup
 
 # ===========================================
 # 🗑️ ARCHIVOS TEMPORALES

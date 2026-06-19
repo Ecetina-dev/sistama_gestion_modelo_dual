@@ -165,6 +165,12 @@ namespace Laboratorio_del_Tema_5_2.Views
                 if (e.KeyCode == Keys.Enter && !isLoading) { e.SuppressKeyPress = true; btnGuardar_Click(s, e); }
             };
 
+            // Pin the grid to legacy columns only — Phase 1 enterprise fields
+            // (CURP, Carrera, Semestre, Genero, etc.) are NOT visible; Phase 2 adds them.
+            dgvAlumnos.AutoGenerateColumns = false;
+            dgvAlumnos.DataSource = null;
+            dgvAlumnos.DataSource = _alumnosCache;
+
             // Color de filas segun status
             dgvAlumnos.CellFormatting += DgvAlumnos_CellFormatting;
 
@@ -447,28 +453,45 @@ namespace Laboratorio_del_Tema_5_2.Views
 
         private void ConfigurarGrid()
         {
-            if (dgvAlumnos.Columns.Count == 0) return;
+            // Phase 1: explicitly bind only the legacy columns so new enterprise
+            // properties (CURP, Carrera, Semestre, Genero, etc.) never appear in the grid.
+            dgvAlumnos.AutoGenerateColumns = false;
 
-            var ocultar = new[] { "Id_Alumno", "Created_At", "Updated_At", "Status_Alumno",
-                                  "Fecha_Nacimiento", "Password", "PasswordHash", "Privilegios" };
+            dgvAlumnos.Columns.Clear();
+
+            var cols = new[]
+            {
+                new DataGridViewTextBoxColumn { DataPropertyName = "No_Control",       HeaderText = "No. Control",   Name = "No_Control" },
+                new DataGridViewTextBoxColumn { DataPropertyName = "Nombre",           HeaderText = "Nombre",        Name = "Nombre" },
+                new DataGridViewTextBoxColumn { DataPropertyName = "Apellido_Paterno", HeaderText = "Ap. Paterno",   Name = "Apellido_Paterno" },
+                new DataGridViewTextBoxColumn { DataPropertyName = "Apellido_Materno", HeaderText = "Ap. Materno",   Name = "Apellido_Materno" },
+                new DataGridViewTextBoxColumn { DataPropertyName = "Email",            HeaderText = "Email",         Name = "Email" },
+                new DataGridViewTextBoxColumn { DataPropertyName = "Telefono",         HeaderText = "Telefono",      Name = "Telefono" },
+                new DataGridViewTextBoxColumn { DataPropertyName = "Status_Alumno",    HeaderText = "Status",        Name = "Status_Alumno" }
+            };
+            dgvAlumnos.Columns.AddRange(cols);
+
+            // Hide all non-legacy columns explicitly so future enterprise additions
+            // are invisible until Phase 2 adds them to the grid.
+            var ocultar = new[] {
+                "Id_Alumno", "Created_At", "Updated_At",
+                "Fecha_Nacimiento", "Password", "PasswordHash", "Privilegios",
+                "Curp", "Rfc", "Nss", "Genero", "Estado_Civil",
+                "Nacionalidad", "Direccion_Calle", "Direccion_Numero",
+                "Direccion_Colonia", "Direccion_Ciudad", "Direccion_Estado",
+                "Direccion_Cp", "Telefono_Fijo",
+                "Contacto_Emergencia_Nombre", "Contacto_Emergencia_Telefono",
+                "Contacto_Emergencia_Parentesco", "Id_Carrera",
+                "Semestre", "Grupo", "Turno", "Fecha_Ingreso",
+                "Fecha_Egreso", "Fecha_Baja", "Motivo_Baja",
+                "Promedio_General", "Created_By", "Updated_By",
+                "Deleted_By", "Deleted_Reason", "Status_Change_Reason"
+            };
             foreach (var col in ocultar)
                 if (dgvAlumnos.Columns.Contains(col))
                     dgvAlumnos.Columns[col].Visible = false;
 
-            var headers = new Dictionary<string, string>
-            {
-                ["No_Control"] = "No. Control",
-                ["Nombre"] = "Nombre",
-                ["Apellido_Paterno"] = "Ap. Paterno",
-                ["Apellido_Materno"] = "Ap. Materno",
-                ["Email"] = "Email",
-                ["Telefono"] = "Teléfono"
-            };
-            foreach (var kv in headers)
-                if (dgvAlumnos.Columns.Contains(kv.Key))
-                    dgvAlumnos.Columns[kv.Key].HeaderText = kv.Value;
-
-            string[] orden = { "No_Control", "Nombre", "Apellido_Paterno", "Apellido_Materno", "Email", "Telefono" };
+            string[] orden = { "No_Control", "Nombre", "Apellido_Paterno", "Apellido_Materno", "Email", "Telefono", "Status_Alumno" };
             int idx = 0;
             foreach (var col in orden)
                 if (dgvAlumnos.Columns.Contains(col))
@@ -549,10 +572,21 @@ namespace Laboratorio_del_Tema_5_2.Views
                 "Confirmar eliminación", MessageBoxButtons.YesNo, MessageBoxIcon.Question,
                 MessageBoxDefaultButton.Button2) != DialogResult.Yes) return;
 
+            // Collect deletion reason — required by AlumnoController.Delete(int, string)
+            string razon = Microsoft.VisualBasic.Interaction.InputBox(
+                "Motivo de eliminación (requerido):",
+                "Eliminar Alumno",
+                "");
+            if (string.IsNullOrWhiteSpace(razon))
+            {
+                MostrarAdvertencia("La eliminación fue cancelada. El motivo es requerido.");
+                return;
+            }
+
             int id = (int)dgvAlumnos.SelectedRows[0].Cells["Id_Alumno"].Value;
             try
             {
-                if (controller.Delete(id))
+                if (controller.Delete(id, razon))
                 {
                     MostrarÉxito("Alumno eliminado.");
                     CargarAlumnos();
