@@ -9,6 +9,9 @@ namespace Laboratorio_del_Tema_5_2
 {
     internal static class Program
     {
+        /// <summary>Indica si el usuario eligió 'Salir del Sistema' desde el menú.</summary>
+        public static bool SalirDelSistema = false;
+
         [STAThread]
         static void Main()
         {
@@ -62,6 +65,8 @@ namespace Laboratorio_del_Tema_5_2
                     {
                         mainForm.ShowDialog();
                     }
+
+                    if (SalirDelSistema) break;
                 }
             }
         }

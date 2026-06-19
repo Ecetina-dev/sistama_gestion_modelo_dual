@@ -12,13 +12,98 @@ namespace Laboratorio_del_Tema_5_2.Views
     public partial class FormMenuPrincipal : Form
     {
         private readonly AuthController _authController;
+        private readonly System.Windows.Forms.Timer _idleTimer;
+        private DateTime _ultimaActividad;
+        private DateTime _ultimaCargaStats = DateTime.MinValue;
+        private const int MINUTOS_INACTIVIDAD_MAX = 30;
+        private const int SEGUNDOS_CACHE_STATS = 30;
 
         public FormMenuPrincipal()
         {
             InitializeComponent();
             _authController = new AuthController();
+            _ultimaActividad = DateTime.Now;
+            _idleTimer = new System.Windows.Forms.Timer
+            {
+                Interval = 60_000 // 1 minuto
+            };
+            _idleTimer.Tick += IdleTimer_Tick;
+            _idleTimer.Start();
+
+            // Detectar cualquier actividad del usuario
+            this.MouseMove += (s, e) => _ultimaActividad = DateTime.Now;
+            this.KeyDown += (s, e) => _ultimaActividad = DateTime.Now;
+            this.MouseDown += (s, e) => _ultimaActividad = DateTime.Now;
+
             ConfigurarInterfaz();
             ConfigurarPermisos();
+            InicializarCards();
+
+            // Refrescar stats al volver de un módulo hijo
+            this.Activated += (s, e) =>
+            {
+                _ultimaActividad = DateTime.Now;
+                _ultimaCargaStats = DateTime.MinValue; // forzar recarga
+                CargarEstadisticas();
+            };
+        }
+
+        private void InicializarCards()
+        {
+            // Propagar clicks a labels internos + accesibilidad con teclado
+            HacerCardAccesible(cardAlumnos, btnAlumnos_Click);
+            HacerCardAccesible(cardEmpresas, btnEmpresas_Click);
+            HacerCardAccesible(cardProyectos, btnProyectos_Click);
+            HacerCardAccesible(cardProfesores, btnProfesores_Click);
+            HacerCardAccesible(cardMaterias, btnMaterias_Click);
+            HacerCardAccesible(cardTemas, btnTemas_Click);
+            HacerCardAccesible(cardGestionUsuarios, btnGestionUsuarios_Click);
+            HacerCardAccesible(cardMigracionBD, btnMigracionBD_Click);
+        }
+
+        private void HacerCardAccesible(Panel card, EventHandler clickHandler)
+        {
+            card.TabStop = true;
+            card.Cursor = Cursors.Hand;
+            // Propagar click a todos los hijos (icono, título, descripción, permiso)
+            foreach (Control child in card.Controls)
+            {
+                child.Cursor = Cursors.Hand;
+                child.Click += clickHandler;
+            }
+            // Accesibilidad: Enter y Space disparan el click
+            card.KeyDown += (s, e) =>
+            {
+                if (e.KeyCode == Keys.Enter || e.KeyCode == Keys.Space)
+                {
+                    e.SuppressKeyPress = true;
+                    clickHandler?.Invoke(s, e);
+                }
+            };
+        }
+
+        private void IdleTimer_Tick(object sender, EventArgs e)
+        {
+            TimeSpan inactivo = DateTime.Now - _ultimaActividad;
+            if (inactivo.TotalMinutes >= MINUTOS_INACTIVIDAD_MAX)
+            {
+                _idleTimer.Stop();
+                MessageBox.Show(
+                    $"Tu sesión se ha cerrado por inactividad ({MINUTOS_INACTIVIDAD_MAX} minutos sin actividad).",
+                    "Sesión Cerrada por Inactividad",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                _authController.CerrarSesion();
+                this.Close();
+                return;
+            }
+            if (SesionActiva.Instance != null &&
+                SesionActiva.Instance.IsSesionExpirada(Seguridad.DuracionSesionHoras))
+            {
+                _idleTimer.Stop();
+                _authController.CerrarSesion();
+                this.Close();
+            }
         }
 
         private void ConfigurarInterfaz()
@@ -34,7 +119,11 @@ namespace Laboratorio_del_Tema_5_2.Views
 
             if (!string.IsNullOrEmpty(username))
             {
-                lblAvatar.Text = username.Substring(0, 1).ToUpper();
+                // Para emails, tomar la parte antes del @ y la inicial del nombre local
+                string display = username;
+                int atIdx = username.IndexOf('@');
+                if (atIdx > 0) display = username.Substring(0, atIdx);
+                lblAvatar.Text = display.Substring(0, 1).ToUpper();
             }
 
             // Saludo personalizado
@@ -148,6 +237,16 @@ namespace Laboratorio_del_Tema_5_2.Views
 
         private void btnProyectos_Click(object sender, EventArgs e)
         {
+            if (!SesionActiva.Instance.EsAdmin &&
+                !SesionActiva.Instance.EsProfesor &&
+                !SesionActiva.Instance.EsAlumno &&
+                !SesionActiva.Instance.EsEmpresa)
+            {
+                Logger.Warning($"Intento de acceso no autorizado a Proyectos: usuario {SesionActiva.Instance.Id_Usuario}");
+                MessageBox.Show("No tienes permiso para acceder a esta sección.",
+                    "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
             AbrirFormulario<FormProyectos>();
         }
 
@@ -234,11 +333,15 @@ namespace Laboratorio_del_Tema_5_2.Views
         {
             try
             {
+                // Caché 30s: si cargamos hace poco, no volver a consultar
+                if ((DateTime.Now - _ultimaCargaStats).TotalSeconds < SEGUNDOS_CACHE_STATS)
+                    return;
+
                 using (var conn = MySQLConnection.GetConnection())
                 {
                     conn.Open();
                     string sql = @"
-                        SELECT 
+                        SELECT
                             (SELECT COUNT(*) FROM v_alumnos_activos) AS total_alumnos,
                             (SELECT COUNT(*) FROM v_empresas_activas) AS total_empresas,
                             (SELECT COUNT(*) FROM v_profesores_activos) AS total_profesores,
@@ -266,6 +369,7 @@ namespace Laboratorio_del_Tema_5_2.Views
 
                             // Pendientes solo para admin
                             statPendientes.Visible = SesionActiva.Instance.EsAdmin;
+                            _ultimaCargaStats = DateTime.Now;
                         }
                     }
                 }
@@ -356,7 +460,45 @@ namespace Laboratorio_del_Tema_5_2.Views
                 {
                     _authController.CerrarSesion();
                 }
-                Application.Exit();
+                Program.SalirDelSistema = true;
+                this.Close();
+            }
+        }
+
+        private void FormMenuPrincipal_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            _idleTimer?.Stop();
+            _idleTimer?.Dispose();
+            // Si el usuario cierra con la X y aún hay sesión activa, cerrarla
+            if (SesionActiva.Instance != null && SesionActiva.Instance.Id_Usuario > 0)
+            {
+                _authController.CerrarSesion();
+            }
+            LimpiarEstadoUI();
+        }
+
+        private void LimpiarEstadoUI()
+        {
+            // Resetear labels para que el próximo usuario no vea datos del anterior
+            lblUsuarioNombre.Text = string.Empty;
+            lblUsuarioRol.Text = string.Empty;
+            lblPageTitulo.Text = string.Empty;
+            lblPageSubtitulo.Text = string.Empty;
+            lblUltimoAcceso.Text = string.Empty;
+            lblAvatar.Text = string.Empty;
+            lblStatAlumnosNum.Text = "0";
+            lblStatEmpresasNum.Text = "0";
+            lblStatProfesoresNum.Text = "0";
+            lblStatPendientesNum.Text = "0";
+            descAlumnos.Text = string.Empty;
+            descEmpresas.Text = string.Empty;
+            descProfesores.Text = string.Empty;
+            // Resetear resaltado de nav
+            Color normal = Color.FromArgb(28, 35, 51);
+            foreach (var btn in new[] { btnNavAlumnos, btnNavEmpresas, btnNavProyectos,
+                btnNavProfesores, btnNavMaterias, btnNavTemas, btnNavGestionUsuarios })
+            {
+                btn.BackColor = normal;
             }
         }
     }

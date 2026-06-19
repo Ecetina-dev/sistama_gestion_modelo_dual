@@ -1390,6 +1390,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.Name = "FormMenuPrincipal";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Sistema Modelo Dual - Panel Principal";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormMenuPrincipal_FormClosing);
             this.panelSidebar.ResumeLayout(false);
             this.panelSidebar.PerformLayout();
             this.panelUsuarioSidebar.ResumeLayout(false);
