@@ -19,6 +19,7 @@ namespace Laboratorio_del_Tema_5_2.Views
         private bool isNewRecord = false;
         private bool isLoading = false;
         private List<Alumno> _alumnosCache = new();
+        private List<Carrera> _carreras = new();
 
         // Paginacion
         private const int REGISTROS_POR_PAGINA = 50;
@@ -218,15 +219,27 @@ namespace Laboratorio_del_Tema_5_2.Views
             // Exportar CSV
             btnExportarCSV.Click += (s, e) => ExportarCSV();
 
+            // W-5: Tab order — left-to-right, top-to-bottom (legacy + enterprise)
             txtNoControl.TabIndex = 0;
             txtNombre.TabIndex = 1;
             txtApellidoPaterno.TabIndex = 2;
             txtApellidoMaterno.TabIndex = 3;
-            txtEmail.TabIndex = 4;
-            txtTelefono.TabIndex = 5;
-            dtpFechaNacimiento.TabIndex = 6;
-            btnGuardar.TabIndex = 7;
-            btnCancelar.TabIndex = 8;
+            txtCURP.TabIndex = 4;
+            cmbGenero.TabIndex = 5;
+            cmbCarrera.TabIndex = 6;
+            nudSemestre.TabIndex = 7;
+            cmbTurno.TabIndex = 8;
+            dtpFechaIngreso.TabIndex = 9;
+            txtGrupo.TabIndex = 10;
+            txtEmail.TabIndex = 11;
+            txtTelefono.TabIndex = 12;
+            dtpFechaNacimiento.TabIndex = 13;
+            btnGuardar.TabIndex = 14;
+            btnCancelar.TabIndex = 15;
+
+            // Cargar carreras y configurar controles enterprise
+            CargarCarreras();
+            ConfigurarControlesEnterprise();
 
             // Paginacion
             CrearPaginacion();
@@ -236,6 +249,73 @@ namespace Laboratorio_del_Tema_5_2.Views
 
             // Redimensionar controles al cambiar tamaño
             this.Resize += (s, e) => ReorganizarLayout();
+        }
+
+        private void CargarCarreras()
+        {
+            try
+            {
+                _carreras = new CarreraController().Read() ?? new List<Carrera>();
+                // Insert "Sin carrera" at index 0
+                _carreras.Insert(0, new Carrera { Id_Carrera = 0, Nombre = "(Sin carrera)" });
+                cmbCarrera.DataSource = _carreras;
+                cmbCarrera.DisplayMember = "Nombre";
+                cmbCarrera.ValueMember = "Id_Carrera";
+                cmbCarrera.SelectedIndex = 0;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("No se pudieron cargar las carreras: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void ConfigurarControlesEnterprise()
+        {
+            // CURP: uppercase, max 18 chars
+            txtCURP.CharacterCasing = CharacterCasing.Upper;
+            txtCURP.MaxLength = 18;
+
+            // Semestre: range 1-20
+            nudSemestre.Minimum = 1;
+            nudSemestre.Maximum = 20;
+            nudSemestre.Value = 1;
+            nudSemestre.Width = 80;
+
+            // Genero combo — W-2: "(Sin especificar)" as placeholder at index 0
+            cmbGenero.Items.Clear();
+            cmbGenero.Items.AddRange(new[] { "(Sin especificar)", "Masculino", "Femenino", "Otro" });
+            cmbGenero.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbGenero.SelectedIndex = 0;
+
+            // Turno combo
+            cmbTurno.Items.Clear();
+            cmbTurno.Items.AddRange(new[] { "Matutino", "Vespertino", "Nocturno" });
+            cmbTurno.DropDownStyle = ComboBoxStyle.DropDownList;
+
+            // Fecha_Ingreso DateTimePicker (always has value - no checkbox)
+            dtpFechaIngreso.Format = DateTimePickerFormat.Custom;
+            dtpFechaIngreso.CustomFormat = "dd/MM/yyyy";
+            dtpFechaIngreso.ShowCheckBox = false;
+            dtpFechaIngreso.Value = DateTime.Today;
+            dtpFechaIngreso.MinDate = new DateTime(1990, 1, 1);
+            dtpFechaIngreso.MaxDate = DateTime.Today;
+
+            // Grupo
+            txtGrupo.MaxLength = 10;
+        }
+
+        private string ValidarCURP(string curp)
+        {
+            if (AlumnoValidator.ValidarCurp(curp, out string error))
+                return null;
+            return error;
+        }
+
+        private string ObtenerNombreCarrera(int? idCarrera)
+        {
+            if (!idCarrera.HasValue || idCarrera.Value == 0) return "";
+            var c = _carreras.FirstOrDefault(x => x.Id_Carrera == idCarrera.Value);
+            return c?.Nombre ?? "";
         }
 
         private Button btnPagAnterior, btnPagSiguiente;
@@ -527,6 +607,8 @@ namespace Laboratorio_del_Tema_5_2.Views
             HabilitarNoControl(true);
             panelCardDatos.Visible = true;
             dtpFechaNacimiento.Checked = false;
+            dtpFechaIngreso.Value = DateTime.Now;
+            dtpFechaIngreso.Checked = true;
             ReorganizarLayout();
             txtNoControl.Focus();
         }
@@ -650,6 +732,13 @@ namespace Laboratorio_del_Tema_5_2.Views
                 Telefono = NullIfEmpty(txtTelefono.Text),
                 Fecha_Nacimiento = dtpFechaNacimiento.Checked ? dtpFechaNacimiento.Value : (DateTime?)null,
                 Status_Alumno = Estatus.AlumnoActivo,
+                Curp = string.IsNullOrWhiteSpace(txtCURP.Text) ? null : txtCURP.Text.Trim().ToUpperInvariant(),
+                Genero = cmbGenero.SelectedIndex > 0 ? cmbGenero.Items[cmbGenero.SelectedIndex].ToString() : null,  // W-2: skip placeholder at 0
+                Id_Carrera = cmbCarrera.SelectedValue is int idC && idC > 0 ? idC : (int?)null,
+                Semestre = (int)nudSemestre.Value,
+                Turno = cmbTurno.SelectedItem?.ToString(),
+                Fecha_Ingreso = dtpFechaIngreso.Value.Date,
+                Grupo = string.IsNullOrWhiteSpace(txtGrupo.Text) ? null : txtGrupo.Text.Trim()
             };
 
             isLoading = true;
@@ -742,6 +831,30 @@ namespace Laboratorio_del_Tema_5_2.Views
                 { MarcarError(txtFechaNacimiento); return "La fecha no puede ser futura."; }
             }
 
+            // --- Enterprise field validations ---
+
+            // CURP: required on new, optional on edit
+            string curp = txtCURP.Text.Trim();
+            if (isNewRecord && string.IsNullOrWhiteSpace(curp))
+                return "El CURP es requerido para nuevos alumnos.";
+            if (!string.IsNullOrWhiteSpace(curp))
+            {
+                string curpError = ValidarCURP(curp);
+                if (curpError != null) return curpError;
+            }
+
+            // Fecha_Ingreso
+            DateTime fechaIng = dtpFechaIngreso.Value.Date;
+            if (fechaIng > DateTime.Today)
+                return "La fecha de ingreso no puede ser futura.";
+            if (fechaIng < new DateTime(1990, 1, 1))
+                return "La fecha de ingreso no puede ser anterior a 1990.";
+
+            // Semestre (1-20)
+            int semestre = (int)nudSemestre.Value;
+            if (semestre < 1 || semestre > 20)
+                return "El semestre debe estar entre 1 y 20.";
+
             return null;
         }
 
@@ -786,14 +899,69 @@ namespace Laboratorio_del_Tema_5_2.Views
             {
                 dtpFechaNacimiento.Checked = false;
             }
+
+            // Enterprise fields
+            txtCURP.Text = a.Curp ?? "";
+
+            // Genero: select by string match (W-2: items shifted by placeholder at 0)
+            if (!string.IsNullOrEmpty(a.Genero))
+            {
+                int idx = cmbGenero.Items.IndexOf(a.Genero);
+                // IndexOf returns position in items list (placeholder at 0 shifts everything)
+                cmbGenero.SelectedIndex = idx > 0 ? idx : 0;  // default to placeholder if not found
+            }
+            else
+            {
+                cmbGenero.SelectedIndex = 0;  // placeholder
+            }
+
+            // Carrera
+            if (a.Id_Carrera.HasValue && a.Id_Carrera.Value > 0)
+                cmbCarrera.SelectedValue = a.Id_Carrera.Value;
+            else
+                cmbCarrera.SelectedIndex = 0;
+
+            // Semestre
+            nudSemestre.Value = a.Semestre.HasValue ? Math.Max(1, Math.Min(20, a.Semestre.Value)) : 1;
+
+            // Turno
+            if (!string.IsNullOrEmpty(a.Turno))
+            {
+                int idx = cmbTurno.Items.IndexOf(a.Turno);
+                cmbTurno.SelectedIndex = idx >= 0 ? idx : 0;
+            }
+            else
+            {
+                cmbTurno.SelectedIndex = 0;
+            }
+
+            // Fecha_Ingreso
+            if (a.Fecha_Ingreso.HasValue)
+            {
+                dtpFechaIngreso.Value = a.Fecha_Ingreso.Value;
+                dtpFechaIngreso.Checked = true;
+            }
+            else
+            {
+                dtpFechaIngreso.Checked = false;
+            }
+
+            // Grupo
+            txtGrupo.Text = a.Grupo ?? "";
         }
 
         private void LimpiarFormulario()
         {
             foreach (var txt in new[] { txtIdAlumno, txtNoControl, txtNombre, txtApellidoPaterno,
-                txtApellidoMaterno, txtEmail, txtTelefono })
+                txtApellidoMaterno, txtEmail, txtTelefono, txtCURP, txtGrupo })
                 txt.Clear();
+            cmbGenero.SelectedIndex = 0;  // W-2: placeholder "(Sin especificar)"
+            cmbCarrera.SelectedIndex = 0;
+            nudSemestre.Value = 1;
+            cmbTurno.SelectedIndex = 0;  // W-1: default Matutino
             dtpFechaNacimiento.Checked = false;
+            dtpFechaIngreso.Value = DateTime.Today;
+            dtpFechaIngreso.Checked = true;  // W-3: always has value (no checkbox)
             RestaurarColores();
         }
 
@@ -833,16 +1001,18 @@ namespace Laboratorio_del_Tema_5_2.Views
 
                 try
                 {
-                    using (var sw = new StreamWriter(sfd.FileName, false, System.Text.Encoding.UTF8))
+                    using ( var sw = new StreamWriter(sfd.FileName, false, System.Text.Encoding.UTF8))
                     {
                         // Header
-                        sw.WriteLine("No. Control,Nombre,Apellido Paterno,Apellido Materno,Email,Teléfono,Fecha Nacimiento,Status");
+                        sw.WriteLine("No. Control,Nombre,Apellido Paterno,Apellido Materno,Email,Teléfono,Fecha Nacimiento,Status,CURP,Género,Carrera,Semestre,Turno,Fecha Ingreso,Grupo");
 
                         // Data
                         foreach (var a in _alumnosFiltrados)
                         {
                             string fecha = a.Fecha_Nacimiento?.ToString("yyyy-MM-dd") ?? "";
-                            sw.WriteLine($"{EscapeCSV(a.No_Control)},{EscapeCSV(a.Nombre)},{EscapeCSV(a.Apellido_Paterno)},{EscapeCSV(a.Apellido_Materno ?? "")},{EscapeCSV(a.Email ?? "")},{EscapeCSV(a.Telefono ?? "")},{EscapeCSV(fecha)},{EscapeCSV(a.Status_Alumno)}");
+                            string fechaIng = a.Fecha_Ingreso?.ToString("dd/MM/yyyy") ?? "";
+                            string carreraNombre = ObtenerNombreCarrera(a.Id_Carrera);
+                            sw.WriteLine($"{EscapeCSV(a.No_Control)},{EscapeCSV(a.Nombre)},{EscapeCSV(a.Apellido_Paterno)},{EscapeCSV(a.Apellido_Materno ?? "")},{EscapeCSV(a.Email ?? "")},{EscapeCSV(a.Telefono ?? "")},{EscapeCSV(fecha)},{EscapeCSV(a.Status_Alumno)},{EscapeCSV(a.Curp ?? "")},{EscapeCSV(a.Genero ?? "")},{EscapeCSV(carreraNombre)},{EscapeCSV(a.Semestre?.ToString() ?? "")},{EscapeCSV(a.Turno ?? "")},{EscapeCSV(fechaIng)},{EscapeCSV(a.Grupo ?? "")}");
                         }
                     }
                     MessageBox.Show($"Exportados {_alumnosFiltrados.Count} registros a:\n{sfd.FileName}", "Exportación Exitosa", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -867,6 +1037,11 @@ namespace Laboratorio_del_Tema_5_2.Views
             // Solo dígitos
             if (!char.IsDigit(e.KeyChar))
                 e.Handled = true;
+        }
+
+        private void dtpFechaIngreso_ValueChanged(object sender, EventArgs e)
+        {
+
         }
 
         /// <summary>

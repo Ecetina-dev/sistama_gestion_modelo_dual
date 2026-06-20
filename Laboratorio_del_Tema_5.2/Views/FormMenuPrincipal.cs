@@ -15,6 +15,7 @@ namespace Laboratorio_del_Tema_5_2.Views
         private readonly System.Windows.Forms.Timer _idleTimer;
         private DateTime _ultimaActividad;
         private DateTime _ultimaCargaStats = DateTime.MinValue;
+        private bool _primeraActivacion = true;
         private const int MINUTOS_INACTIVIDAD_MAX = 30;
         private const int SEGUNDOS_CACHE_STATS = 30;
 
@@ -39,10 +40,15 @@ namespace Laboratorio_del_Tema_5_2.Views
             ConfigurarPermisos();
             InicializarCards();
 
-            // Refrescar stats al volver de un módulo hijo
+            // Refrescar stats al volver de un módulo hijo (Bug #3: skip 1ra activación)
             this.Activated += (s, e) =>
             {
                 _ultimaActividad = DateTime.Now;
+                if (_primeraActivacion)
+                {
+                    _primeraActivacion = false;
+                    return;
+                }
                 _ultimaCargaStats = DateTime.MinValue; // forzar recarga
                 CargarEstadisticas();
             };
@@ -493,12 +499,23 @@ namespace Laboratorio_del_Tema_5_2.Views
             descAlumnos.Text = string.Empty;
             descEmpresas.Text = string.Empty;
             descProfesores.Text = string.Empty;
+            // Resetear visibilidad de stats y cards de admin (Bug #2: ventana insegura post-logout)
+            statPendientes.Visible = false;
+            cardMigracionBD.Visible = false;
+            cardGestionUsuarios.Visible = false;
+            cardProfesores.Visible = false;
+            cardMaterias.Visible = false;
+            cardTemas.Visible = false;
+            cardAlumnos.Visible = false;
+            cardEmpresas.Visible = false;
+            cardProyectos.Visible = false;
             // Resetear resaltado de nav
             Color normal = Color.FromArgb(28, 35, 51);
             foreach (var btn in new[] { btnNavAlumnos, btnNavEmpresas, btnNavProyectos,
                 btnNavProfesores, btnNavMaterias, btnNavTemas, btnNavGestionUsuarios })
             {
                 btn.BackColor = normal;
+                btn.Visible = false;
             }
         }
     }

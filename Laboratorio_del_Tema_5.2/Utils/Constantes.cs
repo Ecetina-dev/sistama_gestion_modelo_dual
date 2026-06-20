@@ -264,6 +264,9 @@ namespace Laboratorio_del_Tema_5_2.Utils
     public static class MensajesAlumno
     {
         public const string CurpInvalido = "El CURP no es valido.";
+        public const string CurpLongitudInvalida = "El CURP debe tener 18 caracteres.";
+        public const string CurpFormatoInvalido = "El CURP no tiene el formato correcto (ej: MMLC800101HNENSNS00).";
+        public const string CurpChecksumInvalido = "El CURP tiene un digito verificador incorrecto.";
         public const string RfcInvalido = "El RFC no es valido.";
         public const string NoControlExiste = "El numero de control ya esta registrado.";
         public const string NoControlReservado = "El numero de control ya esta registrado (incluyendo registros eliminados).";

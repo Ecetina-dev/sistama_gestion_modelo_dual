@@ -32,19 +32,19 @@ namespace Laboratorio_del_Tema_5_2.Utils
 
             if (curp.Length != AlumnoConfig.CurpLength)
             {
-                error = MensajesAlumno.CurpInvalido;
+                error = MensajesAlumno.CurpLongitudInvalida;
                 return false;
             }
 
             if (!Regex.IsMatch(curp, AlumnoConfig.CurpPattern))
             {
-                error = MensajesAlumno.CurpInvalido;
+                error = MensajesAlumno.CurpFormatoInvalido;
                 return false;
             }
 
             if (!ValidarChecksumCurp(curp))
             {
-                error = MensajesAlumno.CurpInvalido;
+                error = MensajesAlumno.CurpChecksumInvalido;
                 return false;
             }
 
