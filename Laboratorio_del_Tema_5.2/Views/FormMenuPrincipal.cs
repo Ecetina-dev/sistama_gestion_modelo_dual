@@ -13,9 +13,12 @@ namespace Laboratorio_del_Tema_5_2.Views
     {
         private readonly AuthController _authController;
         private readonly System.Windows.Forms.Timer _idleTimer;
+        private readonly System.Windows.Forms.Timer _pollTimer;
+        private const int INTERVALO_POLL_STATS_MINUTOS = 5;
         private DateTime _ultimaActividad;
         private DateTime _ultimaCargaStats = DateTime.MinValue;
         private bool _primeraActivacion = true;
+        private bool _volviendoDeModuloHijo = false;
         private const int MINUTOS_INACTIVIDAD_MAX = 30;
         private const int SEGUNDOS_CACHE_STATS = 30;
 
@@ -31,16 +34,33 @@ namespace Laboratorio_del_Tema_5_2.Views
             _idleTimer.Tick += IdleTimer_Tick;
             _idleTimer.Start();
 
-            // Detectar cualquier actividad del usuario
-            this.MouseMove += (s, e) => _ultimaActividad = DateTime.Now;
-            this.KeyDown += (s, e) => _ultimaActividad = DateTime.Now;
-            this.MouseDown += (s, e) => _ultimaActividad = DateTime.Now;
+            // Issue #9: polling automático cada N minutos para mantener stats frescos
+            // aunque el usuario no interactúe con ningún módulo
+            _pollTimer = new System.Windows.Forms.Timer
+            {
+                Interval = INTERVALO_POLL_STATS_MINUTOS * 60_000
+            };
+            _pollTimer.Tick += (s, e) =>
+            {
+                // Solo refrescar si el usuario está activo (no idle)
+                if ((DateTime.Now - _ultimaActividad).TotalMinutes < MINUTOS_INACTIVIDAD_MAX)
+                {
+                    _ultimaCargaStats = DateTime.MinValue;
+                    CargarEstadisticas();
+                }
+            };
+            _pollTimer.Start();
+
+            // Issue #10: throttle del MouseMove para no ejecutar delegate 1000+ veces por seg
+            this.MouseMove += (s, e) => ThrottleActividad();
+            this.KeyDown += (s, e) => ThrottleActividad();
+            this.MouseDown += (s, e) => ThrottleActividad();
 
             ConfigurarInterfaz();
             ConfigurarPermisos();
             InicializarCards();
 
-            // Refrescar stats al volver de un módulo hijo (Bug #3: skip 1ra activación)
+            // Refrescar stats al volver de un módulo hijo (Bug #3 + Issue #6)
             this.Activated += (s, e) =>
             {
                 _ultimaActividad = DateTime.Now;
@@ -49,8 +69,15 @@ namespace Laboratorio_del_Tema_5_2.Views
                     _primeraActivacion = false;
                     return;
                 }
-                _ultimaCargaStats = DateTime.MinValue; // forzar recarga
-                CargarEstadisticas();
+                // Issue #6: solo forzar recarga si realmente volvimos de un módulo hijo
+                // (no cuando el form se restaura desde minimize o recupera foco)
+                if (_volviendoDeModuloHijo)
+                {
+                    _volviendoDeModuloHijo = false;
+                    _ultimaCargaStats = DateTime.MinValue; // forzar recarga
+                    CargarEstadisticas();
+                }
+                // Si no, dejar que el cache de 30s funcione normalmente
             };
         }
 
@@ -86,6 +113,18 @@ namespace Laboratorio_del_Tema_5_2.Views
                     clickHandler?.Invoke(s, e);
                 }
             };
+        }
+
+        private DateTime _ultimaActividadCheck = DateTime.MinValue;
+        private const int THROTTLE_ACTIVIDAD_MS = 1000; // máx 1 update/seg
+
+        private void ThrottleActividad()
+        {
+            // Solo actualizar _ultimaActividad una vez por segundo para no saturar
+            if ((DateTime.Now - _ultimaActividadCheck).TotalMilliseconds < THROTTLE_ACTIVIDAD_MS)
+                return;
+            _ultimaActividadCheck = DateTime.Now;
+            _ultimaActividad = DateTime.Now;
         }
 
         private void IdleTimer_Tick(object sender, EventArgs e)
@@ -321,12 +360,16 @@ namespace Laboratorio_del_Tema_5_2.Views
                 if (modulo != null)
                     ResaltarNav(modulo);
 
+                // Issue #6: marcar que vamos a abrir un módulo hijo
+                _volviendoDeModuloHijo = true;
+
                 T form = new T();
                 form.ShowDialog();
             }
             catch (Exception ex)
             {
                 Logger.Error($"Error al abrir formulario {typeof(T).Name}", ex);
+                _volviendoDeModuloHijo = false;
                 MessageBox.Show(
                     $"No se pudo abrir la ventana: {ex.Message}\n\nVerifica que tengas permisos suficientes.",
                     "Error",
@@ -356,6 +399,11 @@ namespace Laboratorio_del_Tema_5_2.Views
                     using (var cmd = new MySqlCommand(sql, conn))
                     using (var reader = cmd.ExecuteReader())
                     {
+                        // Issue #7: actualizar cache siempre, incluso si no hay filas
+                        _ultimaCargaStats = DateTime.Now;
+                        // Issue #5: marcar que la BD responde
+                        MarcarEstadoConexion(true);
+
                         if (reader.Read())
                         {
                             int alumnos = reader.IsDBNull(0) ? 0 : reader.GetInt32(0);
@@ -375,7 +423,6 @@ namespace Laboratorio_del_Tema_5_2.Views
 
                             // Pendientes solo para admin
                             statPendientes.Visible = SesionActiva.Instance.EsAdmin;
-                            _ultimaCargaStats = DateTime.Now;
                         }
                     }
                 }
@@ -383,7 +430,21 @@ namespace Laboratorio_del_Tema_5_2.Views
             catch (Exception ex)
             {
                 Logger.Error("Error al cargar estadísticas", ex);
+                // Issue #5: mostrar al usuario que la BD no responde
+                MarcarEstadoConexion(false);
             }
+        }
+
+        private void MarcarEstadoConexion(bool conectado)
+        {
+            try
+            {
+                lblEstadoConexion.Text = conectado ? "🟢 Conectado" : "🔴 Sin conexión";
+                lblEstadoConexion.ForeColor = conectado
+                    ? Color.FromArgb(40, 167, 69)
+                    : Color.FromArgb(220, 53, 69);
+            }
+            catch { /* silencioso si el label no existe */ }
         }
 
         private void ResaltarNav(string moduloActivo)
@@ -423,6 +484,8 @@ namespace Laboratorio_del_Tema_5_2.Views
                     "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
+            // Issue #6: marcar que vamos a abrir un módulo hijo
+            _volviendoDeModuloHijo = true;
             using (var form = new FormMigracionBD())
             {
                 form.ShowDialog();
@@ -475,6 +538,8 @@ namespace Laboratorio_del_Tema_5_2.Views
         {
             _idleTimer?.Stop();
             _idleTimer?.Dispose();
+            _pollTimer?.Stop();
+            _pollTimer?.Dispose();
             // Si el usuario cierra con la X y aún hay sesión activa, cerrarla
             if (SesionActiva.Instance != null && SesionActiva.Instance.Id_Usuario > 0)
             {

@@ -116,6 +116,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblPageSubtitulo = new System.Windows.Forms.Label();
             this.lblPageTitulo = new System.Windows.Forms.Label();
             this.lblUltimoAcceso = new System.Windows.Forms.Label();
+            this.lblEstadoConexion = new System.Windows.Forms.Label();
             this.panelSidebar.SuspendLayout();
             this.panelUsuarioSidebar.SuspendLayout();
             this.panelLogo.SuspendLayout();
@@ -1376,6 +1377,17 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblUltimoAcceso.Size = new System.Drawing.Size(95, 13);
             this.lblUltimoAcceso.TabIndex = 5;
             this.lblUltimoAcceso.Text = "Último acceso: —";
+            //
+            // lblEstadoConexion
+            //
+            this.lblEstadoConexion.AutoSize = true;
+            this.lblEstadoConexion.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Bold);
+            this.lblEstadoConexion.ForeColor = System.Drawing.Color.FromArgb(40, 167, 69);
+            this.lblEstadoConexion.Location = new System.Drawing.Point(33, 95);
+            this.lblEstadoConexion.Name = "lblEstadoConexion";
+            this.lblEstadoConexion.Size = new System.Drawing.Size(95, 13);
+            this.lblEstadoConexion.TabIndex = 6;
+            this.lblEstadoConexion.Text = "🟢 Conectado";
             // 
             // FormMenuPrincipal
             // 
@@ -1554,6 +1566,7 @@ namespace Laboratorio_del_Tema_5_2.Views
         private System.Windows.Forms.Label lblStatPendientesNum;
         private System.Windows.Forms.Label lblStatPendientesLabel;
         private System.Windows.Forms.Label lblUltimoAcceso;
+        private System.Windows.Forms.Label lblEstadoConexion;
     }
 }
 
