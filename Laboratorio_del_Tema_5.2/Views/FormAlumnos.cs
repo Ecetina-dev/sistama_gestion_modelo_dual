@@ -257,16 +257,30 @@ namespace Laboratorio_del_Tema_5_2.Views
             try
             {
                 _carreras = new CarreraController().ReadActivas() ?? new List<Carrera>();
-                // Insert "Sin carrera" at index 0
+                // Insert "Sin carrera" placeholder at index 0
                 _carreras.Insert(0, new Carrera { Id_Carrera = 0, Nombre = "(Sin carrera)" });
-                cmbCarrera.DataSource = _carreras;
+
+                // Reset combo to avoid stale SelectedIndex issues
+                cmbCarrera.DataSource = null;
                 cmbCarrera.DisplayMember = "Nombre";
                 cmbCarrera.ValueMember = "Id_Carrera";
-                cmbCarrera.SelectedIndex = 0;
+                cmbCarrera.DataSource = _carreras;
+
+                // Seleccionar placeholder solo si hay items
+                if (cmbCarrera.Items.Count > 0)
+                    cmbCarrera.SelectedIndex = 0;
             }
             catch (Exception ex)
             {
+                Logger.Error("Error cargando carreras", ex);
                 MessageBox.Show("No se pudieron cargar las carreras: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                _carreras = new List<Carrera> { new Carrera { Id_Carrera = 0, Nombre = "(Sin carrera)" } };
+                cmbCarrera.DataSource = null;
+                cmbCarrera.DisplayMember = "Nombre";
+                cmbCarrera.ValueMember = "Id_Carrera";
+                cmbCarrera.DataSource = _carreras;
+                if (cmbCarrera.Items.Count > 0)
+                    cmbCarrera.SelectedIndex = 0;
             }
         }
 
