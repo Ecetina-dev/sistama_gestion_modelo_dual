@@ -40,45 +40,55 @@ namespace Laboratorio_del_Tema_5_2.Views
             {
                 Interval = INTERVALO_POLL_STATS_MINUTOS * 60_000
             };
-            _pollTimer.Tick += (s, e) =>
-            {
-                // Solo refrescar si el usuario está activo (no idle)
-                if ((DateTime.Now - _ultimaActividad).TotalMinutes < MINUTOS_INACTIVIDAD_MAX)
-                {
-                    _ultimaCargaStats = DateTime.MinValue;
-                    CargarEstadisticas();
-                }
-            };
+            _pollTimer.Tick += PollTimer_Tick;
             _pollTimer.Start();
 
             // Issue #10: throttle del MouseMove para no ejecutar delegate 1000+ veces por seg
-            this.MouseMove += (s, e) => ThrottleActividad();
-            this.KeyDown += (s, e) => ThrottleActividad();
-            this.MouseDown += (s, e) => ThrottleActividad();
+            this.MouseMove += FormMenuPrincipal_MouseMove;
+            this.KeyDown += FormMenuPrincipal_KeyDown;
+            this.MouseDown += FormMenuPrincipal_MouseDown;
 
             ConfigurarInterfaz();
             ConfigurarPermisos();
             InicializarCards();
 
             // Refrescar stats al volver de un módulo hijo (Bug #3 + Issue #6)
-            this.Activated += (s, e) =>
+            this.Activated += FormMenuPrincipal_Activated;
+
+            this.FormClosing += FormMenuPrincipal_FormClosing;
+        }
+
+        private void FormMenuPrincipal_Activated(object sender, EventArgs e)
+        {
+            _ultimaActividad = DateTime.Now;
+            if (_primeraActivacion)
             {
-                _ultimaActividad = DateTime.Now;
-                if (_primeraActivacion)
-                {
-                    _primeraActivacion = false;
-                    return;
-                }
-                // Issue #6: solo forzar recarga si realmente volvimos de un módulo hijo
-                // (no cuando el form se restaura desde minimize o recupera foco)
-                if (_volviendoDeModuloHijo)
-                {
-                    _volviendoDeModuloHijo = false;
-                    _ultimaCargaStats = DateTime.MinValue; // forzar recarga
-                    CargarEstadisticas();
-                }
-                // Si no, dejar que el cache de 30s funcione normalmente
-            };
+                _primeraActivacion = false;
+                return;
+            }
+            // Issue #6: solo forzar recarga si realmente volvimos de un módulo hijo
+            // (no cuando el form se restaura desde minimize o recupera foco)
+            if (_volviendoDeModuloHijo)
+            {
+                _volviendoDeModuloHijo = false;
+                _ultimaCargaStats = DateTime.MinValue; // forzar recarga
+                CargarEstadisticas();
+            }
+            // Si no, dejar que el cache de 30s funcione normalmente
+        }
+
+        private void FormMenuPrincipal_MouseMove(object sender, MouseEventArgs e) => ThrottleActividad();
+        private void FormMenuPrincipal_KeyDown(object sender, KeyEventArgs e) => ThrottleActividad();
+        private void FormMenuPrincipal_MouseDown(object sender, MouseEventArgs e) => ThrottleActividad();
+
+        private void PollTimer_Tick(object sender, EventArgs e)
+        {
+            // Solo refrescar si el usuario está activo (no idle)
+            if ((DateTime.Now - _ultimaActividad).TotalMinutes < MINUTOS_INACTIVIDAD_MAX)
+            {
+                _ultimaCargaStats = DateTime.MinValue;
+                CargarEstadisticas();
+            }
         }
 
         private void InicializarCards()
@@ -98,6 +108,8 @@ namespace Laboratorio_del_Tema_5_2.Views
         {
             card.TabStop = true;
             card.Cursor = Cursors.Hand;
+            // Issue #11: guardar handler en Tag para que ProcessCmdKey lo invoque
+            card.Tag = clickHandler;
             // Propagar click a todos los hijos (icono, título, descripción, permiso)
             foreach (Control child in card.Controls)
             {
@@ -125,6 +137,21 @@ namespace Laboratorio_del_Tema_5_2.Views
                 return;
             _ultimaActividadCheck = DateTime.Now;
             _ultimaActividad = DateTime.Now;
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            // Issue #11: teclas globales incluso cuando el foco está en un child control
+            if (keyData == Keys.Enter || keyData == Keys.Space)
+            {
+                var focused = this.ActiveControl as Panel;
+                if (focused != null && focused.Tag is EventHandler handler)
+                {
+                    handler(focused, EventArgs.Empty);
+                    return true;
+                }
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
         }
 
         private void IdleTimer_Tick(object sender, EventArgs e)
@@ -394,7 +421,10 @@ namespace Laboratorio_del_Tema_5_2.Views
                             (SELECT COUNT(*) FROM v_alumnos_activos) AS total_alumnos,
                             (SELECT COUNT(*) FROM v_empresas_activas) AS total_empresas,
                             (SELECT COUNT(*) FROM v_profesores_activos) AS total_profesores,
-                            (SELECT COUNT(*) FROM Usuario WHERE debe_cambiar_password = 1 AND is_deleted = 0) AS pendientes_activacion";
+                            (SELECT COUNT(*) FROM Usuario WHERE debe_cambiar_password = 1 AND is_deleted = 0) AS pendientes_activacion,
+                            (SELECT COUNT(*) FROM v_proyectos_activos) AS total_proyectos,
+                            (SELECT COUNT(*) FROM v_materias_activas) AS total_materias,
+                            (SELECT COUNT(*) FROM tema WHERE is_deleted = 0) AS total_temas";
 
                     using (var cmd = new MySqlCommand(sql, conn))
                     using (var reader = cmd.ExecuteReader())
@@ -410,16 +440,19 @@ namespace Laboratorio_del_Tema_5_2.Views
                             int empresas = reader.IsDBNull(1) ? 0 : reader.GetInt32(1);
                             int profesores = reader.IsDBNull(2) ? 0 : reader.GetInt32(2);
                             int pendientes = reader.IsDBNull(3) ? 0 : reader.GetInt32(3);
+                            int proyectos = reader.IsDBNull(4) ? 0 : reader.GetInt32(4);
+                            int materias = reader.IsDBNull(5) ? 0 : reader.GetInt32(5);
+                            int temas = reader.IsDBNull(6) ? 0 : reader.GetInt32(6);
 
                             lblStatAlumnosNum.Text = alumnos.ToString();
                             lblStatEmpresasNum.Text = empresas.ToString();
                             lblStatProfesoresNum.Text = profesores.ToString();
                             lblStatPendientesNum.Text = pendientes.ToString();
 
-                            // Update card descriptions with counts
-                            descAlumnos.Text = $"{alumnos} activos";
-                            descEmpresas.Text = $"{empresas} activas";
-                            descProfesores.Text = $"{profesores} activos";
+                            // Issue #12: dashboard extendido con más stats
+                            descAlumnos.Text = $"{alumnos} activos · {proyectos} proyectos";
+                            descEmpresas.Text = $"{empresas} activas · {materias} materias";
+                            descProfesores.Text = $"{profesores} activos · {temas} temas";
 
                             // Pendientes solo para admin
                             statPendientes.Visible = SesionActiva.Instance.EsAdmin;
@@ -536,6 +569,14 @@ namespace Laboratorio_del_Tema_5_2.Views
 
         private void FormMenuPrincipal_FormClosing(object sender, FormClosingEventArgs e)
         {
+            // Issue #13, #14, #15: desuscribir event handlers para evitar fugas
+            this.MouseMove -= FormMenuPrincipal_MouseMove;
+            this.KeyDown -= FormMenuPrincipal_KeyDown;
+            this.MouseDown -= FormMenuPrincipal_MouseDown;
+            this.Activated -= FormMenuPrincipal_Activated;
+            this.FormClosing -= FormMenuPrincipal_FormClosing;
+            _idleTimer.Tick -= IdleTimer_Tick;
+            _pollTimer.Tick -= PollTimer_Tick;
             _idleTimer?.Stop();
             _idleTimer?.Dispose();
             _pollTimer?.Stop();
