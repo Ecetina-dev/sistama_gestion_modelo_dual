@@ -265,12 +265,9 @@ namespace Laboratorio_del_Tema_5_2.Views
                 cmbCarrera.ValueMember = "Id_Carrera";
                 cmbCarrera.DataSource = _carreras;
 
-                // SelectedIndex en BeginInvoke para que el binding se complete
-                this.BeginInvoke(new Action(() =>
-                {
-                    if (cmbCarrera.Items.Count > 0)
-                        cmbCarrera.SelectedIndex = 0;
-                }));
+                // SelectedIndex solo si hay items (evita InvalidArgument)
+                if (cmbCarrera.Items.Count > 0)
+                    cmbCarrera.SelectedIndex = 0;
             }
             catch (Exception ex)
             {
@@ -280,11 +277,8 @@ namespace Laboratorio_del_Tema_5_2.Views
                 cmbCarrera.DisplayMember = "Nombre";
                 cmbCarrera.ValueMember = "Id_Carrera";
                 cmbCarrera.DataSource = _carreras;
-                this.BeginInvoke(new Action(() =>
-                {
-                    if (cmbCarrera.Items.Count > 0)
-                        cmbCarrera.SelectedIndex = 0;
-                }));
+                if (cmbCarrera.Items.Count > 0)
+                    cmbCarrera.SelectedIndex = 0;
             }
         }
 
