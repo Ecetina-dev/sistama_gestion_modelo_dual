@@ -125,8 +125,17 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             carrera.Clave = reader.GetString("clave");
             carrera.Nombre = reader.GetString("nombre");
 
-            int idxDescripcion = reader.GetOrdinal("descripcion");
-            carrera.Descripcion = reader.IsDBNull(idxDescripcion) ? null : reader.GetString(idxDescripcion);
+            // La columna descripcion no existe en algunas versiones del schema.
+            // Se usa try/catch para mantener compatibilidad sin romper la lectura.
+            try
+            {
+                int idxDescripcion = reader.GetOrdinal("descripcion");
+                carrera.Descripcion = reader.IsDBNull(idxDescripcion) ? null : reader.GetString(idxDescripcion);
+            }
+            catch (IndexOutOfRangeException)
+            {
+                carrera.Descripcion = null;
+            }
 
             carrera.Duracion_Semestres = reader.GetInt32("duracion_semestres");
             carrera.Status = reader.GetString("status");
