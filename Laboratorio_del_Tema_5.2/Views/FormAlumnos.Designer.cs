@@ -9,9 +9,9 @@ namespace Laboratorio_del_Tema_5_2.Views
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             this.panelSidebar = new System.Windows.Forms.Panel();
             this.btnNavVolver = new System.Windows.Forms.Button();
             this.panelSidebarFooter = new System.Windows.Forms.Panel();
@@ -92,11 +92,15 @@ namespace Laboratorio_del_Tema_5_2.Views
             // panelSidebar
             // 
             this.panelSidebar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(35)))), ((int)(((byte)(51)))));
+            this.panelSidebar.Controls.Add(this.btnNavVolver);
+            this.panelSidebar.Controls.Add(this.panelSidebarFooter);
+            this.panelSidebar.Controls.Add(this.panelSidebarNav);
+            this.panelSidebar.Controls.Add(this.lblSideTitulo);
             this.panelSidebar.Dock = System.Windows.Forms.DockStyle.Left;
             this.panelSidebar.Location = new System.Drawing.Point(0, 0);
             this.panelSidebar.Margin = new System.Windows.Forms.Padding(2);
             this.panelSidebar.Name = "panelSidebar";
-            this.panelSidebar.Size = new System.Drawing.Size(165, 611);
+            this.panelSidebar.Size = new System.Drawing.Size(165, 601);
             this.panelSidebar.TabIndex = 0;
             // 
             // btnNavVolver
@@ -122,8 +126,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             // panelSidebarFooter
             // 
             this.panelSidebarFooter.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(26)))), ((int)(((byte)(40)))));
+            this.panelSidebarFooter.Controls.Add(this.lblSideVersion);
             this.panelSidebarFooter.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panelSidebarFooter.Location = new System.Drawing.Point(0, 546);
+            this.panelSidebarFooter.Location = new System.Drawing.Point(0, 536);
             this.panelSidebarFooter.Margin = new System.Windows.Forms.Padding(2);
             this.panelSidebarFooter.Name = "panelSidebarFooter";
             this.panelSidebarFooter.Padding = new System.Windows.Forms.Padding(11, 8, 11, 8);
@@ -145,6 +150,13 @@ namespace Laboratorio_del_Tema_5_2.Views
             // panelSidebarNav
             // 
             this.panelSidebarNav.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(35)))), ((int)(((byte)(51)))));
+            this.panelSidebarNav.Controls.Add(this.lblNavSeccion);
+            this.panelSidebarNav.Controls.Add(this.btnNuevo);
+            this.panelSidebarNav.Controls.Add(this.btnEditar);
+            this.panelSidebarNav.Controls.Add(this.btnEliminar);
+            this.panelSidebarNav.Controls.Add(this.btnActualizar);
+            this.panelSidebarNav.Controls.Add(this.btnVerEmpresas);
+            this.panelSidebarNav.Controls.Add(this.btnExportarCSV);
             this.panelSidebarNav.Location = new System.Drawing.Point(0, 57);
             this.panelSidebarNav.Margin = new System.Windows.Forms.Padding(2);
             this.panelSidebarNav.Name = "panelSidebarNav";
@@ -285,33 +297,41 @@ namespace Laboratorio_del_Tema_5_2.Views
             // panelMain
             // 
             this.panelMain.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(247)))), ((int)(((byte)(250)))));
+            this.panelMain.Controls.Add(this.panelContent);
+            this.panelMain.Controls.Add(this.panelTopBar);
             this.panelMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelMain.Location = new System.Drawing.Point(165, 0);
             this.panelMain.Margin = new System.Windows.Forms.Padding(2);
             this.panelMain.Name = "panelMain";
-            this.panelMain.Size = new System.Drawing.Size(660, 611);
+            this.panelMain.Size = new System.Drawing.Size(660, 601);
             this.panelMain.TabIndex = 1;
             // 
             // panelContent
             // 
             this.panelContent.AutoScroll = true;
             this.panelContent.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(247)))), ((int)(((byte)(250)))));
+            this.panelContent.Controls.Add(this.panelCardDatos);
+            this.panelContent.Controls.Add(this.dgvAlumnos);
+            this.panelContent.Controls.Add(this.panelToolbar);
             this.panelContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelContent.Location = new System.Drawing.Point(0, 65);
             this.panelContent.Margin = new System.Windows.Forms.Padding(2);
             this.panelContent.Name = "panelContent";
             this.panelContent.Padding = new System.Windows.Forms.Padding(19, 12, 19, 12);
-            this.panelContent.Size = new System.Drawing.Size(660, 546);
+            this.panelContent.Size = new System.Drawing.Size(660, 536);
             this.panelContent.TabIndex = 1;
             // 
             // panelCardDatos
             // 
             this.panelCardDatos.BackColor = System.Drawing.Color.White;
             this.panelCardDatos.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panelCardDatos.Location = new System.Drawing.Point(18, 282);
+            this.panelCardDatos.Controls.Add(this.panelCardActions);
+            this.panelCardDatos.Controls.Add(this.panelCardBar);
+            this.panelCardDatos.Controls.Add(this.panelCardBody);
+            this.panelCardDatos.Location = new System.Drawing.Point(18, 315);
             this.panelCardDatos.Margin = new System.Windows.Forms.Padding(2);
             this.panelCardDatos.Name = "panelCardDatos";
-            this.panelCardDatos.Size = new System.Drawing.Size(623, 313);
+            this.panelCardDatos.Size = new System.Drawing.Size(623, 212);
             this.panelCardDatos.TabIndex = 2;
             this.panelCardDatos.Visible = false;
             // 
@@ -319,8 +339,10 @@ namespace Laboratorio_del_Tema_5_2.Views
             // 
             this.panelCardActions.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
             this.panelCardActions.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelCardActions.Controls.Add(this.btnCancelar);
+            this.panelCardActions.Controls.Add(this.btnGuardar);
             this.panelCardActions.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panelCardActions.Location = new System.Drawing.Point(4, 265);
+            this.panelCardActions.Location = new System.Drawing.Point(4, 164);
             this.panelCardActions.Margin = new System.Windows.Forms.Padding(2);
             this.panelCardActions.Name = "panelCardActions";
             this.panelCardActions.Padding = new System.Windows.Forms.Padding(8);
@@ -370,7 +392,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelCardBar.Location = new System.Drawing.Point(0, 0);
             this.panelCardBar.Margin = new System.Windows.Forms.Padding(2);
             this.panelCardBar.Name = "panelCardBar";
-            this.panelCardBar.Size = new System.Drawing.Size(4, 311);
+            this.panelCardBar.Size = new System.Drawing.Size(4, 210);
             this.panelCardBar.TabIndex = 0;
             // 
             // panelCardBody
@@ -407,7 +429,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelCardBody.Controls.Add(this.lblFechaIngreso);
             this.panelCardBody.Controls.Add(this.txtGrupo);
             this.panelCardBody.Controls.Add(this.lblGrupo);
-            this.panelCardBody.Location = new System.Drawing.Point(4, 1);
+            this.panelCardBody.Location = new System.Drawing.Point(4, 2);
             this.panelCardBody.Margin = new System.Windows.Forms.Padding(2);
             this.panelCardBody.Name = "panelCardBody";
             this.panelCardBody.Size = new System.Drawing.Size(617, 260);
@@ -604,9 +626,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblNoControl.Size = new System.Drawing.Size(78, 15);
             this.lblNoControl.TabIndex = 14;
             this.lblNoControl.Text = "No. Control *";
-            // 
+            //
             // txtCURP
-            // 
+            //
             this.txtCURP.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
             this.txtCURP.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtCURP.Font = new System.Drawing.Font("Segoe UI", 12F);
@@ -614,9 +636,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.txtCURP.Name = "txtCURP";
             this.txtCURP.Size = new System.Drawing.Size(170, 29);
             this.txtCURP.TabIndex = 4;
-            // 
+            //
             // lblCURP
-            // 
+            //
             this.lblCURP.AutoSize = true;
             this.lblCURP.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.lblCURP.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
@@ -625,9 +647,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblCURP.Size = new System.Drawing.Size(46, 15);
             this.lblCURP.TabIndex = 15;
             this.lblCURP.Text = "CURP *";
-            // 
+            //
             // cmbGenero
-            // 
+            //
             this.cmbGenero.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
             this.cmbGenero.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbGenero.Font = new System.Drawing.Font("Segoe UI", 12F);
@@ -635,9 +657,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.cmbGenero.Name = "cmbGenero";
             this.cmbGenero.Size = new System.Drawing.Size(140, 29);
             this.cmbGenero.TabIndex = 5;
-            // 
+            //
             // lblGenero
-            // 
+            //
             this.lblGenero.AutoSize = true;
             this.lblGenero.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.lblGenero.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
@@ -646,9 +668,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblGenero.Size = new System.Drawing.Size(57, 15);
             this.lblGenero.TabIndex = 16;
             this.lblGenero.Text = "Género *";
-            // 
+            //
             // cmbCarrera
-            // 
+            //
             this.cmbCarrera.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
             this.cmbCarrera.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbCarrera.Font = new System.Drawing.Font("Segoe UI", 12F);
@@ -656,9 +678,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.cmbCarrera.Name = "cmbCarrera";
             this.cmbCarrera.Size = new System.Drawing.Size(200, 29);
             this.cmbCarrera.TabIndex = 6;
-            // 
+            //
             // lblCarrera
-            // 
+            //
             this.lblCarrera.AutoSize = true;
             this.lblCarrera.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.lblCarrera.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
@@ -667,17 +689,17 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblCarrera.Size = new System.Drawing.Size(56, 15);
             this.lblCarrera.TabIndex = 17;
             this.lblCarrera.Text = "Carrera *";
-            // 
+            //
             // nudSemestre
-            // 
+            //
             this.nudSemestre.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.nudSemestre.Location = new System.Drawing.Point(277, 150);
             this.nudSemestre.Name = "nudSemestre";
             this.nudSemestre.Size = new System.Drawing.Size(80, 29);
             this.nudSemestre.TabIndex = 7;
-            // 
+            //
             // lblSemestre
-            // 
+            //
             this.lblSemestre.AutoSize = true;
             this.lblSemestre.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.lblSemestre.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
@@ -686,9 +708,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblSemestre.Size = new System.Drawing.Size(69, 15);
             this.lblSemestre.TabIndex = 18;
             this.lblSemestre.Text = "Semestre *";
-            // 
+            //
             // cmbTurno
-            // 
+            //
             this.cmbTurno.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
             this.cmbTurno.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbTurno.Font = new System.Drawing.Font("Segoe UI", 12F);
@@ -696,9 +718,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.cmbTurno.Name = "cmbTurno";
             this.cmbTurno.Size = new System.Drawing.Size(120, 29);
             this.cmbTurno.TabIndex = 8;
-            // 
+            //
             // lblTurno
-            // 
+            //
             this.lblTurno.AutoSize = true;
             this.lblTurno.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.lblTurno.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
@@ -707,9 +729,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblTurno.Size = new System.Drawing.Size(47, 15);
             this.lblTurno.TabIndex = 19;
             this.lblTurno.Text = "Turno *";
-            // 
+            //
             // dtpFechaIngreso
-            // 
+            //
             this.dtpFechaIngreso.CustomFormat = "dd/MM/yyyy";
             this.dtpFechaIngreso.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.dtpFechaIngreso.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
@@ -717,10 +739,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.dtpFechaIngreso.Name = "dtpFechaIngreso";
             this.dtpFechaIngreso.Size = new System.Drawing.Size(150, 29);
             this.dtpFechaIngreso.TabIndex = 9;
-            this.dtpFechaIngreso.ValueChanged += new System.EventHandler(this.dtpFechaIngreso_ValueChanged);
-            // 
+            //
             // lblFechaIngreso
-            // 
+            //
             this.lblFechaIngreso.AutoSize = true;
             this.lblFechaIngreso.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.lblFechaIngreso.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
@@ -729,9 +750,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblFechaIngreso.Size = new System.Drawing.Size(92, 15);
             this.lblFechaIngreso.TabIndex = 20;
             this.lblFechaIngreso.Text = "Fecha Ingreso *";
-            // 
+            //
             // txtGrupo
-            // 
+            //
             this.txtGrupo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
             this.txtGrupo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtGrupo.Font = new System.Drawing.Font("Segoe UI", 12F);
@@ -739,9 +760,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.txtGrupo.Name = "txtGrupo";
             this.txtGrupo.Size = new System.Drawing.Size(100, 29);
             this.txtGrupo.TabIndex = 10;
-            // 
+            //
             // lblGrupo
-            // 
+            //
             this.lblGrupo.AutoSize = true;
             this.lblGrupo.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.lblGrupo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
@@ -750,22 +771,22 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblGrupo.Size = new System.Drawing.Size(42, 15);
             this.lblGrupo.TabIndex = 21;
             this.lblGrupo.Text = "Grupo";
-            // 
+            //
             // dgvAlumnos
             // 
             this.dgvAlumnos.AllowUserToAddRows = false;
             this.dgvAlumnos.AllowUserToDeleteRows = false;
-            dataGridViewCellStyle7.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
-            this.dgvAlumnos.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle7;
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
+            this.dgvAlumnos.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
             this.dgvAlumnos.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dgvAlumnos.BackgroundColor = System.Drawing.Color.White;
             this.dgvAlumnos.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle8.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(35)))), ((int)(((byte)(51)))));
-            dataGridViewCellStyle8.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-            dataGridViewCellStyle8.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle8.Padding = new System.Windows.Forms.Padding(8, 0, 0, 0);
-            this.dgvAlumnos.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle8;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(35)))), ((int)(((byte)(51)))));
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.White;
+            dataGridViewCellStyle2.Padding = new System.Windows.Forms.Padding(8, 0, 0, 0);
+            this.dgvAlumnos.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             this.dgvAlumnos.ColumnHeadersHeight = 36;
             this.dgvAlumnos.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dgvAlumnos.EnableHeadersVisualStyles = false;
@@ -776,12 +797,12 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.dgvAlumnos.Name = "dgvAlumnos";
             this.dgvAlumnos.ReadOnly = true;
             this.dgvAlumnos.RowHeadersVisible = false;
-            dataGridViewCellStyle9.Font = new System.Drawing.Font("Segoe UI", 9F);
-            dataGridViewCellStyle9.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(37)))), ((int)(((byte)(41)))));
-            dataGridViewCellStyle9.Padding = new System.Windows.Forms.Padding(8, 0, 0, 0);
-            dataGridViewCellStyle9.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(120)))), ((int)(((byte)(215)))));
-            dataGridViewCellStyle9.SelectionForeColor = System.Drawing.Color.White;
-            this.dgvAlumnos.RowsDefaultCellStyle = dataGridViewCellStyle9;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Segoe UI", 9F);
+            dataGridViewCellStyle3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(37)))), ((int)(((byte)(41)))));
+            dataGridViewCellStyle3.Padding = new System.Windows.Forms.Padding(8, 0, 0, 0);
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(120)))), ((int)(((byte)(215)))));
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.Color.White;
+            this.dgvAlumnos.RowsDefaultCellStyle = dataGridViewCellStyle3;
             this.dgvAlumnos.RowTemplate.Height = 32;
             this.dgvAlumnos.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvAlumnos.Size = new System.Drawing.Size(622, 195);
@@ -791,12 +812,16 @@ namespace Laboratorio_del_Tema_5_2.Views
             // 
             this.panelToolbar.BackColor = System.Drawing.Color.White;
             this.panelToolbar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelToolbar.Controls.Add(this.cmbFiltroStatus);
+            this.panelToolbar.Controls.Add(this.btnLimpiarBusqueda);
+            this.panelToolbar.Controls.Add(this.txtBuscar);
+            this.panelToolbar.Controls.Add(this.lblBuscarIcono);
             this.panelToolbar.Dock = System.Windows.Forms.DockStyle.Top;
             this.panelToolbar.Location = new System.Drawing.Point(19, 12);
             this.panelToolbar.Margin = new System.Windows.Forms.Padding(2);
             this.panelToolbar.Name = "panelToolbar";
             this.panelToolbar.Padding = new System.Windows.Forms.Padding(8);
-            this.panelToolbar.Size = new System.Drawing.Size(605, 45);
+            this.panelToolbar.Size = new System.Drawing.Size(622, 45);
             this.panelToolbar.TabIndex = 0;
             // 
             // cmbFiltroStatus
@@ -854,6 +879,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             // panelTopBar
             // 
             this.panelTopBar.BackColor = System.Drawing.Color.White;
+            this.panelTopBar.Controls.Add(this.lblSeparador);
+            this.panelTopBar.Controls.Add(this.lblSubtitulo);
+            this.panelTopBar.Controls.Add(this.lblTitulo);
             this.panelTopBar.Dock = System.Windows.Forms.DockStyle.Top;
             this.panelTopBar.Location = new System.Drawing.Point(0, 0);
             this.panelTopBar.Margin = new System.Windows.Forms.Padding(2);
@@ -901,7 +929,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(247)))), ((int)(((byte)(250)))));
-            this.ClientSize = new System.Drawing.Size(825, 611);
+            this.ClientSize = new System.Drawing.Size(825, 601);
+            this.Controls.Add(this.panelMain);
+            this.Controls.Add(this.panelSidebar);
             this.Margin = new System.Windows.Forms.Padding(2);
             this.MinimumSize = new System.Drawing.Size(754, 495);
             this.Name = "FormAlumnos";
