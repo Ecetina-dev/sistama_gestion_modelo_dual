@@ -662,10 +662,13 @@ namespace Laboratorio_del_Tema_5_2.Views
                 return;
             }
 
-            var nombre = $"{dgvAlumnos.SelectedRows[0].Cells["Nombre"]?.Value} " +
-                         $"{dgvAlumnos.SelectedRows[0].Cells["Apellido_Paterno"]?.Value}";
+            // Usar DataBoundItem para acceder al objeto Alumno (Id_Alumno no es columna del grid)
+            var a = dgvAlumnos.SelectedRows[0].DataBoundItem as Alumno;
+            if (a == null) { MostrarError("No se pudo obtener el alumno seleccionado."); return; }
 
-            if (MessageBox.Show($"Eliminar a '{nombre.Trim()}'?\n\nEsto no se puede deshacer.",
+            var nombre = $"{a.Nombre} {a.Apellido_Paterno}".Trim();
+
+            if (MessageBox.Show($"Eliminar a '{nombre}'?\n\nEsto no se puede deshacer.",
                 "Confirmar eliminación", MessageBoxButtons.YesNo, MessageBoxIcon.Question,
                 MessageBoxDefaultButton.Button2) != DialogResult.Yes) return;
 
@@ -680,16 +683,19 @@ namespace Laboratorio_del_Tema_5_2.Views
                 return;
             }
 
-            int id = (int)dgvAlumnos.SelectedRows[0].Cells["Id_Alumno"].Value;
             try
             {
-                if (controller.Delete(id, razon))
+                if (controller.Delete(a.Id_Alumno, razon))
                 {
                     MostrarÉxito("Alumno eliminado.");
                     CargarAlumnos();
                 }
                 else
                     MostrarError("No se pudo eliminar. Puede tener registros asociados.");
+            }
+            catch (CrudOperationException ex)
+            {
+                MostrarError(ex.Message);
             }
             catch (Exception ex)
             {
@@ -904,9 +910,9 @@ namespace Laboratorio_del_Tema_5_2.Views
         private void CargarDatosFormulario()
         {
             if (dgvAlumnos.SelectedRows.Count == 0) return;
-            int idAlumno = (int)dgvAlumnos.SelectedRows[0].Cells["Id_Alumno"].Value;
 
-            var a = _alumnosCache.FirstOrDefault(x => x.Id_Alumno == idAlumno);
+            // Usar DataBoundItem para acceder al objeto Alumno (Id_Alumno no es columna del grid)
+            var a = dgvAlumnos.SelectedRows[0].DataBoundItem as Alumno;
             if (a == null) { MostrarAdvertencia("No se pudieron cargar los datos."); return; }
 
             txtIdAlumno.Text = a.Id_Alumno.ToString();
