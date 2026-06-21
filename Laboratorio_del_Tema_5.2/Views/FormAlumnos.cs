@@ -31,9 +31,10 @@ namespace Laboratorio_del_Tema_5_2.Views
         private string _ultimaColumnaOrden = "";
         private bool _ordenAscendente = true;
 
-        // Sincronizado con BD: alumno.no_control VARCHAR(15)
-        private const int MAX_NO_CONTROL = 15;
-        private const int EXT_MIN_NO_CONTROL = 1;
+        // Sincronizado con BD: alumno.no_control VARCHAR(15), constraint chk_alumno_no_control
+        // exige exactamente 10 caracteres alfanumericos mayusculas/numeros.
+        private const int MIN_NO_CONTROL = 10;
+        private const int MAX_NO_CONTROL = 10;
         // Sincronizado con BD: alumno.nombre VARCHAR(100)
         private const int MAX_NOMBRE = 100;
         // Sincronizado con BD: alumno.apellido_paterno/apellido_materno VARCHAR(80)
@@ -89,7 +90,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             txtTelefono.MaxLength = MAX_TELEFONO;
 
             // Filtros de entrada por tipo de campo
-            txtNoControl.KeyPress += (s, e) => SoloDigitos(e);
+            txtNoControl.KeyPress += (s, e) => SoloAlfanumericoMayusculas(e);
             txtNombre.KeyPress += (s, e) => SoloLetrasConAcentos(e);
             txtApellidoPaterno.KeyPress += (s, e) => SoloLetrasConAcentos(e);
             txtApellidoMaterno.KeyPress += (s, e) => SoloLetrasConAcentos(e);
@@ -108,7 +109,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             // Tooltip dinamico para No.Control
             txtNoControl.TextChanged += (s, e) =>
             {
-                toolTip.SetToolTip(txtNoControl, $"{txtNoControl.Text.Length}/{MAX_NO_CONTROL} - solo dígitos");
+                toolTip.SetToolTip(txtNoControl, $"{txtNoControl.Text.Length}/{MAX_NO_CONTROL} - letras mayúsculas y números");
             };
 
             this.KeyPreview = true;
@@ -120,7 +121,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             };
 
             // Tooltips en campos
-            toolTip.SetToolTip(txtNoControl, "Solo dígitos (ej: 2000123456)");
+            toolTip.SetToolTip(txtNoControl, "10 caracteres alfanuméricos mayúsculas/números (ej: 2021101001)");
             toolTip.SetToolTip(txtNombre, "Nombre del alumno");
             toolTip.SetToolTip(txtApellidoPaterno, "Apellido paterno");
             toolTip.SetToolTip(txtApellidoMaterno, "Apellido materno (opcional)");
@@ -255,7 +256,7 @@ namespace Laboratorio_del_Tema_5_2.Views
         {
             try
             {
-                _carreras = new CarreraController().Read() ?? new List<Carrera>();
+                _carreras = new CarreraController().ReadActivas() ?? new List<Carrera>();
                 // Insert "Sin carrera" at index 0
                 _carreras.Insert(0, new Carrera { Id_Carrera = 0, Nombre = "(Sin carrera)" });
                 cmbCarrera.DataSource = _carreras;
@@ -283,13 +284,13 @@ namespace Laboratorio_del_Tema_5_2.Views
 
             // Genero combo — W-2: "(Sin especificar)" as placeholder at index 0
             cmbGenero.Items.Clear();
-            cmbGenero.Items.AddRange(new[] { "(Sin especificar)", "Masculino", "Femenino", "Otro" });
+            cmbGenero.Items.AddRange(new[] { "(Sin especificar)", Genero.Masculino, Genero.Femenino, Genero.NoBinario, Genero.PrefieroNoDecir });
             cmbGenero.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbGenero.SelectedIndex = 0;
 
-            // Turno combo
+            // Turno combo: mostrar legible, guardar en minusculas (constraint BD)
             cmbTurno.Items.Clear();
-            cmbTurno.Items.AddRange(new[] { "Matutino", "Vespertino", "Nocturno" });
+            cmbTurno.Items.AddRange(new[] { "Matutino", "Vespertino", "Nocturno", "Mixto" });
             cmbTurno.DropDownStyle = ComboBoxStyle.DropDownList;
 
             // Fecha_Ingreso DateTimePicker (always has value - no checkbox)
@@ -736,7 +737,7 @@ namespace Laboratorio_del_Tema_5_2.Views
                 Genero = cmbGenero.SelectedIndex > 0 ? cmbGenero.Items[cmbGenero.SelectedIndex].ToString() : null,  // W-2: skip placeholder at 0
                 Id_Carrera = cmbCarrera.SelectedValue is int idC && idC > 0 ? idC : (int?)null,
                 Semestre = (int)nudSemestre.Value,
-                Turno = cmbTurno.SelectedItem?.ToString(),
+                Turno = cmbTurno.SelectedIndex > 0 ? cmbTurno.SelectedItem?.ToString().ToLowerInvariant() : null,
                 Fecha_Ingreso = dtpFechaIngreso.Value.Date,
                 Grupo = string.IsNullOrWhiteSpace(txtGrupo.Text) ? null : txtGrupo.Text.Trim()
             };
@@ -804,8 +805,8 @@ namespace Laboratorio_del_Tema_5_2.Views
 
             string nc = txtNoControl.Text.Trim();
             if (string.IsNullOrEmpty(nc)) { MarcarError(txtNoControl); return "El número de control es obligatorio."; }
-            if (nc.Length < EXT_MIN_NO_CONTROL) { MarcarError(txtNoControl); return $"Debe tener {EXT_MIN_NO_CONTROL} dígitos."; }
-            if (!System.Text.RegularExpressions.Regex.IsMatch(nc, @"^\d+$")) { MarcarError(txtNoControl); return "Solo se permiten dígitos."; }
+            if (nc.Length < MIN_NO_CONTROL || nc.Length > MAX_NO_CONTROL) { MarcarError(txtNoControl); return $"Debe tener exactamente {MIN_NO_CONTROL} caracteres."; }
+            if (!System.Text.RegularExpressions.Regex.IsMatch(nc, AlumnoConfig.NoControlPattern)) { MarcarError(txtNoControl); return "Solo se permiten letras mayúsculas y números."; }
 
             if (string.IsNullOrWhiteSpace(txtNombre.Text)) { MarcarError(txtNombre); return "El nombre es obligatorio."; }
             if (txtNombre.Text.Trim().Length < 2) { MarcarError(txtNombre); return "Mínimo 2 caracteres."; }
@@ -821,8 +822,8 @@ namespace Laboratorio_del_Tema_5_2.Views
             if (!string.IsNullOrWhiteSpace(txtTelefono.Text))
             {
                 string soloDigitos = new string(txtTelefono.Text.Where(char.IsDigit).ToArray());
-                if (soloDigitos.Length < EXT_MIN_TELEFONO || soloDigitos.Length > MAX_TELEFONO)
-                { MarcarError(txtTelefono); return $"El teléfono debe tener entre {EXT_MIN_TELEFONO} y {MAX_TELEFONO} dígitos."; }
+                if (soloDigitos.Length != MAX_TELEFONO)
+                { MarcarError(txtTelefono); return $"El teléfono debe tener exactamente {MAX_TELEFONO} dígitos."; }
             }
 
             if (dtpFechaNacimiento.Checked)
@@ -842,6 +843,18 @@ namespace Laboratorio_del_Tema_5_2.Views
                 string curpError = ValidarCURP(curp);
                 if (curpError != null) return curpError;
             }
+
+            // Genero requerido para nuevos alumnos
+            if (isNewRecord && cmbGenero.SelectedIndex <= 0)
+                return "El género es requerido.";
+
+            // Carrera requerida para nuevos alumnos
+            if (isNewRecord && (cmbCarrera.SelectedValue == null || (int)cmbCarrera.SelectedValue <= 0))
+                return "La carrera es requerida.";
+
+            // Turno requerido para nuevos alumnos
+            if (isNewRecord && cmbTurno.SelectedIndex < 0)
+                return "El turno es requerido.";
 
             // Fecha_Ingreso
             DateTime fechaIng = dtpFechaIngreso.Value.Date;
@@ -924,10 +937,11 @@ namespace Laboratorio_del_Tema_5_2.Views
             // Semestre
             nudSemestre.Value = a.Semestre.HasValue ? Math.Max(1, Math.Min(20, a.Semestre.Value)) : 1;
 
-            // Turno
+            // Turno: BD almacena minusculas, combo muestra TitleCase
             if (!string.IsNullOrEmpty(a.Turno))
             {
-                int idx = cmbTurno.Items.IndexOf(a.Turno);
+                string display = char.ToUpper(a.Turno[0]) + a.Turno.Substring(1);
+                int idx = cmbTurno.Items.IndexOf(display);
                 cmbTurno.SelectedIndex = idx >= 0 ? idx : 0;
             }
             else
@@ -1027,7 +1041,26 @@ namespace Laboratorio_del_Tema_5_2.Views
         // ==================== FILTROS DE ENTRADA ====================
 
         /// <summary>
-        /// Solo permite dígitos (0-9) y teclas de control (Backspace, Delete, etc.)
+        /// Solo permite letras mayusculas y digitos (para no_control).
+        /// Convierte minusculas a mayusculas y bloquea todo lo demas.
+        /// </summary>
+        private void SoloAlfanumericoMayusculas(KeyPressEventArgs e)
+        {
+            if (char.IsControl(e.KeyChar))
+                return;
+
+            if (char.IsLower(e.KeyChar))
+            {
+                e.KeyChar = char.ToUpper(e.KeyChar);
+                return;
+            }
+
+            if (!char.IsUpper(e.KeyChar) && !char.IsDigit(e.KeyChar))
+                e.Handled = true;
+        }
+
+        /// <summary>
+        /// Solo permite digitos.
         /// </summary>
         private void SoloDigitos(KeyPressEventArgs e)
         {

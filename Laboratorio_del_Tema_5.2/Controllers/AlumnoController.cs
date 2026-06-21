@@ -24,16 +24,20 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 using (MySqlConnection conn = MySQLConnection.GetConnection())
                 {
                     conn.Open();
-                    ValidarCamposRequeridos(alumno, esNuevo: true);
-                    ValidarFormatos(alumno);
-                    ValidarDuplicados(conn, alumno, excluirId: null);
+                    using (var tx = conn.BeginTransaction())
+                    {
+                        try
+                        {
+                            ValidarCamposRequeridos(conn, alumno, esNuevo: true);
+                            ValidarFormatos(alumno);
+                            ValidarDuplicados(conn, alumno, excluirId: null);
 
-                    if (string.IsNullOrEmpty(alumno.Status_Alumno))
-                        alumno.Status_Alumno = Estatus.AlumnoActivo;
+                            if (string.IsNullOrEmpty(alumno.Status_Alumno))
+                                alumno.Status_Alumno = Estatus.AlumnoActivo;
 
-                    alumno.Created_By = ObtenerUsuarioAuditoria();
+                            alumno.Created_By = ObtenerUsuarioAuditoria();
 
-                    string query = @"INSERT INTO Alumno
+                            string query = @"INSERT INTO Alumno
                                      (no_control, nombre, apellido_paterno, apellido_materno,
                                       email, telefono, fecha_nacimiento, status_alumno,
                                       curp, rfc, nss, genero, estado_civil, nacionalidad,
@@ -56,18 +60,27 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                       @fecha_ingreso, @fecha_egreso, @fecha_baja, @motivo_baja,
                                       @promedio_general, @created_by)";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                    {
-                        AgregarParametrosAlumno(cmd, alumno, incluirAuditAlta: true, incluirAuditCambio: false);
+                            using (MySqlCommand cmd = new MySqlCommand(query, conn, tx))
+                            {
+                                AgregarParametrosAlumno(cmd, alumno, incluirAuditAlta: true, incluirAuditCambio: false);
 
-                        int rowsAffected = cmd.ExecuteNonQuery();
-                        if (rowsAffected > 0)
-                        {
-                            alumno.Id_Alumno = Convert.ToInt32(new MySqlCommand("SELECT LAST_INSERT_ID()", conn).ExecuteScalar());
-                            SincronizarEmailUsuario(conn, alumno.Id_Alumno, alumno.Email);
-                            InsertarBitacora(conn, "INSERT", alumno);
+                                int rowsAffected = cmd.ExecuteNonQuery();
+                                if (rowsAffected > 0)
+                                {
+                                    alumno.Id_Alumno = Convert.ToInt32(new MySqlCommand("SELECT LAST_INSERT_ID()", conn, tx).ExecuteScalar());
+                                    SincronizarEmailUsuario(conn, alumno.Id_Alumno, alumno.Email);
+                                    InsertarBitacora(conn, "INSERT", alumno);
+                                }
+                            }
+
+                            tx.Commit();
+                            return true;
                         }
-                        return rowsAffected > 0;
+                        catch
+                        {
+                            tx.Rollback();
+                            throw;
+                        }
                     }
                 }
             }
@@ -165,20 +178,23 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 using (MySqlConnection conn = MySQLConnection.GetConnection())
                 {
                     conn.Open();
+                    using (var tx = conn.BeginTransaction())
+                    {
+                        try
+                        {
+                            Alumno actual = ReadById(conn, alumno.Id_Alumno);
+                            if (actual == null)
+                                return false;
 
-                    Alumno actual = ReadById(conn, alumno.Id_Alumno);
-                    if (actual == null)
-                        return false;
+                            ValidarCamposRequeridos(conn, alumno, esNuevo: false);
+                            ValidarFormatos(alumno);
+                            ValidarDuplicados(conn, alumno, excluirId: alumno.Id_Alumno);
+                            ValidarTransicionStatus(conn, alumno, actual);
 
-                    ValidarCamposRequeridos(alumno, esNuevo: false);
-                    ValidarFormatos(alumno);
-                    ValidarDuplicados(conn, alumno, excluirId: alumno.Id_Alumno);
-                    ValidarTransicionStatus(conn, alumno, actual);
+                            alumno.Updated_By = ObtenerUsuarioAuditoria();
+                            bool emailCambio = !string.Equals(actual.Email, alumno.Email, StringComparison.OrdinalIgnoreCase);
 
-                    alumno.Updated_By = ObtenerUsuarioAuditoria();
-                    bool emailCambio = !string.Equals(actual.Email, alumno.Email, StringComparison.OrdinalIgnoreCase);
-
-                    string query = @"UPDATE Alumno SET
+                            string query = @"UPDATE Alumno SET
                                      no_control = @no_control,
                                      nombre = @nombre,
                                      apellido_paterno = @apellido_paterno,
@@ -213,22 +229,32 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                      motivo_baja = @motivo_baja,
                                      promedio_general = @promedio_general,
                                      status_change_reason = @status_change_reason,
-                                     updated_by = @updated_by
+                                     updated_by = @updated_by,
+                                     updated_at = NOW()
                                      WHERE id_alumno = @id_alumno AND is_deleted = 0";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                    {
-                        AgregarParametrosAlumno(cmd, alumno, incluirAuditAlta: false, incluirAuditCambio: true);
-                        cmd.Parameters.AddWithValue("@id_alumno", alumno.Id_Alumno);
+                            using (MySqlCommand cmd = new MySqlCommand(query, conn, tx))
+                            {
+                                AgregarParametrosAlumno(cmd, alumno, incluirAuditAlta: false, incluirAuditCambio: true);
+                                cmd.Parameters.AddWithValue("@id_alumno", alumno.Id_Alumno);
 
-                        int rowsAffected = cmd.ExecuteNonQuery();
-                        if (rowsAffected > 0)
-                        {
-                            if (emailCambio)
-                                SincronizarEmailUsuario(conn, alumno.Id_Alumno, alumno.Email);
-                            InsertarBitacora(conn, "UPDATE", alumno);
+                                int rowsAffected = cmd.ExecuteNonQuery();
+                                if (rowsAffected > 0)
+                                {
+                                    if (emailCambio)
+                                        SincronizarEmailUsuario(conn, alumno.Id_Alumno, alumno.Email);
+                                    InsertarBitacora(conn, "UPDATE", alumno);
+                                }
+                            }
+
+                            tx.Commit();
+                            return true;
                         }
-                        return rowsAffected > 0;
+                        catch
+                        {
+                            tx.Rollback();
+                            throw;
+                        }
                     }
                 }
             }
@@ -262,28 +288,39 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 using (MySqlConnection conn = MySQLConnection.GetConnection())
                 {
                     conn.Open();
+                    using (var tx = conn.BeginTransaction())
+                    {
+                        try
+                        {
+                            if (TieneAsignacionesActivas(conn, idAlumno))
+                                throw new CrudOperationException(MensajesAlumno.AlumnoConAsignaciones, "Delete", null);
 
-                    if (TieneAsignacionesActivas(conn, idAlumno))
-                        throw new CrudOperationException(MensajesAlumno.AlumnoConAsignaciones, "Delete", null);
-
-                    string query = @"UPDATE Alumno SET
+                            string query = @"UPDATE Alumno SET
                                      is_deleted = 1,
                                      deleted_at = NOW(),
                                      deleted_by = @deleted_by,
                                      deleted_reason = @deleted_reason
                                      WHERE id_alumno = @id_alumno AND is_deleted = 0";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@id_alumno", idAlumno);
-                        cmd.Parameters.AddWithValue("@deleted_by", ObtenerUsuarioAuditoria() ?? (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@deleted_reason", deletedReason.Trim());
+                            using (MySqlCommand cmd = new MySqlCommand(query, conn, tx))
+                            {
+                                cmd.Parameters.AddWithValue("@id_alumno", idAlumno);
+                                cmd.Parameters.AddWithValue("@deleted_by", ObtenerUsuarioAuditoria() ?? (object)DBNull.Value);
+                                cmd.Parameters.AddWithValue("@deleted_reason", deletedReason.Trim());
 
-                        int rowsAffected = cmd.ExecuteNonQuery();
-                        if (rowsAffected > 0)
-                            InsertarBitacora(conn, "DELETE", idAlumno, $"Alumno ID: {idAlumno}");
+                                int rowsAffected = cmd.ExecuteNonQuery();
+                                if (rowsAffected > 0)
+                                    InsertarBitacora(conn, "DELETE", idAlumno, $"Alumno ID: {idAlumno}");
+                            }
 
-                        return rowsAffected > 0;
+                            tx.Commit();
+                            return true;
+                        }
+                        catch
+                        {
+                            tx.Rollback();
+                            throw;
+                        }
                     }
                 }
             }
@@ -588,7 +625,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             cmd.Parameters.AddWithValue("@id_carrera", alumno.Id_Carrera.HasValue ? (object)alumno.Id_Carrera.Value : DBNull.Value);
             cmd.Parameters.AddWithValue("@semestre", alumno.Semestre.HasValue ? (object)alumno.Semestre.Value : DBNull.Value);
             cmd.Parameters.AddWithValue("@grupo", string.IsNullOrEmpty(alumno.Grupo) ? (object)DBNull.Value : alumno.Grupo);
-            cmd.Parameters.AddWithValue("@turno", string.IsNullOrEmpty(alumno.Turno) ? (object)DBNull.Value : alumno.Turno);
+            cmd.Parameters.AddWithValue("@turno", string.IsNullOrEmpty(alumno.Turno) ? (object)DBNull.Value : alumno.Turno.ToLowerInvariant());
 
             cmd.Parameters.AddWithValue("@fecha_ingreso", alumno.Fecha_Ingreso.HasValue ? (object)alumno.Fecha_Ingreso.Value : DBNull.Value);
             cmd.Parameters.AddWithValue("@fecha_egreso", alumno.Fecha_Egreso.HasValue ? (object)alumno.Fecha_Egreso.Value : DBNull.Value);
@@ -611,7 +648,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             return SesionActiva.Instance?.Id_Usuario > 0 ? SesionActiva.Instance.Id_Usuario : (int?)null;
         }
 
-        private void ValidarCamposRequeridos(Alumno alumno, bool esNuevo)
+        private void ValidarCamposRequeridos(MySqlConnection conn, Alumno alumno, bool esNuevo)
         {
             if (string.IsNullOrWhiteSpace(alumno.No_Control))
                 throw new CrudOperationException("El numero de control es requerido.", "Validate", alumno);
@@ -644,6 +681,10 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 if (string.IsNullOrWhiteSpace(alumno.Email))
                     throw new CrudOperationException("El email es requerido.", "Validate", alumno);
             }
+
+            // ALTO-06 fix: validar que la carrera seleccionada exista realmente
+            if (alumno.Id_Carrera.HasValue && !CarreraExiste(conn, alumno.Id_Carrera.Value))
+                throw new CrudOperationException("La carrera seleccionada no existe.", "Validate", alumno);
         }
 
         private void ValidarFormatos(Alumno alumno)
@@ -659,7 +700,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             if (!string.IsNullOrWhiteSpace(alumno.Rfc) && !AlumnoValidator.ValidarRfc(alumno.Rfc, out error))
                 throw new CrudOperationException(error, "Validate", alumno);
 
-            if (!AlumnoValidator.ValidarEmail(alumno.Email, out error))
+            // ALTO-01 fix: no validar email si esta vacio en edicion
+            if (!string.IsNullOrWhiteSpace(alumno.Email) && !AlumnoValidator.ValidarEmail(alumno.Email, out error))
                 throw new CrudOperationException(error, "Validate", alumno);
 
             if (!string.IsNullOrWhiteSpace(alumno.Telefono) && !AlumnoValidator.ValidarTelefono(alumno.Telefono, out error))
@@ -757,6 +799,33 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             using (MySqlCommand cmd = new MySqlCommand(query, conn))
             {
                 cmd.Parameters.AddWithValue("@no_control", noControl);
+                return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+            }
+        }
+
+        private bool CarreraExiste(int idCarrera)
+        {
+            try
+            {
+                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                {
+                    conn.Open();
+                    return CarreraExiste(conn, idCarrera);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error checking carrera existence", ex);
+                return false;
+            }
+        }
+
+        private bool CarreraExiste(MySqlConnection conn, int idCarrera)
+        {
+            string query = "SELECT COUNT(*) FROM Carrera WHERE id_carrera = @id_carrera";
+            using (MySqlCommand cmd = new MySqlCommand(query, conn))
+            {
+                cmd.Parameters.AddWithValue("@id_carrera", idCarrera);
                 return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
             }
         }

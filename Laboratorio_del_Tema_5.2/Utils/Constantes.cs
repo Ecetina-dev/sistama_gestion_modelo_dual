@@ -132,8 +132,8 @@ namespace Laboratorio_del_Tema_5_2.Utils
     // ============================================
     public static class AlumnoConfig
     {
-        public const int NoControlMinLength = 8;
-        public const int NoControlMaxLength = 15;
+        public const int NoControlMinLength = 10;
+        public const int NoControlMaxLength = 10;
         public const int CurpLength = 18;
         public const int RfcLength = 13;
         public const int TelefonoLength = 10;
@@ -145,7 +145,7 @@ namespace Laboratorio_del_Tema_5_2.Utils
         public const string RfcPattern = "^[A-ZÑ&]{4}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])[A-Z0-9]{3}$";
         public const string EmailPattern = "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$";
         public const string TelefonoPattern = "^[0-9]{10}$";
-        public const string NoControlPattern = "^[0-9]{8,15}$";
+        public const string NoControlPattern = "^[A-Z0-9]{10}$";
         public const string CodigoPostalPattern = "^[0-9]{5}$";
     }
 
@@ -279,7 +279,7 @@ namespace Laboratorio_del_Tema_5_2.Utils
         public const string MotivoBajaRequerido = "El motivo de baja es requerido para dar de baja un alumno.";
         public const string MotivoEliminacionRequerido = "El motivo de eliminacion es requerido.";
         public const string AlumnoConAsignaciones = "No se puede eliminar el alumno porque tiene asignaciones activas.";
-        public const string NoControlInvalido = "El numero de control debe contener entre 8 y 15 digitos.";
+        public const string NoControlInvalido = "El numero de control debe tener exactamente 10 caracteres alfanumericos mayusculas/numeros.";
         public const string TelefonoInvalido = "El telefono debe contener 10 digitos.";
         public const string SemestreInvalido = "El semestre no es valido para la carrera.";
     }
