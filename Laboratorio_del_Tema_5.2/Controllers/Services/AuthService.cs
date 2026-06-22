@@ -313,5 +313,149 @@ namespace Laboratorio_del_Tema_5_2.Controllers.Services
                 SesionActiva.Instance.CerrarSesion();
             }
         }
+    
+        public ResultadoLogin ActivarCuenta(string username, string passwordTemporal, string passwordNuevo)
+        {
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrEmpty(passwordTemporal) || string.IsNullOrEmpty(passwordNuevo))
+                return new ResultadoLogin { Success = false, Message = "Todos los campos son requeridos" };
+
+            if (passwordNuevo.Length < Seguridad.PasswordMinLength)
+                return new ResultadoLogin { Success = false, Message = Seguridad.MsgPasswordLongitud };
+
+            var validacionComun = PasswordValidator.Validar(passwordNuevo, username, null);
+            if (!validacionComun.EsValido)
+            {
+                Logger.Warning($"Intento de activar cuenta con password débil: '{username}'. Razón: {validacionComun.Razon}");
+                return new ResultadoLogin { Success = false, Message = validacionComun.Razon };
+            }
+
+            username = username.Trim();
+
+            try
+            {
+                using (var db = new ModeloDualContext())
+                using (var tx = db.Database.BeginTransaction(System.Data.IsolationLevel.Serializable))
+                {
+                    try
+                    {
+                        var user = db.Usuarios
+                            .FirstOrDefault(u => u.Username.ToLower() == username.ToLower()
+                                              && u.Is_Deleted != true);
+
+                        if (user == null)
+                        {
+                            tx.Rollback();
+                            return new ResultadoLogin { Success = false, Message = "Credenciales invalidas" };
+                        }
+
+                        if (user.Bloqueado_Hasta.HasValue && DateTime.Now < user.Bloqueado_Hasta.Value)
+                        {
+                            tx.Rollback();
+                            TimeSpan restante = user.Bloqueado_Hasta.Value - DateTime.Now;
+                            Logger.Warning($"Activacion bloqueada para '{username}'. Restante: {Math.Ceiling(restante.TotalMinutes)} min");
+                            return new ResultadoLogin { Success = false, Message = $"Demasiados intentos fallidos. Reintenta en {Math.Ceiling(restante.TotalMinutes)} minuto(s)." };
+                        }
+
+                        if (user.Status != "activo")
+                        {
+                            tx.Rollback();
+                            return new ResultadoLogin { Success = false, Message = "Tu cuenta no esta activa. Contacta al administrador." };
+                        }
+
+                        if (string.IsNullOrEmpty(user.Password_Temporal_Hash))
+                        {
+                            tx.Rollback();
+                            return new ResultadoLogin { Success = false, Message = "Esta cuenta ya fue activada. Usa el login normal." };
+                        }
+
+                        if (!BCrypt.Net.BCrypt.Verify(passwordTemporal, user.Password_Temporal_Hash))
+                        {
+                            user.Intentos_Fallidos = (user.Intentos_Fallidos ?? 0) + 1;
+                            int intentosActuales = user.Intentos_Fallidos.Value;
+                            int maxIntentos = ParametroSistemaService.Instance.GetInt(Claves.MAX_INTENTOS_LOGIN, Seguridad.MaxIntentosLogin);
+
+                            if (intentosActuales >= maxIntentos)
+                                user.Bloqueado_Hasta = DateTime.Now.AddMinutes(
+                                    ParametroSistemaService.Instance.GetInt(Claves.TIEMPO_BLOQUEO_MINUTOS, Seguridad.MinutosBloqueo));
+
+                            db.SaveChanges();
+
+                            int restantes = maxIntentos - intentosActuales;
+                            Logger.Warning($"Intento de activacion con password temporal invalido: '{username}'. Restantes: {restantes}");
+                            tx.Commit();
+                            return new ResultadoLogin
+                            {
+                                Success = false,
+                                Message = restantes > 0 ? $"Credenciales invalidas (Intentos restantes: {restantes})" : Seguridad.MsgCuentaBloqueada,
+                                IntentosRestantes = restantes
+                            };
+                        }
+
+                        // Validar contra historial de passwords reutilizados
+                        var history = db.Database.SqlQuery<int>(
+                            "SELECT COUNT(*) FROM password_history WHERE id_usuario = @p0 AND password_hash = @p1",
+                            user.Id_Usuario,
+                            BCrypt.Net.BCrypt.HashPassword(passwordNuevo, Seguridad.BcryptCostFactor)).FirstOrDefault();
+
+                        if (history > 0)
+                        {
+                            tx.Rollback();
+                            Logger.Warning($"Activacion rechazada: password reutilizado (usuario {username})");
+                            return new ResultadoLogin { Success = false, Message = "No podes reutilizar una contrasena reciente. Elegi una diferente." };
+                        }
+
+                        // Activar cuenta
+                        string nuevoHash = BCrypt.Net.BCrypt.HashPassword(passwordNuevo, Seguridad.BcryptCostFactor);
+                        user.PasswordHash = nuevoHash;
+                        user.Password_Temporal_Hash = null;
+                        user.Debe_Cambiar_Password = 0;
+                        user.Fecha_Activacion = DateTime.Now;
+                        user.Intentos_Fallidos = 0;
+                        user.Bloqueado_Hasta = null;
+
+                        db.SaveChanges();
+                        tx.Commit();
+
+                        Logger.Info($"Cuenta activada exitosamente: '{username}'");
+
+                        var usuarioDto = new Usuario
+                        {
+                            Id_Usuario = user.Id_Usuario,
+                            Username = user.Username,
+                            Email = user.Email,
+                            Id_Rol = user.Id_Rol,
+                            Status = user.Status,
+                            PasswordHash = nuevoHash,
+                            Debe_Cambiar_Password = false,
+                            Fecha_Activacion = DateTime.Now,
+                            Created_At = user.Created_At ?? DateTime.Now
+                        };
+
+                        List<string> privilegios = ObtenerPrivilegios(db, user.Id_Rol);
+                        var (tipoEntidad, idEntidad) = ObtenerEntidadVinculada(db, user.Id_Usuario);
+
+                        SesionActiva.Instance.IniciarSesion(usuarioDto, "usuario", tipoEntidad, idEntidad, privilegios);
+
+                        return new ResultadoLogin
+                        {
+                            Success = true,
+                            Message = "Cuenta activada exitosamente",
+                            Usuario = usuarioDto,
+                            RequiereCambioPassword = false
+                        };
+                    }
+                    catch
+                    {
+                        tx.Rollback();
+                        throw;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error en ActivarCuenta", ex);
+                return new ResultadoLogin { Success = false, Message = Seguridad.MsgErrorGenerico };
+            }
+        }
     }
 }
