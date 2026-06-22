@@ -713,7 +713,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                  debe_cambiar_password, password_temporal_hash, creado_por)
                                 VALUES
                                 (@username, @email, @temp_hash, @id_rol, 'activo',
-                                 TRUE, @temp_hash, @creado_por)";
+                                 1, @temp_hash, @creado_por)";
 
                             int idUsuario;
                             using (SqlCommand cmd = new SqlCommand(queryUsuario, conn, transaction))
@@ -765,9 +765,9 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                     }
                 }
             }
-            catch (SqlException mysqlEx) when (mysqlEx.Number == 1062)
+            catch (SqlException sqlEx) when (sqlEx.Number == 2627)
             {
-                Logger.Warning($"Intento de crear duplicado: '{username}' o '{email}'");
+                Logger.Warning($"Intento de crear duplicado (CargarUsuario): '{username}' o '{email}'");
                 return new ResultadoCarga { Success = false, Message = "Username o email duplicado" };
             }
             catch (Exception ex)
@@ -804,7 +804,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                     string query = @"UPDATE Usuario
                                     SET password_temporal_hash = @temp_hash,
                                         password_hash = @temp_hash,
-                                        debe_cambiar_password = TRUE,
+                                        debe_cambiar_password = 1,
                                         fecha_activacion = NULL
                                     WHERE id_usuario = @id";
 
