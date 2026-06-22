@@ -76,8 +76,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                             string rolNombre = reader.GetString(reader.GetOrdinal("rol_nombre"));
 
                             // Enterprise: leer campos de soft delete y activacion
-                            bool isDeleted = !reader.IsDBNull(reader.GetOrdinal("is_deleted")) && reader.GetBoolean(reader.GetOrdinal("is_deleted"));
-                            bool debeCambiarPassword = !reader.IsDBNull(reader.GetOrdinal("debe_cambiar_password")) && reader.GetBoolean(reader.GetOrdinal("debe_cambiar_password"));
+                            bool isDeleted = !reader.IsDBNull(reader.GetOrdinal("is_deleted")) && reader.GetInt16(reader.GetOrdinal("is_deleted")) != 0;
+                            bool debeCambiarPassword = !reader.IsDBNull(reader.GetOrdinal("debe_cambiar_password")) && reader.GetInt16(reader.GetOrdinal("debe_cambiar_password")) != 0;
                             DateTime? fechaActivacion = reader.IsDBNull(reader.GetOrdinal("fecha_activacion")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("fecha_activacion"));
                             DateTime? deletedAt = reader.IsDBNull(reader.GetOrdinal("deleted_at")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("deleted_at"));
 
@@ -473,7 +473,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                             Status = reader.GetString(reader.GetOrdinal("status")),
                             Ultimo_Login = reader.IsDBNull(reader.GetOrdinal("ultimo_login")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("ultimo_login")),
                             Created_At = reader.GetDateTime(reader.GetOrdinal("created_at")),
-                            Debe_Cambiar_Password = reader.GetBoolean(reader.GetOrdinal("debe_cambiar_password")),
+                            Debe_Cambiar_Password = reader.GetInt16(reader.GetOrdinal("debe_cambiar_password")) != 0,
                             Fecha_Activacion = reader.IsDBNull(reader.GetOrdinal("fecha_activacion")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("fecha_activacion"))
                         };
                     }
@@ -1338,7 +1338,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                 Email = reader.GetString(reader.GetOrdinal("email")),
                                 Id_Rol = reader.GetInt32(reader.GetOrdinal("id_rol")),
                                 Status = reader.GetString(reader.GetOrdinal("status")),
-                                Debe_Cambiar_Password = reader.GetBoolean(reader.GetOrdinal("debe_cambiar_password")),
+                                Debe_Cambiar_Password = reader.GetInt16(reader.GetOrdinal("debe_cambiar_password")) != 0,
                                 Fecha_Activacion = reader.IsDBNull(reader.GetOrdinal("fecha_activacion"))
                                     ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("fecha_activacion")),
                                 Created_At = reader.GetDateTime(reader.GetOrdinal("created_at")),
