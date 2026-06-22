@@ -90,6 +90,9 @@ namespace Laboratorio_del_Tema_5_2.Models
 
         public void IniciarSesion(Usuario usuario, string nombreRol, string tipoEntidad, int? idEntidad, List<string> privilegios)
         {
+            if (usuario == null)
+                throw new ArgumentNullException(nameof(usuario));
+
             Id_Usuario = usuario.Id_Usuario;
             Username = usuario.Username;
             Email = usuario.Email;
@@ -97,7 +100,7 @@ namespace Laboratorio_del_Tema_5_2.Models
             Nombre_Rol = nombreRol;
             Tipo_Entidad = tipoEntidad;
             Id_Entidad = idEntidad;
-            Privilegios = privilegios;
+            Privilegios = privilegios ?? new List<string>();
             Fecha_Login = DateTime.Now;
             Debe_Cambiar_Password = usuario.Debe_Cambiar_Password;
         }

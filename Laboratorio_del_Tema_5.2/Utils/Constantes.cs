@@ -218,7 +218,7 @@ namespace Laboratorio_del_Tema_5_2.Utils
         // Limites de seguridad (fallbacks - DB manda)
         // ============================================
         public const int MaxIntentosLogin = 5;
-        public const int MinutosBloqueo = 1;
+        public const int MinutosBloqueo = 15;
         public const int BcryptCostFactor = 11;
         public const int DuracionSesionHoras = 8;
 

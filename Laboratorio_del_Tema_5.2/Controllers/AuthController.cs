@@ -66,7 +66,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                     bool isDeleted = user.Is_Deleted == true;
                     bool debeCambiarPassword = user.Debe_Cambiar_Password == 1;
                     DateTime? fechaActivacion = user.Fecha_Activacion;
-                    DateTime? deletedAt = user.Deleted_At;
 
                     // Check: cuenta eliminada (soft delete)
                     if (isDeleted)
@@ -172,30 +171,46 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                         Created_At = user.Created_At ?? DateTime.Now
                     };
 
-                    List<string> privilegios = ObtenerPrivilegiosEF(db, user.Id_Rol);
-                    var (tipoEntidad, idEntidad) = ObtenerEntidadVinculadaEF(db, idUsuario);
-
-                    SesionActiva.Instance.IniciarSesion(usuario, rolNombre, tipoEntidad, idEntidad, privilegios);
-
-                    // Crear sesion EF
-                    db.Sesiones.Add(new SesionEF
+                    // Transaccion explicita para atomicidad
+                    using (var tx = db.Database.BeginTransaction())
                     {
-                        Id_Sesion = Guid.NewGuid().ToString("N"),
-                        Id_Usuario = idUsuario,
-                        Fecha_Inicio = DateTime.Now,
-                        Fecha_Expiracion = DateTime.Now.AddHours(Seguridad.DuracionSesionHoras),
-                        Ip_Address = "127.0.0.1",
-                        User_Agent = "WinForms App",
-                        Status = "activa"
-                    });
+                        try
+                        {
 
-                    // Bitacora via SQL directo (la tabla usa triggers)
-                    db.Database.ExecuteSqlCommand(
-                        "INSERT INTO bitacora (tabla_afectada, id_registro, operacion, usuario, datos_nuevos) VALUES (@p0, @p1, @p2, @p3, @p4)",
-                        "Usuario", idUsuario.ToString(), "LOGIN", usernameBd,
-                        $"{{\"username\":\"{usernameBd}\"}}");
+                            List<string> privilegios = ObtenerPrivilegiosEF(db, user.Id_Rol);
+                            var (tipoEntidad, idEntidad) = ObtenerEntidadVinculadaEF(db, idUsuario);
 
-                    db.SaveChanges();
+                            SesionActiva.Instance.IniciarSesion(usuario, rolNombre, tipoEntidad, idEntidad, privilegios);
+
+                            // Crear sesion EF
+                            db.Sesiones.Add(new SesionEF
+                            {
+                                Id_Sesion = Guid.NewGuid().ToString("N"),
+                                Id_Usuario = idUsuario,
+                                Fecha_Inicio = DateTime.Now,
+                                Fecha_Expiracion = DateTime.Now.AddHours(Seguridad.DuracionSesionHoras),
+                                Ip_Address = "127.0.0.1",
+                                User_Agent = "WinForms App",
+                                Status = "activa"
+                            });
+
+                            // Bitacora via SQL directo (JSON con serializador para evitar inyeccion)
+                            string jsonDatos = new System.Web.Script.Serialization.JavaScriptSerializer()
+                                .Serialize(new { username = usernameBd });
+
+                            db.Database.ExecuteSqlCommand(
+                                "INSERT INTO bitacora (tabla_afectada, id_registro, operacion, usuario, datos_nuevos) VALUES (@p0, @p1, @p2, @p3, @p4)",
+                                "Usuario", idUsuario.ToString(), "LOGIN", usernameBd, jsonDatos);
+
+                            db.SaveChanges();
+                            tx.Commit();
+                        }
+                        catch
+                        {
+                            tx.Rollback();
+                            throw;
+                        }
+                    }
 
                     Logger.Info($"Login exitoso para usuario '{usernameBd}' (rol: {rolNombre})");
 
