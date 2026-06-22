@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Data.Entity;
+using System.Linq;
 using Laboratorio_del_Tema_5_2.Data;
+using Laboratorio_del_Tema_5_2.Data.EntityModel;
 using Laboratorio_del_Tema_5_2.Models;
 using Laboratorio_del_Tema_5_2.Utils;
 using Laboratorio_del_Tema_5_2.Controllers.Services;
@@ -24,7 +27,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
             login = login.Trim();
 
-            // Limitar longitud para evitar ataques de tipo DoS
             if (login.Length > Seguridad.LoginMaxLength || password.Length > Seguridad.PasswordMaxLength)
             {
                 Logger.Warning($"Intento de login con input excesivo. Login length: {login.Length}");
@@ -37,183 +39,179 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
             try
             {
-                using (SqlConnection conn = SqlServerConnection.GetConnection())
+                using (var db = new ModeloDualContext())
                 {
-                    conn.Open();
+                    var user = db.Usuarios
+                        .Include(u => u.Rol)
+                        .FirstOrDefault(u => u.Username.ToLower() == login.ToLower()
+                                          || u.Email.ToLower() == login.ToLower());
 
-                    string query = @"SELECT u.id_usuario, u.username, u.email, u.password_hash,
-                                            u.id_rol, u.status, u.intentos_fallidos, u.bloqueado_hasta,
-                                            u.is_deleted, u.debe_cambiar_password, u.fecha_activacion,
-                                            u.deleted_at,
-                                            r.nombre AS rol_nombre
-                                     FROM Usuario u
-                                     INNER JOIN Rol r ON u.id_rol = r.id_rol
-                                     WHERE (LOWER(u.username) = LOWER(@login) OR LOWER(u.email) = LOWER(@login))";
-
-                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    if (user == null)
                     {
-                        cmd.Parameters.AddWithValue("@login", login);
-
-                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        try { BCrypt.Net.BCrypt.Verify("dummy", "$2a$11$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"); } catch { }
+                        return new ResultadoLogin
                         {
-                            if (!reader.Read())
-                            {
-                                // Timing-safe: ejecutar BCrypt con dummy hash para mismo timing
-                                try { BCrypt.Net.BCrypt.Verify("dummy", "$2a$11$aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"); } catch { }
-                                // No revelar si el usuario existe o no
-                                return new ResultadoLogin
-                                {
-                                    Success = false,
-                                    Message = Seguridad.MsgCredencialesInvalidas
-                                };
-                            }
-
-                            int idUsuario = reader.GetInt32(reader.GetOrdinal("id_usuario"));
-                            string usernameBd = reader.GetString(reader.GetOrdinal("username"));
-                            string passwordHash = reader.GetString(reader.GetOrdinal("password_hash"));
-                            string status = reader.GetString(reader.GetOrdinal("status"));
-                            int intentosFallidos = reader.IsDBNull(reader.GetOrdinal("intentos_fallidos")) ? 0 : reader.GetInt32(reader.GetOrdinal("intentos_fallidos"));
-                            string rolNombre = reader.GetString(reader.GetOrdinal("rol_nombre"));
-
-                            // Enterprise: leer campos de soft delete y activacion
-                            bool isDeleted = !reader.IsDBNull(reader.GetOrdinal("is_deleted")) && reader.GetInt16(reader.GetOrdinal("is_deleted")) != 0;
-                            bool debeCambiarPassword = !reader.IsDBNull(reader.GetOrdinal("debe_cambiar_password")) && reader.GetInt16(reader.GetOrdinal("debe_cambiar_password")) != 0;
-                            DateTime? fechaActivacion = reader.IsDBNull(reader.GetOrdinal("fecha_activacion")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("fecha_activacion"));
-                            DateTime? deletedAt = reader.IsDBNull(reader.GetOrdinal("deleted_at")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("deleted_at"));
-
-                            // Check: cuenta eliminada (soft delete)
-                            if (isDeleted)
-                            {
-                                Logger.Warning($"Intento de login en cuenta eliminada: '{usernameBd}'");
-                                return new ResultadoLogin
-                                {
-                                    Success = false,
-                                    CuentaEliminada = true,
-                                    Message = "Esta cuenta ha sido eliminada. Contacta al administrador."
-                                };
-                            }
-
-                            // Usamos el parametro del sistema en lugar de la constante fija
-                            int minutosBloqueo = ParametroSistemaService.Instance.GetInt(
-                                Claves.TIEMPO_BLOQUEO_MINUTOS, Seguridad.MinutosBloqueo);
-
-                            if (!reader.IsDBNull(reader.GetOrdinal("bloqueado_hasta")))
-                            {
-                                DateTime bloqueadoHasta = reader.GetDateTime(reader.GetOrdinal("bloqueado_hasta"));
-                                if (DateTime.Now < bloqueadoHasta)
-                                {
-                                    TimeSpan restante = bloqueadoHasta - DateTime.Now;
-                                    Logger.Warning($"Cuenta bloqueada: '{usernameBd}'. Restante: {restante.Minutes} min");
-                                    string msgBloqueo = $"Demasiados intentos fallidos. Reintenta en {Math.Ceiling(restante.TotalMinutes)} minuto(s).";
-                                    return new ResultadoLogin
-                                    {
-                                        Success = false,
-                                        Message = msgBloqueo
-                                    };
-                                }
-                            }
-
-                            if (status == "inactivo")
-                            {
-                                Logger.Warning($"Intento de login en cuenta inactiva: '{usernameBd}'");
-                                return new ResultadoLogin
-                                {
-                                    Success = false,
-                                    Message = Seguridad.MsgCuentaInactiva
-                                };
-                            }
-
-                            if (status == "suspendido")
-                            {
-                                Logger.Warning($"Intento de login en cuenta suspendida: '{usernameBd}'");
-                                return new ResultadoLogin
-                                {
-                                    Success = false,
-                                    Message = Seguridad.MsgCuentaInactiva
-                                };
-                            }
-
-                            if (!BCrypt.Net.BCrypt.Verify(password, passwordHash))
-                            {
-                                reader.Close();
-                                IncrementarIntentosFallidos(conn, idUsuario, intentosFallidos);
-                                int maxIntentos = ParametroSistemaService.Instance.GetInt(
-                                    Claves.MAX_INTENTOS_LOGIN, Seguridad.MaxIntentosLogin);
-                                int restantes = maxIntentos - intentosFallidos - 1;
-                                Logger.Warning($"Contrasena incorrecta para '{usernameBd}'. Intentos restantes: {restantes}");
-                                return new ResultadoLogin
-                                {
-                                    Success = false,
-                                    // Mensaje generico - no revela info
-                                    Message = restantes > 0
-                                        ? $"{Seguridad.MsgCredencialesInvalidas} (Intentos restantes: {restantes})"
-                                        : Seguridad.MsgCuentaBloqueada,
-                                    IntentosRestantes = restantes
-                                };
-                            }
-
-                            // Enterprise: cuenta requiere activacion (password temporal)
-                            if (debeCambiarPassword)
-                            {
-                                reader.Close();
-                                Logger.Info($"Cuenta requiere activacion: '{usernameBd}'");
-                                return new ResultadoLogin
-                                {
-                                    Success = true,
-                                    RequiereActivacion = true,
-                                    Message = "Debes activar tu cuenta con una nueva contraseña."
-                                };
-                            }
-
-                            // Enterprise: verificar caducidad de password
-                            int diasCaducidad = ParametroSistemaService.Instance.GetInt(
-                                Claves.DIAS_CADUCIDAD_PASSWORD, Seguridad.DiasCaducidadPassword);
-                            bool passwordExpirado = false;
-                            if (fechaActivacion.HasValue)
-                            {
-                                passwordExpirado = (DateTime.Now - fechaActivacion.Value).TotalDays > diasCaducidad;
-                            }
-
-                            reader.Close();
-
-                            ActualizarUltimoLogin(conn, idUsuario);
-
-                            Usuario usuario = ObtenerUsuarioPorId(conn, idUsuario);
-                            List<string> privilegios = ObtenerPrivilegios(conn, usuario.Id_Rol);
-                            var (tipoEntidad, idEntidad) = ObtenerEntidadVinculada(conn, idUsuario);
-
-                            SesionActiva.Instance.IniciarSesion(usuario, rolNombre, tipoEntidad, idEntidad, privilegios);
-
-                            CrearSesion(conn, idUsuario);
-
-                            InsertarBitacora(conn, "Usuario", idUsuario.ToString(), "LOGIN", usernameBd);
-
-                            Logger.Info($"Login exitoso para usuario '{usernameBd}' (rol: {rolNombre})");
-
-                            return new ResultadoLogin
-                            {
-                                Success = true,
-                                Message = "Login exitoso",
-                                Usuario = usuario,
-                                RequiereCambioPassword = usuario.Debe_Cambiar_Password,
-                                PasswordExpirado = passwordExpirado
-                            };
-                        }
+                            Success = false,
+                            Message = Seguridad.MsgCredencialesInvalidas
+                        };
                     }
+
+                    int idUsuario = user.Id_Usuario;
+                    string usernameBd = user.Username;
+                    string passwordHash = user.PasswordHash;
+                    string status = user.Status;
+                    int intentosFallidos = user.Intentos_Fallidos ?? 0;
+                    string rolNombre = user.Rol?.Nombre ?? "";
+
+                    bool isDeleted = user.Is_Deleted == true;
+                    bool debeCambiarPassword = user.Debe_Cambiar_Password == 1;
+                    DateTime? fechaActivacion = user.Fecha_Activacion;
+                    DateTime? deletedAt = user.Deleted_At;
+
+                    // Check: cuenta eliminada (soft delete)
+                    if (isDeleted)
+                    {
+                        Logger.Warning($"Intento de login en cuenta eliminada: '{usernameBd}'");
+                        return new ResultadoLogin
+                        {
+                            Success = false,
+                            CuentaEliminada = true,
+                            Message = "Esta cuenta ha sido eliminada. Contacta al administrador."
+                        };
+                    }
+
+                    int minutosBloqueo = ParametroSistemaService.Instance.GetInt(
+                        Claves.TIEMPO_BLOQUEO_MINUTOS, Seguridad.MinutosBloqueo);
+
+                    if (user.Bloqueado_Hasta.HasValue && DateTime.Now < user.Bloqueado_Hasta.Value)
+                    {
+                        TimeSpan restante = user.Bloqueado_Hasta.Value - DateTime.Now;
+                        Logger.Warning($"Cuenta bloqueada: '{usernameBd}'. Restante: {restante.Minutes} min");
+                        return new ResultadoLogin
+                        {
+                            Success = false,
+                            Message = $"Demasiados intentos fallidos. Reintenta en {Math.Ceiling(restante.TotalMinutes)} minuto(s)."
+                        };
+                    }
+
+                    if (status == "inactivo" || status == "suspendido")
+                    {
+                        Logger.Warning($"Intento de login en cuenta {status}: '{usernameBd}'");
+                        return new ResultadoLogin
+                        {
+                            Success = false,
+                            Message = Seguridad.MsgCuentaInactiva
+                        };
+                    }
+
+                    if (!BCrypt.Net.BCrypt.Verify(password, passwordHash))
+                    {
+                        // EF: incrementar intentos fallidos
+                        user.Intentos_Fallidos = (user.Intentos_Fallidos ?? 0) + 1;
+                        int intentosActuales = user.Intentos_Fallidos.Value;
+                        int maxIntentos = ParametroSistemaService.Instance.GetInt(
+                            Claves.MAX_INTENTOS_LOGIN, Seguridad.MaxIntentosLogin);
+
+                        if (intentosActuales >= maxIntentos)
+                        {
+                            user.Bloqueado_Hasta = DateTime.Now.AddMinutes(minutosBloqueo);
+                            Logger.Warning($"Cuenta bloqueada por {minutosBloqueo} min: '{usernameBd}'");
+                        }
+
+                        db.SaveChanges();
+
+                        int restantes = maxIntentos - intentosActuales;
+                        Logger.Warning($"Contrasena incorrecta para '{usernameBd}'. Intentos restantes: {restantes}");
+                        return new ResultadoLogin
+                        {
+                            Success = false,
+                            Message = restantes > 0
+                                ? $"{Seguridad.MsgCredencialesInvalidas} (Intentos restantes: {restantes})"
+                                : Seguridad.MsgCuentaBloqueada,
+                            IntentosRestantes = restantes
+                        };
+                    }
+
+                    // Enterprise: cuenta requiere activacion (password temporal)
+                    if (debeCambiarPassword)
+                    {
+                        Logger.Info($"Cuenta requiere activacion: '{usernameBd}'");
+                        return new ResultadoLogin
+                        {
+                            Success = true,
+                            RequiereActivacion = true,
+                            Message = "Debes activar tu cuenta con una nueva contraseña."
+                        };
+                    }
+
+                    // Enterprise: verificar caducidad de password
+                    int diasCaducidad = ParametroSistemaService.Instance.GetInt(
+                        Claves.DIAS_CADUCIDAD_PASSWORD, Seguridad.DiasCaducidadPassword);
+                    bool passwordExpirado = false;
+                    if (fechaActivacion.HasValue)
+                    {
+                        passwordExpirado = (DateTime.Now - fechaActivacion.Value).TotalDays > diasCaducidad;
+                    }
+
+                    // Actualizar ultimo login
+                    user.Ultimo_Login = DateTime.Now;
+                    user.Intentos_Fallidos = 0;
+                    user.Bloqueado_Hasta = null;
+
+                    // Mapear a modelo Usuario (no EF) para la sesion activa
+                    var usuario = new Usuario
+                    {
+                        Id_Usuario = user.Id_Usuario,
+                        Username = user.Username,
+                        Email = user.Email,
+                        Id_Rol = user.Id_Rol,
+                        Status = user.Status,
+                        PasswordHash = user.PasswordHash,
+                        Debe_Cambiar_Password = user.Debe_Cambiar_Password == 1,
+                        Fecha_Activacion = user.Fecha_Activacion,
+                        Created_At = user.Created_At ?? DateTime.Now
+                    };
+
+                    List<string> privilegios = ObtenerPrivilegiosEF(db, user.Id_Rol);
+                    var (tipoEntidad, idEntidad) = ObtenerEntidadVinculadaEF(db, idUsuario);
+
+                    SesionActiva.Instance.IniciarSesion(usuario, rolNombre, tipoEntidad, idEntidad, privilegios);
+
+                    // Crear sesion EF
+                    db.Sesiones.Add(new SesionEF
+                    {
+                        Id_Sesion = Guid.NewGuid().ToString("N"),
+                        Id_Usuario = idUsuario,
+                        Fecha_Inicio = DateTime.Now,
+                        Fecha_Expiracion = DateTime.Now.AddHours(Seguridad.DuracionSesionHoras),
+                        Ip_Address = "127.0.0.1",
+                        User_Agent = "WinForms App",
+                        Status = "activa"
+                    });
+
+                    // Bitacora via SQL directo (la tabla usa triggers)
+                    db.Database.ExecuteSqlCommand(
+                        "INSERT INTO bitacora (tabla_afectada, id_registro, operacion, usuario, datos_nuevos) VALUES (@p0, @p1, @p2, @p3, @p4)",
+                        "Usuario", idUsuario.ToString(), "LOGIN", usernameBd,
+                        $"{{\"username\":\"{usernameBd}\"}}");
+
+                    db.SaveChanges();
+
+                    Logger.Info($"Login exitoso para usuario '{usernameBd}' (rol: {rolNombre})");
+
+                    return new ResultadoLogin
+                    {
+                        Success = true,
+                        Message = "Login exitoso",
+                        Usuario = usuario,
+                        RequiereCambioPassword = usuario.Debe_Cambiar_Password,
+                        PasswordExpirado = passwordExpirado
+                    };
                 }
-            }
-            catch (SqlException mysqlEx)
-            {
-                Logger.Error("Error de MySQL en ValidarCredenciales", mysqlEx);
-                return new ResultadoLogin
-                {
-                    Success = false,
-                    Message = Seguridad.MsgErrorConexion
-                };
             }
             catch (Exception ex)
             {
-                Logger.Error("Error inesperado en ValidarCredenciales", ex);
+                Logger.Error("Error en ValidarCredenciales", ex);
                 return new ResultadoLogin
                 {
                     Success = false,
@@ -535,6 +533,34 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 if (result != null && result != DBNull.Value)
                     return ("empresa", Convert.ToInt32(result));
             }
+
+            return (null, null);
+        }
+
+        private List<string> ObtenerPrivilegiosEF(ModeloDualContext db, int idRol)
+        {
+            return (from rp in db.RolesPrivilegios
+                    join p in db.Privilegios on rp.Id_Privilegio equals p.Id_Privilegio
+                    where rp.Id_Rol == idRol
+                    select p.Nombre).ToList();
+        }
+
+        private (string tipoEntidad, int? idEntidad) ObtenerEntidadVinculadaEF(ModeloDualContext db, int idUsuario)
+        {
+            var alumno = db.UsuariosAlumnos
+                .FirstOrDefault(ua => ua.Id_Usuario == idUsuario);
+            if (alumno != null)
+                return ("alumno", alumno.Id_Alumno);
+
+            var prof = db.UsuariosProfesores
+                .FirstOrDefault(up => up.Id_Usuario == idUsuario);
+            if (prof != null)
+                return ("profesor", prof.Id_Profesor);
+
+            var emp = db.UsuariosEmpresas
+                .FirstOrDefault(ue => ue.Id_Usuario == idUsuario);
+            if (emp != null)
+                return ("empresa", emp.Id_Empresa);
 
             return (null, null);
         }

@@ -27,6 +27,11 @@ namespace Laboratorio_del_Tema_5_2.Data.EntityModel
         public DbSet<EmpresaEF> Empresas { get; set; }
         public DbSet<ProyectoEF> Proyectos { get; set; }
         public DbSet<TemaEF> Temas { get; set; }
+        public DbSet<SesionEF> Sesiones { get; set; }
+        public DbSet<RolPrivilegioEF> RolesPrivilegios { get; set; }
+        public DbSet<UsuarioAlumnoEF> UsuariosAlumnos { get; set; }
+        public DbSet<UsuarioProfesorEF> UsuariosProfesores { get; set; }
+        public DbSet<UsuarioEmpresaEF> UsuariosEmpresas { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -664,4 +669,86 @@ namespace Laboratorio_del_Tema_5_2.Data.EntityModel
         [ForeignKey("Id_Materia")]
         public virtual MateriaEF Materia { get; set; }
     }
+
+
+    [Table("sesion")]
+    public class SesionEF
+    {
+        [Key]
+        [StringLength(64)]
+        [Column("id_sesion")]
+        public string Id_Sesion { get; set; }
+
+        [Column("id_usuario")]
+        public int Id_Usuario { get; set; }
+
+        [Column("fecha_inicio")]
+        public DateTime Fecha_Inicio { get; set; }
+
+        [Column("fecha_expiracion")]
+        public DateTime Fecha_Expiracion { get; set; }
+
+        [StringLength(45)]
+        [Column("ip_address")]
+        public string Ip_Address { get; set; }
+
+        [StringLength(255)]
+        [Column("user_agent")]
+        public string User_Agent { get; set; }
+
+        [Required]
+        [StringLength(10)]
+        [Column("status")]
+        public string Status { get; set; }
+
+        [ForeignKey("Id_Usuario")]
+        public virtual UsuarioEF Usuario { get; set; }
+    }
+
+    [Table("rol_privilegio")]
+    public class RolPrivilegioEF
+    {
+        [Key, Column("id_rol", Order = 0)]
+        public int Id_Rol { get; set; }
+
+        [Key, Column("id_privilegio", Order = 1)]
+        public int Id_Privilegio { get; set; }
+
+        [ForeignKey("Id_Rol")]
+        public virtual RolEF Rol { get; set; }
+
+        [ForeignKey("Id_Privilegio")]
+        public virtual PrivilegioEF Privilegio { get; set; }
+    }
+
+    [Table("usuario_alumno")]
+    public class UsuarioAlumnoEF
+    {
+        [Key, Column("id_usuario", Order = 0)]
+        public int Id_Usuario { get; set; }
+
+        [Key, Column("id_alumno", Order = 1)]
+        public int Id_Alumno { get; set; }
+    }
+
+    [Table("usuario_profesor")]
+    public class UsuarioProfesorEF
+    {
+        [Key, Column("id_usuario", Order = 0)]
+        public int Id_Usuario { get; set; }
+
+        [Key, Column("id_profesor", Order = 1)]
+        public int Id_Profesor { get; set; }
+    }
+
+    [Table("usuario_empresa")]
+    public class UsuarioEmpresaEF
+    {
+        [Key, Column("id_usuario", Order = 0)]
+        public int Id_Usuario { get; set; }
+
+        [Key, Column("id_empresa", Order = 1)]
+        public int Id_Empresa { get; set; }
+    }
+
 }
