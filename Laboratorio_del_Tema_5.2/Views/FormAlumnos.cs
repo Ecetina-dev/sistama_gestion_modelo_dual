@@ -57,7 +57,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             CrearDateTimePicker();
 
             // Timer debounce para busqueda (300ms)
-            _debounceTimer = new System.Windows.Forms.Timer();
+            _debounceTimer = new System.Windows.Forms.Timer(components);
             _debounceTimer.Interval = 300;
             _debounceTimer.Tick += (s, e) =>
             {
@@ -526,8 +526,17 @@ namespace Laboratorio_del_Tema_5_2.Views
         {
             try
             {
-                dgvAlumnos.DataSource = controller.GetAlumnosConEmpresa();
-                ActualizarContador();
+                var datos = controller.GetAlumnosConEmpresa() ?? new List<AlumnoConEmpresa>();
+                // Mostrar datos con paginación simple (sin pasar por AplicarPagina)
+                dgvAlumnos.AutoGenerateColumns = true;
+                dgvAlumnos.Columns.Clear();
+                dgvAlumnos.DataSource = datos;
+                // Ocultar columnas internas
+                string[] ocultar = { "Id_Alumno", "NombreCompleto" };
+                foreach (var col in ocultar)
+                    if (dgvAlumnos.Columns.Contains(col))
+                        dgvAlumnos.Columns[col].Visible = false;
+                lblPagInfo.Text = $"0 de 0 ({datos.Count} registros con empresas)";
             }
             catch (Exception ex)
             {
@@ -655,7 +664,6 @@ namespace Laboratorio_del_Tema_5_2.Views
             panelCardDatos.Visible = true;
             dtpFechaNacimiento.Checked = false;
             dtpFechaIngreso.Value = DateTime.Now;
-            dtpFechaIngreso.Checked = true;
             ReorganizarLayout();
             txtNoControl.Focus();
         }
@@ -784,7 +792,10 @@ namespace Laboratorio_del_Tema_5_2.Views
                 Email = NullIfEmpty(txtEmail.Text),
                 Telefono = NullIfEmpty(txtTelefono.Text),
                 Fecha_Nacimiento = dtpFechaNacimiento.Checked ? dtpFechaNacimiento.Value : (DateTime?)null,
-                Status_Alumno = Estatus.AlumnoActivo,
+                Status_Alumno = isNewRecord
+                    ? Estatus.AlumnoActivo
+                    : (_alumnosCache.FirstOrDefault(a => a.Id_Alumno == Convert.ToInt32(txtIdAlumno.Text))?.Status_Alumno
+                       ?? Estatus.AlumnoActivo),
                 Curp = string.IsNullOrWhiteSpace(txtCURP.Text) ? null : txtCURP.Text.Trim().ToUpperInvariant(),
                 Genero = cmbGenero.SelectedIndex > 0 ? cmbGenero.Items[cmbGenero.SelectedIndex].ToString() : null,  // W-2: skip placeholder at 0
                 Id_Carrera = cmbCarrera.SelectedValue is int idC && idC > 0 ? idC : (int?)null,
@@ -810,9 +821,14 @@ namespace Laboratorio_del_Tema_5_2.Views
                     success = await System.Threading.Tasks.Task.Run(() => controller.Update(alumno));
                 }
             }
+            catch (CrudOperationException ex)
+            {
+                MostrarAdvertencia(ex.Message);
+                return;
+            }
             catch (Exception ex)
             {
-                MostrarError("Error BD: " + ex.Message);
+                MostrarError("Error inesperado: " + ex.Message);
                 return;
             }
             finally
@@ -1009,16 +1025,11 @@ namespace Laboratorio_del_Tema_5_2.Views
                 cmbTurno.SelectedIndex = 0;
             }
 
-            // Fecha_Ingreso
+            // Fecha_Ingreso (siempre tiene valor - ShowCheckBox = false)
             if (a.Fecha_Ingreso.HasValue)
-            {
                 dtpFechaIngreso.Value = a.Fecha_Ingreso.Value;
-                dtpFechaIngreso.Checked = true;
-            }
             else
-            {
-                dtpFechaIngreso.Checked = false;
-            }
+                dtpFechaIngreso.Value = DateTime.Today;
 
             // Grupo
             txtGrupo.Text = a.Grupo ?? "";
@@ -1035,7 +1046,6 @@ namespace Laboratorio_del_Tema_5_2.Views
             cmbTurno.SelectedIndex = 0;  // W-1: default Matutino
             dtpFechaNacimiento.Checked = false;
             dtpFechaIngreso.Value = DateTime.Today;
-            dtpFechaIngreso.Checked = true;  // W-3: always has value (no checkbox)
             RestaurarColores();
         }
 
