@@ -392,12 +392,11 @@ namespace Laboratorio_del_Tema_5_2.Controllers.Services
                         }
 
                         // Validar contra historial de passwords reutilizados
-                        var history = db.Database.SqlQuery<int>(
-                            "SELECT COUNT(*) FROM password_history WHERE id_usuario = @p0 AND password_hash = @p1",
-                            user.Id_Usuario,
-                            BCrypt.Net.BCrypt.HashPassword(passwordNuevo, Seguridad.BcryptCostFactor)).FirstOrDefault();
+                        var hashesAnteriores = db.Database.SqlQuery<string>(
+                            "SELECT password_hash FROM password_history WHERE id_usuario = @p0 ORDER BY fecha_cambio DESC",
+                            user.Id_Usuario).ToList();
 
-                        if (history > 0)
+                        if (hashesAnteriores.Any(h => BCrypt.Net.BCrypt.Verify(passwordNuevo, h)))
                         {
                             tx.Rollback();
                             Logger.Warning($"Activacion rechazada: password reutilizado (usuario {username})");
