@@ -72,17 +72,18 @@ namespace Laboratorio_del_Tema_5_2.Views
         private void CrearDateTimePicker()
         {
             dtpFechaNacimiento = new DateTimePicker();
+            DateTime hoy = DateTime.Today;
             dtpFechaNacimiento.Format = DateTimePickerFormat.Custom;
             dtpFechaNacimiento.CustomFormat = "yyyy-MM-dd";
             dtpFechaNacimiento.ShowCheckBox = true;
             dtpFechaNacimiento.Checked = false;
-            dtpFechaNacimiento.Value = DateTime.Today;
             dtpFechaNacimiento.Font = new Font("Segoe UI", 12F);
             dtpFechaNacimiento.Location = txtFechaNacimiento.Location;
             dtpFechaNacimiento.Size = txtFechaNacimiento.Size;
             dtpFechaNacimiento.TabIndex = txtFechaNacimiento.TabIndex;
-            dtpFechaNacimiento.MinDate = DateTime.Today.AddYears(-120);
-            dtpFechaNacimiento.MaxDate = DateTime.Today;
+            dtpFechaNacimiento.MinDate = hoy.AddYears(-120);
+            dtpFechaNacimiento.MaxDate = hoy;
+            dtpFechaNacimiento.Value = hoy;
 
             // Reemplazar textbox en el parent
             if (txtFechaNacimiento.Parent != null)
@@ -329,12 +330,13 @@ namespace Laboratorio_del_Tema_5_2.Views
             cmbTurno.DropDownStyle = ComboBoxStyle.DropDownList;
 
             // Fecha_Ingreso DateTimePicker (always has value - no checkbox)
+            DateTime hoy = DateTime.Today;
             dtpFechaIngreso.Format = DateTimePickerFormat.Custom;
             dtpFechaIngreso.CustomFormat = "dd/MM/yyyy";
             dtpFechaIngreso.ShowCheckBox = false;
-            dtpFechaIngreso.Value = DateTime.Today;
             dtpFechaIngreso.MinDate = new DateTime(1990, 1, 1);
-            dtpFechaIngreso.MaxDate = DateTime.Today;
+            dtpFechaIngreso.MaxDate = hoy;
+            dtpFechaIngreso.Value = hoy;
 
             // Grupo
             txtGrupo.MaxLength = 10;
@@ -664,7 +666,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             HabilitarNoControl(true);
             panelCardDatos.Visible = true;
             dtpFechaNacimiento.Checked = false;
-            dtpFechaIngreso.Value = DateTime.Now;
+            dtpFechaIngreso.Value = DateTime.Today;
             ReorganizarLayout();
             txtNoControl.Focus();
         }
