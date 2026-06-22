@@ -48,10 +48,23 @@ namespace Laboratorio_del_Tema_5_2.Views
         // DateTimePicker creado programaticamente (no necesita Designer)
         private DateTimePicker dtpFechaNacimiento;
 
+        // Debounce para busqueda (300ms)
+        private System.Windows.Forms.Timer _debounceTimer;
+
         public FormAlumnos()
         {
             InitializeComponent();
             CrearDateTimePicker();
+
+            // Timer debounce para busqueda (300ms)
+            _debounceTimer = new System.Windows.Forms.Timer();
+            _debounceTimer.Interval = 300;
+            _debounceTimer.Tick += (s, e) =>
+            {
+                _debounceTimer.Stop();
+                AplicarFiltros();
+            };
+
             ConfigurarFormulario();
             CargarAlumnos();
         }
@@ -461,7 +474,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             AplicarPagina();
         }
 
-        // Atajos de teclado: Ctrl+N nuevo, Ctrl+S guardar
+        // Atajos de teclado: Ctrl+N nuevo, Ctrl+S guardar, F5 refrescar
         private void FormAlumnos_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Control && e.KeyCode == Keys.N)
@@ -478,6 +491,11 @@ namespace Laboratorio_del_Tema_5_2.Views
             {
                 e.SuppressKeyPress = true;
                 btnCancelar_Click(sender, e);
+            }
+            if (e.KeyCode == Keys.F5)
+            {
+                e.SuppressKeyPress = true;
+                btnActualizar_Click(sender, e);
             }
         }
 
@@ -619,7 +637,12 @@ namespace Laboratorio_del_Tema_5_2.Views
         // ==================== NAVEGACION ====================
 
         private void btnCerrar_Click(object sender, EventArgs e) => this.Close();
-        private void txtBuscar_TextChanged(object sender, EventArgs e) => AplicarFiltros();
+        private void txtBuscar_TextChanged(object sender, EventArgs e)
+        {
+            // Debounce 300ms: reiniciar timer en cada tecla
+            _debounceTimer.Stop();
+            _debounceTimer.Start();
+        }
 
         // ==================== CRUD ====================
 

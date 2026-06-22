@@ -60,12 +60,13 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                       @fecha_ingreso, @fecha_egreso, @fecha_baja, @motivo_baja,
                                       @promedio_general, @created_by)";
 
+                            int rowsAffectedCreate;
                             using (MySqlCommand cmd = new MySqlCommand(query, conn, tx))
                             {
                                 AgregarParametrosAlumno(cmd, alumno, incluirAuditAlta: true, incluirAuditCambio: false);
 
-                                int rowsAffected = cmd.ExecuteNonQuery();
-                                if (rowsAffected > 0)
+                                rowsAffectedCreate = cmd.ExecuteNonQuery();
+                                if (rowsAffectedCreate > 0)
                                 {
                                     alumno.Id_Alumno = Convert.ToInt32(new MySqlCommand("SELECT LAST_INSERT_ID()", conn, tx).ExecuteScalar());
                                     SincronizarEmailUsuario(conn, alumno.Id_Alumno, alumno.Email);
@@ -74,7 +75,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                             }
 
                             tx.Commit();
-                            return true;
+                            return rowsAffectedCreate > 0;
                         }
                         catch
                         {
@@ -233,13 +234,14 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                      updated_at = NOW()
                                      WHERE id_alumno = @id_alumno AND is_deleted = 0";
 
+                            int rowsAffectedUpdate;
                             using (MySqlCommand cmd = new MySqlCommand(query, conn, tx))
                             {
                                 AgregarParametrosAlumno(cmd, alumno, incluirAuditAlta: false, incluirAuditCambio: true);
                                 cmd.Parameters.AddWithValue("@id_alumno", alumno.Id_Alumno);
 
-                                int rowsAffected = cmd.ExecuteNonQuery();
-                                if (rowsAffected > 0)
+                                rowsAffectedUpdate = cmd.ExecuteNonQuery();
+                                if (rowsAffectedUpdate > 0)
                                 {
                                     if (emailCambio)
                                         SincronizarEmailUsuario(conn, alumno.Id_Alumno, alumno.Email);
@@ -248,7 +250,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                             }
 
                             tx.Commit();
-                            return true;
+                            return rowsAffectedUpdate > 0;
                         }
                         catch
                         {
@@ -302,19 +304,20 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                      deleted_reason = @deleted_reason
                                      WHERE id_alumno = @id_alumno AND is_deleted = 0";
 
+                            int rowsAffected;
                             using (MySqlCommand cmd = new MySqlCommand(query, conn, tx))
                             {
                                 cmd.Parameters.AddWithValue("@id_alumno", idAlumno);
                                 cmd.Parameters.AddWithValue("@deleted_by", ObtenerUsuarioAuditoria() ?? (object)DBNull.Value);
                                 cmd.Parameters.AddWithValue("@deleted_reason", deletedReason.Trim());
 
-                                int rowsAffected = cmd.ExecuteNonQuery();
+                                rowsAffected = cmd.ExecuteNonQuery();
                                 if (rowsAffected > 0)
                                     InsertarBitacora(conn, "DELETE", idAlumno, $"Alumno ID: {idAlumno}");
                             }
 
                             tx.Commit();
-                            return true;
+                            return rowsAffected > 0;
                         }
                         catch
                         {
