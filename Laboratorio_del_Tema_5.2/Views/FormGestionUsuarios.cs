@@ -61,6 +61,8 @@ namespace Laboratorio_del_Tema_5_2.Views
             catch (Exception ex)
             {
                 Logger.Error("Error al cargar entidades", ex);
+                MessageBox.Show("Error al cargar datos de entidades: " + ex.Message,
+                    "Error de Base de Datos", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
@@ -188,7 +190,7 @@ namespace Laboratorio_del_Tema_5_2.Views
 
         private string GenerarEmailSugerido(string tipo, ComboBoxItem entidad)
         {
-            return $"{tipo}_{DateTime.Now.Ticks}@modelodual.edu";
+            return $"{tipo}_{DateTime.Now:yyyyMMddHHmmss}@modelodual.edu";
         }
 
         private string CapitalizeFirst(string text)
@@ -228,6 +230,12 @@ namespace Laboratorio_del_Tema_5_2.Views
 
             var tipoItem = cmbTipoUsuario.SelectedItem as ComboBoxItem;
             var rolItem = cmbRol.SelectedItem as ComboBoxItem;
+            if (tipoItem == null || rolItem == null)
+            {
+                MessageBox.Show("Error interno: seleccion invalida. Intenta de nuevo.",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
             string tipo = tipoItem.Value.ToString();
             int idRol = Convert.ToInt32(rolItem.Value);
 
@@ -244,11 +252,18 @@ namespace Laboratorio_del_Tema_5_2.Views
             btnCargarUsuario.Enabled = false;
             btnCargarUsuario.Text = "Cargando...";
 
+            int adminId = SesionActiva.Instance?.Id_Usuario ?? 0;
+            if (adminId == 0)
+            {
+                MessageBox.Show("Sesion no valida. Vuelve a iniciar sesion.",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             try
             {
                 var resultado = await Task.Run(() =>
-                    _authController.CargarUsuario(username, email, idRol, tipoEntidad, idEntidad,
-                        SesionActiva.Instance.Id_Usuario));
+                    _authController.CargarUsuario(username, email, idRol, tipoEntidad, idEntidad, adminId));
 
                 if (resultado.Success)
                 {
@@ -262,6 +277,10 @@ namespace Laboratorio_del_Tema_5_2.Views
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                     Clipboard.SetText(resultado.PasswordTemporal);
+                    // Limpiar clipboard a los 30 segundos
+                    var timer = new System.Windows.Forms.Timer { Interval = 30000 };
+                    timer.Tick += (s, e) => { Clipboard.Clear(); timer.Stop(); timer.Dispose(); };
+                    timer.Start();
 
                     LimpiarFormulario();
                     CargarUsuarios();
