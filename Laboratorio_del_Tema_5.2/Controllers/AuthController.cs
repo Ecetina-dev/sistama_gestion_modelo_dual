@@ -237,7 +237,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
         public bool CrearUsuario(string username, string email, string password, int idRol, string tipoEntidad, int idEntidad)
         {
-            // Validaciones basicas de entrada
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(email) || string.IsNullOrEmpty(password))
             {
                 Logger.Warning("CrearUsuario: parametros invalidos");
@@ -257,71 +256,59 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             {
                 string passwordHash = BCrypt.Net.BCrypt.HashPassword(password, Seguridad.BcryptCostFactor);
 
-                using (SqlConnection conn = SqlServerConnection.GetConnection())
+                using (var db = new ModeloDualContext())
+                using (var tx = db.Database.BeginTransaction())
                 {
-                    conn.Open();
-
-                    using (SqlTransaction transaction = conn.BeginTransaction())
+                    try
                     {
-                        try
+                        var nuevoUsuario = new UsuarioEF
                         {
-                            string queryUsuario = @"INSERT INTO Usuario (username, email, password_hash, id_rol, status)
-                                                   VALUES (@username, @email, @password_hash, @id_rol, 'activo')";
+                            Username = username,
+                            Email = email,
+                            PasswordHash = passwordHash,
+                            Id_Rol = idRol,
+                            Status = "activo",
+                            Created_At = DateTime.Now,
+                            Updated_At = DateTime.Now,
+                            Is_Deleted = false,
+                            Debe_Cambiar_Password = 1
+                        };
+                        db.Usuarios.Add(nuevoUsuario);
+                        db.SaveChanges();
 
-                            int idUsuario;
-                            using (SqlCommand cmd = new SqlCommand(queryUsuario, conn, transaction))
+                        int idUsuario = nuevoUsuario.Id_Usuario;
+
+                        if (!string.IsNullOrEmpty(tipoEntidad) && idEntidad > 0)
+                        {
+                            switch (tipoEntidad.ToLower())
                             {
-                                cmd.Parameters.AddWithValue("@username", username);
-                                cmd.Parameters.AddWithValue("@email", email);
-                                cmd.Parameters.AddWithValue("@password_hash", passwordHash);
-                                cmd.Parameters.AddWithValue("@id_rol", idRol);
-                                cmd.ExecuteNonQuery();
-
-                                using (SqlCommand cmdId = new SqlCommand("SELECT SCOPE_IDENTITY()", conn, transaction))
-                                {
-                                    idUsuario = Convert.ToInt32(cmdId.ExecuteScalar());
-                                }
+                                case "alumno":
+                                    db.UsuariosAlumnos.Add(new UsuarioAlumnoEF { Id_Usuario = idUsuario, Id_Alumno = idEntidad });
+                                    break;
+                                case "profesor":
+                                    db.UsuariosProfesores.Add(new UsuarioProfesorEF { Id_Usuario = idUsuario, Id_Profesor = idEntidad });
+                                    break;
+                                case "empresa":
+                                    db.UsuariosEmpresas.Add(new UsuarioEmpresaEF { Id_Usuario = idUsuario, Id_Empresa = idEntidad });
+                                    break;
                             }
+                            db.SaveChanges();
+                        }
 
-                            if (!string.IsNullOrEmpty(tipoEntidad) && idEntidad > 0)
-                            {
-                                string tablaVinculo = ObtenerTablaVinculo(tipoEntidad);
-                                string columnaVinculo = ObtenerColumnaVinculo(tipoEntidad);
-                                string queryVinculo = $"INSERT INTO {tablaVinculo} (id_usuario, {columnaVinculo}) VALUES (@id_usuario, @id_entidad)";
-                                using (SqlCommand cmd2 = new SqlCommand(queryVinculo, conn, transaction))
-                                {
-                                    cmd2.Parameters.AddWithValue("@id_usuario", idUsuario);
-                                    cmd2.Parameters.AddWithValue("@id_entidad", idEntidad);
-                                    cmd2.ExecuteNonQuery();
-                                }
-                            }
-
-                            transaction.Commit();
-                            Logger.Info($"Usuario creado exitosamente: '{username}' (rol_id: {idRol}, tipo: {tipoEntidad ?? "N/A"})");
-                            return true;
-                        }
-                        catch (SqlException mysqlEx) when (mysqlEx.Number == 1062) // Duplicate entry
-                        {
-                            transaction.Rollback();
-                            Logger.Warning($"Intento de crear usuario duplicado: '{username}' o '{email}'");
-                            return false;
-                        }
-                        catch
-                        {
-                            transaction.Rollback();
-                            throw;
-                        }
+                        tx.Commit();
+                        Logger.Info($"Usuario creado exitosamente: '{username}' (rol_id: {idRol}, tipo: {tipoEntidad ?? "N/A"})");
+                        return true;
+                    }
+                    catch
+                    {
+                        tx.Rollback();
+                        throw;
                     }
                 }
             }
-            catch (SqlException mysqlEx)
-            {
-                Logger.Error("Error de MySQL al crear usuario", mysqlEx);
-                return false;
-            }
             catch (Exception ex)
             {
-                Logger.Error("Error inesperado al crear usuario", ex);
+                Logger.Error("Error al crear usuario", ex);
                 return false;
             }
         }
@@ -763,33 +750,26 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
         public List<Rol> ObtenerRoles()
         {
-            List<Rol> roles = new List<Rol>();
             try
             {
-                using (SqlConnection conn = SqlServerConnection.GetConnection())
+                using (var db = new ModeloDualContext())
                 {
-                    conn.Open();
-                    string query = "SELECT id_rol, nombre, descripcion FROM Rol ORDER BY nombre";
-                    using (SqlCommand cmd = new SqlCommand(query, conn))
-                    using (SqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
+                    return db.Roles
+                        .OrderBy(r => r.Nombre)
+                        .Select(r => new Rol
                         {
-                            roles.Add(new Rol
-                            {
-                                Id_Rol = reader.GetInt32(reader.GetOrdinal("id_rol")),
-                                Nombre = reader.GetString(reader.GetOrdinal("nombre")),
-                                Descripcion = reader.IsDBNull(reader.GetOrdinal("descripcion")) ? null : reader.GetString(reader.GetOrdinal("descripcion"))
-                            });
-                        }
-                    }
+                            Id_Rol = r.Id_Rol,
+                            Nombre = r.Nombre,
+                            Descripcion = r.Descripcion
+                        })
+                        .ToList();
                 }
             }
             catch (Exception ex)
             {
                 Logger.Error("Error al obtener roles", ex);
+                return new List<Rol>();
             }
-            return roles;
         }
 
         /// <summary>
