@@ -5,6 +5,8 @@ using Laboratorio_del_Tema_5_2.Data;
 using Laboratorio_del_Tema_5_2.Models;
 using Laboratorio_del_Tema_5_2.Utils;
 
+using Laboratorio_del_Tema_5_2.Controllers.Services;
+
 namespace Laboratorio_del_Tema_5_2.Controllers
 {
     /// <summary>
@@ -13,6 +15,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
     /// </summary>
     public class AlumnoController
     {
+        private readonly AlumnoService _alumnoService = new AlumnoService();
         /// <summary>
         /// Inserts a new student after validating required fields, formats,
         /// and uniqueness (active and soft-deleted records).
@@ -21,328 +24,51 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (SqlConnection conn = SqlServerConnection.GetConnection())
-                {
-                    conn.Open();
-                    using (var tx = conn.BeginTransaction())
-                    {
-                        try
-                        {
-                            ValidarCamposRequeridos(conn, alumno, esNuevo: true);
-                            ValidarFormatos(alumno);
-                            ValidarDuplicados(conn, alumno, excluirId: null);
-
-                            if (string.IsNullOrEmpty(alumno.Status_Alumno))
-                                alumno.Status_Alumno = Estatus.AlumnoActivo;
-
-                            alumno.Created_By = ObtenerUsuarioAuditoria();
-
-                            string query = @"INSERT INTO Alumno
-                                     (no_control, nombre, apellido_paterno, apellido_materno,
-                                      email, telefono, fecha_nacimiento, status_alumno,
-                                      curp, rfc, nss, genero, estado_civil, nacionalidad,
-                                      direccion_calle, direccion_numero, direccion_colonia,
-                                      direccion_ciudad, direccion_estado, direccion_cp,
-                                      telefono_fijo, contacto_emergencia_nombre,
-                                      contacto_emergencia_telefono, contacto_emergencia_parentesco,
-                                      id_carrera, semestre, grupo, turno,
-                                      fecha_ingreso, fecha_egreso, fecha_baja, motivo_baja,
-                                      promedio_general, created_by)
-                                     VALUES
-                                     (@no_control, @nombre, @apellido_paterno, @apellido_materno,
-                                      @email, @telefono, @fecha_nacimiento, @status_alumno,
-                                      @curp, @rfc, @nss, @genero, @estado_civil, @nacionalidad,
-                                      @direccion_calle, @direccion_numero, @direccion_colonia,
-                                      @direccion_ciudad, @direccion_estado, @direccion_cp,
-                                      @telefono_fijo, @contacto_emergencia_nombre,
-                                      @contacto_emergencia_telefono, @contacto_emergencia_parentesco,
-                                      @id_carrera, @semestre, @grupo, @turno,
-                                      @fecha_ingreso, @fecha_egreso, @fecha_baja, @motivo_baja,
-                                      @promedio_general, @created_by)";
-
-                            int rowsAffectedCreate;
-                            using (SqlCommand cmd = new SqlCommand(query, conn, tx))
-                            {
-                                AgregarParametrosAlumno(cmd, alumno, incluirAuditAlta: true, incluirAuditCambio: false);
-
-                                Logger.Info($"Create alumno: no_control={alumno.No_Control}, nombre={alumno.Nombre}, " +
-                                    $"curp={alumno.Curp}, genero={alumno.Genero}, id_carrera={alumno.Id_Carrera}, " +
-                                    $"semestre={alumno.Semestre}, turno={alumno.Turno}");
-
-                                rowsAffectedCreate = cmd.ExecuteNonQuery();
-                                if (rowsAffectedCreate > 0)
-                                {
-                                    alumno.Id_Alumno = Convert.ToInt32(new SqlCommand("SELECT SCOPE_IDENTITY()", conn, tx).ExecuteScalar());
-                                    SincronizarEmailUsuario(conn, alumno.Id_Alumno, alumno.Email);
-                                    InsertarBitacora(conn, "INSERT", alumno);
-                                }
-                            }
-
-                            tx.Commit();
-                            return rowsAffectedCreate > 0;
-                        }
-                        catch
-                        {
-                            tx.Rollback();
-                            throw;
-                        }
-                    }
-                }
+                return _alumnoService.Create(alumno);
             }
             catch (CrudOperationException)
             {
                 throw;
             }
-            catch (SqlException ex) when (ex.Number == 2627)
-            {
-                Logger.Error("Duplicate entry while creating alumno", ex);
-                throw new CrudOperationException(MensajesAlumno.NoControlExiste, "Create", alumno);
-            }
-            catch (SqlException ex)
-            {
-                string detalle = string.Format(
-                    "NoControl={0}, Nombre={1}, Curp={2}, Genero={3}, IdCarrera={4}, Semestre={5}, Turno={6}, Grupo={7}",
-                    alumno.No_Control, alumno.Nombre, alumno.Curp ?? "NULL",
-                    alumno.Genero ?? "NULL", alumno.Id_Carrera.HasValue ? alumno.Id_Carrera.Value.ToString() : "NULL",
-                    alumno.Semestre.HasValue ? alumno.Semestre.Value.ToString() : "NULL",
-                    alumno.Turno ?? "NULL", alumno.Grupo ?? "NULL");
-                Logger.Error(string.Format("SQL Server error. Number={0}, Message={1}, Detail={2}", ex.Number, ex.Message, detalle), ex);
-                throw new CrudOperationException(
-                    string.Format("Error de BD (codigo {0}): {1}. Datos: {2}", ex.Number, ex.Message, detalle),
-                    "Create", alumno);
-            }
             catch (Exception ex)
             {
-                Logger.Error(string.Format("Error creating alumno. Message={0}", ex.Message), ex);
-                throw new CrudOperationException(string.Format("Ocurrio un error inesperado: {0}", ex.Message), "Create", alumno);
+                Logger.Error("Error en controller Create", ex);
+                throw new CrudOperationException("Ocurrio un error al crear el alumno.", "Create", alumno);
             }
         }
 
-        /// <summary>
-        /// Returns all active students ordered by last name and first name.
-        /// </summary>
         public List<Alumno> Read()
         {
-            List<Alumno> alumnos = new List<Alumno>();
-
-            try
-            {
-                using (SqlConnection conn = SqlServerConnection.GetConnection())
-                {
-                    conn.Open();
-                    string query = @"SELECT * FROM Alumno
-                                      WHERE is_deleted = 0
-                                      ORDER BY apellido_paterno, nombre";
-
-                    using (SqlCommand cmd = new SqlCommand(query, conn))
-                    using (SqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            alumnos.Add(MapAlumnoFromReader(reader));
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Error("Error reading alumnos", ex);
-                throw new CrudOperationException("Ocurrio un error al obtener la lista de alumnos.", "Read", null);
-            }
-            return alumnos;
+            return _alumnoService.Read();
         }
 
-        // READ BY ID
-        /// <summary>
-        /// Returns an active student by ID, or null if not found or deleted.
-        /// </summary>
         public Alumno ReadById(int idAlumno)
         {
-            try
-            {
-                using (SqlConnection conn = SqlServerConnection.GetConnection())
-                {
-                    conn.Open();
-                    string query = "SELECT * FROM Alumno WHERE id_alumno = @id_alumno AND is_deleted = 0";
-
-                    using (SqlCommand cmd = new SqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@id_alumno", idAlumno);
-
-                        using (SqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            if (reader.Read())
-                                return MapAlumnoFromReader(reader);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Error($"Error reading alumno ID: {idAlumno}", ex);
-                throw new CrudOperationException("Ocurrio un error al buscar el alumno.", "ReadById", null);
-            }
-            return null;
+            return _alumnoService.ReadById(idAlumno);
         }
 
-        /// <summary>
-        /// Updates an existing active student after validating business rules,
-        /// uniqueness, status transitions, and required reasons.
-        /// </summary>
         public bool Update(Alumno alumno)
         {
             try
             {
-                using (SqlConnection conn = SqlServerConnection.GetConnection())
-                {
-                    conn.Open();
-                    using (var tx = conn.BeginTransaction())
-                    {
-                        try
-                        {
-                            Alumno actual = ReadById(conn, alumno.Id_Alumno);
-                            if (actual == null)
-                                return false;
-
-                            ValidarCamposRequeridos(conn, alumno, esNuevo: false);
-                            ValidarFormatos(alumno);
-                            ValidarDuplicados(conn, alumno, excluirId: alumno.Id_Alumno);
-                            ValidarTransicionStatus(conn, alumno, actual);
-
-                            alumno.Updated_By = ObtenerUsuarioAuditoria();
-                            bool emailCambio = !string.Equals(actual.Email, alumno.Email, StringComparison.OrdinalIgnoreCase);
-
-                            string query = @"UPDATE Alumno SET
-                                     no_control = @no_control,
-                                     nombre = @nombre,
-                                     apellido_paterno = @apellido_paterno,
-                                     apellido_materno = @apellido_materno,
-                                     email = @email,
-                                     telefono = @telefono,
-                                     fecha_nacimiento = @fecha_nacimiento,
-                                     status_alumno = @status_alumno,
-                                     curp = @curp,
-                                     rfc = @rfc,
-                                     nss = @nss,
-                                     genero = @genero,
-                                     estado_civil = @estado_civil,
-                                     nacionalidad = @nacionalidad,
-                                     direccion_calle = @direccion_calle,
-                                     direccion_numero = @direccion_numero,
-                                     direccion_colonia = @direccion_colonia,
-                                     direccion_ciudad = @direccion_ciudad,
-                                     direccion_estado = @direccion_estado,
-                                     direccion_cp = @direccion_cp,
-                                     telefono_fijo = @telefono_fijo,
-                                     contacto_emergencia_nombre = @contacto_emergencia_nombre,
-                                     contacto_emergencia_telefono = @contacto_emergencia_telefono,
-                                     contacto_emergencia_parentesco = @contacto_emergencia_parentesco,
-                                     id_carrera = @id_carrera,
-                                     semestre = @semestre,
-                                     grupo = @grupo,
-                                     turno = @turno,
-                                     fecha_ingreso = @fecha_ingreso,
-                                     fecha_egreso = @fecha_egreso,
-                                     fecha_baja = @fecha_baja,
-                                     motivo_baja = @motivo_baja,
-                                     promedio_general = @promedio_general,
-                                     status_change_reason = @status_change_reason,
-                                     updated_by = @updated_by,
-                                     updated_at = GETDATE()
-                                     WHERE id_alumno = @id_alumno AND is_deleted = 0";
-
-                            int rowsAffectedUpdate;
-                            using (SqlCommand cmd = new SqlCommand(query, conn, tx))
-                            {
-                                AgregarParametrosAlumno(cmd, alumno, incluirAuditAlta: false, incluirAuditCambio: true);
-                                cmd.Parameters.AddWithValue("@id_alumno", alumno.Id_Alumno);
-
-                                rowsAffectedUpdate = cmd.ExecuteNonQuery();
-                                if (rowsAffectedUpdate > 0)
-                                {
-                                    if (emailCambio)
-                                        SincronizarEmailUsuario(conn, alumno.Id_Alumno, alumno.Email);
-                                    InsertarBitacora(conn, "UPDATE", alumno);
-                                }
-                            }
-
-                            tx.Commit();
-                            return rowsAffectedUpdate > 0;
-                        }
-                        catch
-                        {
-                            tx.Rollback();
-                            throw;
-                        }
-                    }
-                }
+                return _alumnoService.Update(alumno);
             }
             catch (CrudOperationException)
             {
                 throw;
             }
-            catch (SqlException ex) when (ex.Number == 2627)
-            {
-                Logger.Error("Duplicate entry while updating alumno", ex);
-                throw new CrudOperationException(MensajesAlumno.NoControlExiste, "Update", alumno);
-            }
             catch (Exception ex)
             {
-                Logger.Error("Error updating alumno", ex);
-                throw new CrudOperationException("Ocurrio un error inesperado al actualizar el alumno.", "Update", alumno);
+                Logger.Error("Error en controller Update", ex);
+                throw new CrudOperationException("Ocurrio un error al actualizar el alumno.", "Update", alumno);
             }
         }
 
-        /// <summary>
-        /// Soft-deletes a student. Requires a non-empty reason and rejects
-        /// the operation if the student has active company assignments.
-        /// </summary>
         public bool Delete(int idAlumno, string deletedReason)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(deletedReason))
-                    throw new CrudOperationException(MensajesAlumno.MotivoEliminacionRequerido, "Delete", null);
-
-                using (SqlConnection conn = SqlServerConnection.GetConnection())
-                {
-                    conn.Open();
-                    using (var tx = conn.BeginTransaction())
-                    {
-                        try
-                        {
-                            if (TieneAsignacionesActivas(conn, idAlumno))
-                                throw new CrudOperationException(MensajesAlumno.AlumnoConAsignaciones, "Delete", null);
-
-                            string query = @"UPDATE Alumno SET
-                                     is_deleted = 1,
-                                     deleted_at = GETDATE(),
-                                     deleted_by = @deleted_by,
-                                     deleted_reason = @deleted_reason
-                                     WHERE id_alumno = @id_alumno AND is_deleted = 0";
-
-                            int rowsAffected;
-                            using (SqlCommand cmd = new SqlCommand(query, conn, tx))
-                            {
-                                cmd.Parameters.AddWithValue("@id_alumno", idAlumno);
-                                cmd.Parameters.AddWithValue("@deleted_by", ObtenerUsuarioAuditoria() ?? (object)DBNull.Value);
-                                cmd.Parameters.AddWithValue("@deleted_reason", deletedReason.Trim());
-
-                                rowsAffected = cmd.ExecuteNonQuery();
-                                if (rowsAffected > 0)
-                                    InsertarBitacora(conn, "DELETE", idAlumno, $"Alumno ID: {idAlumno}");
-                            }
-
-                            tx.Commit();
-                            return rowsAffected > 0;
-                        }
-                        catch
-                        {
-                            tx.Rollback();
-                            throw;
-                        }
-                    }
-                }
+                return _alumnoService.Delete(idAlumno, deletedReason);
             }
             catch (CrudOperationException)
             {
@@ -350,14 +76,11 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
             catch (Exception ex)
             {
-                Logger.Error($"Error deleting alumno ID: {idAlumno}", ex);
-                throw new CrudOperationException("Ocurrio un error inesperado al eliminar el alumno.", "Delete", null);
+                Logger.Error("Error en controller Delete", ex);
+                throw new CrudOperationException("Ocurrio un error al eliminar el alumno.", "Delete", null);
             }
         }
 
-        /// <summary>
-        /// Returns students with active company assignments.
-        /// </summary>
         public List<AlumnoConEmpresa> GetAlumnosConEmpresa()
         {
             List<AlumnoConEmpresa> lista = new List<AlumnoConEmpresa>();
