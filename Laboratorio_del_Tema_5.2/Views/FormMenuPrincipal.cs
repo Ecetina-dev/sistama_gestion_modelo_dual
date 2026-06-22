@@ -5,7 +5,7 @@ using Laboratorio_del_Tema_5_2.Controllers;
 using Laboratorio_del_Tema_5_2.Data;
 using Laboratorio_del_Tema_5_2.Models;
 using Laboratorio_del_Tema_5_2.Utils;
-using MySqlConnector;
+using System.Data.SqlClient;
 
 namespace Laboratorio_del_Tema_5_2.Views
 {
@@ -413,7 +413,7 @@ namespace Laboratorio_del_Tema_5_2.Views
                 if ((DateTime.Now - _ultimaCargaStats).TotalSeconds < SEGUNDOS_CACHE_STATS)
                     return;
 
-                using (var conn = MySQLConnection.GetConnection())
+                using (var conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string sql = @"
@@ -426,7 +426,7 @@ namespace Laboratorio_del_Tema_5_2.Views
                             (SELECT COUNT(*) FROM v_materias_activas) AS total_materias,
                             (SELECT COUNT(*) FROM tema WHERE is_deleted = 0) AS total_temas";
 
-                    using (var cmd = new MySqlCommand(sql, conn))
+                    using (var cmd = new SqlCommand(sql, conn))
                     using (var reader = cmd.ExecuteReader())
                     {
                         // Issue #7: actualizar cache siempre, incluso si no hay filas

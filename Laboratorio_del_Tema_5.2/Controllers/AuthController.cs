@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using MySqlConnector;
+using System.Data.SqlClient;
 using Laboratorio_del_Tema_5_2.Data;
 using Laboratorio_del_Tema_5_2.Models;
 using Laboratorio_del_Tema_5_2.Utils;
@@ -37,7 +37,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
 
@@ -50,11 +50,11 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                      INNER JOIN Rol r ON u.id_rol = r.id_rol
                                      WHERE (LOWER(u.username) = LOWER(@login) OR LOWER(u.email) = LOWER(@login))";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@login", login);
 
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
                             if (!reader.Read())
                             {
@@ -68,18 +68,18 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                 };
                             }
 
-                            int idUsuario = reader.GetInt32("id_usuario");
-                            string usernameBd = reader.GetString("username");
-                            string passwordHash = reader.GetString("password_hash");
-                            string status = reader.GetString("status");
-                            int intentosFallidos = reader.IsDBNull(reader.GetOrdinal("intentos_fallidos")) ? 0 : reader.GetInt32("intentos_fallidos");
-                            string rolNombre = reader.GetString("rol_nombre");
+                            int idUsuario = reader.GetInt32(reader.GetOrdinal("id_usuario"));
+                            string usernameBd = reader.GetString(reader.GetOrdinal("username"));
+                            string passwordHash = reader.GetString(reader.GetOrdinal("password_hash"));
+                            string status = reader.GetString(reader.GetOrdinal("status"));
+                            int intentosFallidos = reader.IsDBNull(reader.GetOrdinal("intentos_fallidos")) ? 0 : reader.GetInt32(reader.GetOrdinal("intentos_fallidos"));
+                            string rolNombre = reader.GetString(reader.GetOrdinal("rol_nombre"));
 
                             // Enterprise: leer campos de soft delete y activacion
-                            bool isDeleted = !reader.IsDBNull(reader.GetOrdinal("is_deleted")) && reader.GetBoolean("is_deleted");
-                            bool debeCambiarPassword = !reader.IsDBNull(reader.GetOrdinal("debe_cambiar_password")) && reader.GetBoolean("debe_cambiar_password");
-                            DateTime? fechaActivacion = reader.IsDBNull(reader.GetOrdinal("fecha_activacion")) ? (DateTime?)null : reader.GetDateTime("fecha_activacion");
-                            DateTime? deletedAt = reader.IsDBNull(reader.GetOrdinal("deleted_at")) ? (DateTime?)null : reader.GetDateTime("deleted_at");
+                            bool isDeleted = !reader.IsDBNull(reader.GetOrdinal("is_deleted")) && reader.GetBoolean(reader.GetOrdinal("is_deleted"));
+                            bool debeCambiarPassword = !reader.IsDBNull(reader.GetOrdinal("debe_cambiar_password")) && reader.GetBoolean(reader.GetOrdinal("debe_cambiar_password"));
+                            DateTime? fechaActivacion = reader.IsDBNull(reader.GetOrdinal("fecha_activacion")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("fecha_activacion"));
+                            DateTime? deletedAt = reader.IsDBNull(reader.GetOrdinal("deleted_at")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("deleted_at"));
 
                             // Check: cuenta eliminada (soft delete)
                             if (isDeleted)
@@ -99,7 +99,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
                             if (!reader.IsDBNull(reader.GetOrdinal("bloqueado_hasta")))
                             {
-                                DateTime bloqueadoHasta = reader.GetDateTime("bloqueado_hasta");
+                                DateTime bloqueadoHasta = reader.GetDateTime(reader.GetOrdinal("bloqueado_hasta"));
                                 if (DateTime.Now < bloqueadoHasta)
                                 {
                                     TimeSpan restante = bloqueadoHasta - DateTime.Now;
@@ -202,7 +202,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                     }
                 }
             }
-            catch (MySqlException mysqlEx)
+            catch (SqlException mysqlEx)
             {
                 Logger.Error("Error de MySQL en ValidarCredenciales", mysqlEx);
                 return new ResultadoLogin
@@ -244,11 +244,11 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             {
                 string passwordHash = BCrypt.Net.BCrypt.HashPassword(password, Seguridad.BcryptCostFactor);
 
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
 
-                    using (MySqlTransaction transaction = conn.BeginTransaction())
+                    using (SqlTransaction transaction = conn.BeginTransaction())
                     {
                         try
                         {
@@ -256,7 +256,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                                    VALUES (@username, @email, @password_hash, @id_rol, 'activo')";
 
                             int idUsuario;
-                            using (MySqlCommand cmd = new MySqlCommand(queryUsuario, conn, transaction))
+                            using (SqlCommand cmd = new SqlCommand(queryUsuario, conn, transaction))
                             {
                                 cmd.Parameters.AddWithValue("@username", username);
                                 cmd.Parameters.AddWithValue("@email", email);
@@ -264,7 +264,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                 cmd.Parameters.AddWithValue("@id_rol", idRol);
                                 cmd.ExecuteNonQuery();
 
-                                using (MySqlCommand cmdId = new MySqlCommand("SELECT LAST_INSERT_ID()", conn, transaction))
+                                using (SqlCommand cmdId = new SqlCommand("SELECT SCOPE_IDENTITY()", conn, transaction))
                                 {
                                     idUsuario = Convert.ToInt32(cmdId.ExecuteScalar());
                                 }
@@ -275,7 +275,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                 string tablaVinculo = ObtenerTablaVinculo(tipoEntidad);
                                 string columnaVinculo = ObtenerColumnaVinculo(tipoEntidad);
                                 string queryVinculo = $"INSERT INTO {tablaVinculo} (id_usuario, {columnaVinculo}) VALUES (@id_usuario, @id_entidad)";
-                                using (MySqlCommand cmd2 = new MySqlCommand(queryVinculo, conn, transaction))
+                                using (SqlCommand cmd2 = new SqlCommand(queryVinculo, conn, transaction))
                                 {
                                     cmd2.Parameters.AddWithValue("@id_usuario", idUsuario);
                                     cmd2.Parameters.AddWithValue("@id_entidad", idEntidad);
@@ -287,7 +287,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                             Logger.Info($"Usuario creado exitosamente: '{username}' (rol_id: {idRol}, tipo: {tipoEntidad ?? "N/A"})");
                             return true;
                         }
-                        catch (MySqlException mysqlEx) when (mysqlEx.Number == 1062) // Duplicate entry
+                        catch (SqlException mysqlEx) when (mysqlEx.Number == 1062) // Duplicate entry
                         {
                             transaction.Rollback();
                             Logger.Warning($"Intento de crear usuario duplicado: '{username}' o '{email}'");
@@ -301,7 +301,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                     }
                 }
             }
-            catch (MySqlException mysqlEx)
+            catch (SqlException mysqlEx)
             {
                 Logger.Error("Error de MySQL al crear usuario", mysqlEx);
                 return false;
@@ -317,7 +317,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
 
@@ -325,15 +325,15 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                     string hashActual;
                     string username;
                     string email;
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@id_usuario", idUsuario);
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
                             if (!reader.Read()) return false;
-                            hashActual = reader.GetString("password_hash");
-                            username = reader.GetString("username");
-                            email = reader.IsDBNull(reader.GetOrdinal("email")) ? null : reader.GetString("email");
+                            hashActual = reader.GetString(reader.GetOrdinal("password_hash"));
+                            username = reader.GetString(reader.GetOrdinal("username"));
+                            email = reader.IsDBNull(reader.GetOrdinal("email")) ? null : reader.GetString(reader.GetOrdinal("email"));
                         }
                     }
 
@@ -366,12 +366,12 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
                     string hashNuevo = BCrypt.Net.BCrypt.HashPassword(passwordNuevo, Seguridad.BcryptCostFactor);
 
-                    using (MySqlTransaction transaction = conn.BeginTransaction())
+                    using (SqlTransaction transaction = conn.BeginTransaction())
                     {
                         try
                         {
                             string updateQuery = "UPDATE Usuario SET password_hash = @hash WHERE id_usuario = @id_usuario";
-                            using (MySqlCommand cmd = new MySqlCommand(updateQuery, conn, transaction))
+                            using (SqlCommand cmd = new SqlCommand(updateQuery, conn, transaction))
                             {
                                 cmd.Parameters.AddWithValue("@hash", hashNuevo);
                                 cmd.Parameters.AddWithValue("@id_usuario", idUsuario);
@@ -385,8 +385,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                             try
                             {
                                 string queryBitacora = @"INSERT INTO bitacora (tabla_afectada, id_registro, operacion, usuario, ip_address, navegador, fecha)
-                                                         VALUES (@tabla, @id_registro, @operacion, @usuario, @ip, @navegador, NOW())";
-                                using (MySqlCommand cmd = new MySqlCommand(queryBitacora, conn, transaction))
+                                                         VALUES (@tabla, @id_registro, @operacion, @usuario, @ip, @navegador, GETDATE())";
+                                using (SqlCommand cmd = new SqlCommand(queryBitacora, conn, transaction))
                                 {
                                     cmd.Parameters.AddWithValue("@tabla", "Usuario");
                                     cmd.Parameters.AddWithValue("@id_registro", idUsuario.ToString());
@@ -432,11 +432,11 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = $"SELECT COUNT(*) FROM Usuario WHERE {campo} = @valor";
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@valor", valor);
                         int count = Convert.ToInt32(cmd.ExecuteScalar());
@@ -451,30 +451,30 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
         }
 
-        private Usuario ObtenerUsuarioPorId(MySqlConnection conn, int idUsuario)
+        private Usuario ObtenerUsuarioPorId(SqlConnection conn, int idUsuario)
         {
             string query = @"SELECT id_usuario, username, email, id_rol, status, ultimo_login, created_at,
                                     debe_cambiar_password, fecha_activacion
                              FROM Usuario WHERE id_usuario = @id_usuario";
 
-            using (MySqlCommand cmd = new MySqlCommand(query, conn))
+            using (SqlCommand cmd = new SqlCommand(query, conn))
             {
                 cmd.Parameters.AddWithValue("@id_usuario", idUsuario);
-                using (MySqlDataReader reader = cmd.ExecuteReader())
+                using (SqlDataReader reader = cmd.ExecuteReader())
                 {
                     if (reader.Read())
                     {
                         return new Usuario
                         {
-                            Id_Usuario = reader.GetInt32("id_usuario"),
-                            Username = reader.GetString("username"),
-                            Email = reader.GetString("email"),
-                            Id_Rol = reader.GetInt32("id_rol"),
-                            Status = reader.GetString("status"),
-                            Ultimo_Login = reader.IsDBNull(reader.GetOrdinal("ultimo_login")) ? (DateTime?)null : reader.GetDateTime("ultimo_login"),
-                            Created_At = reader.GetDateTime("created_at"),
-                            Debe_Cambiar_Password = reader.GetBoolean("debe_cambiar_password"),
-                            Fecha_Activacion = reader.IsDBNull(reader.GetOrdinal("fecha_activacion")) ? (DateTime?)null : reader.GetDateTime("fecha_activacion")
+                            Id_Usuario = reader.GetInt32(reader.GetOrdinal("id_usuario")),
+                            Username = reader.GetString(reader.GetOrdinal("username")),
+                            Email = reader.GetString(reader.GetOrdinal("email")),
+                            Id_Rol = reader.GetInt32(reader.GetOrdinal("id_rol")),
+                            Status = reader.GetString(reader.GetOrdinal("status")),
+                            Ultimo_Login = reader.IsDBNull(reader.GetOrdinal("ultimo_login")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("ultimo_login")),
+                            Created_At = reader.GetDateTime(reader.GetOrdinal("created_at")),
+                            Debe_Cambiar_Password = reader.GetBoolean(reader.GetOrdinal("debe_cambiar_password")),
+                            Fecha_Activacion = reader.IsDBNull(reader.GetOrdinal("fecha_activacion")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("fecha_activacion"))
                         };
                     }
                 }
@@ -482,7 +482,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             return null;
         }
 
-        private List<string> ObtenerPrivilegios(MySqlConnection conn, int idRol)
+        private List<string> ObtenerPrivilegios(SqlConnection conn, int idRol)
         {
             List<string> privilegios = new List<string>();
             string query = @"SELECT p.nombre 
@@ -490,25 +490,25 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                              INNER JOIN Rol_Privilegio rp ON p.id_privilegio = rp.id_privilegio
                              WHERE rp.id_rol = @id_rol";
 
-            using (MySqlCommand cmd = new MySqlCommand(query, conn))
+            using (SqlCommand cmd = new SqlCommand(query, conn))
             {
                 cmd.Parameters.AddWithValue("@id_rol", idRol);
-                using (MySqlDataReader reader = cmd.ExecuteReader())
+                using (SqlDataReader reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        privilegios.Add(reader.GetString("nombre"));
+                        privilegios.Add(reader.GetString(reader.GetOrdinal("nombre")));
                     }
                 }
             }
             return privilegios;
         }
 
-        private (string tipoEntidad, int? idEntidad) ObtenerEntidadVinculada(MySqlConnection conn, int idUsuario)
+        private (string tipoEntidad, int? idEntidad) ObtenerEntidadVinculada(SqlConnection conn, int idUsuario)
         {
             // Usuario_Alumno (nueva tabla con FK real)
-            string queryAlumno = "SELECT id_alumno FROM Usuario_Alumno WHERE id_usuario = @id LIMIT 1";
-            using (var cmd = new MySqlCommand(queryAlumno, conn))
+            string queryAlumno = "SELECT TOP 1 id_alumno FROM Usuario_Alumno WHERE id_usuario = @id";
+            using (var cmd = new SqlCommand(queryAlumno, conn))
             {
                 cmd.Parameters.AddWithValue("@id", idUsuario);
                 var result = cmd.ExecuteScalar();
@@ -517,8 +517,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
 
             // Usuario_Profesor
-            string queryProf = "SELECT id_profesor FROM Usuario_Profesor WHERE id_usuario = @id LIMIT 1";
-            using (var cmd = new MySqlCommand(queryProf, conn))
+            string queryProf = "SELECT TOP 1 id_profesor FROM Usuario_Profesor WHERE id_usuario = @id";
+            using (var cmd = new SqlCommand(queryProf, conn))
             {
                 cmd.Parameters.AddWithValue("@id", idUsuario);
                 var result = cmd.ExecuteScalar();
@@ -527,8 +527,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
 
             // Usuario_Empresa
-            string queryEmp = "SELECT id_empresa FROM Usuario_Empresa WHERE id_usuario = @id LIMIT 1";
-            using (var cmd = new MySqlCommand(queryEmp, conn))
+            string queryEmp = "SELECT TOP 1 id_empresa FROM Usuario_Empresa WHERE id_usuario = @id";
+            using (var cmd = new SqlCommand(queryEmp, conn))
             {
                 cmd.Parameters.AddWithValue("@id", idUsuario);
                 var result = cmd.ExecuteScalar();
@@ -543,12 +543,12 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         /// Incrementa el contador de intentos fallidos.
         /// Cuando se supera el máximo, establece bloqueo_hasta.
         /// </summary>
-        private void IncrementarIntentosFallidos(MySqlConnection conn, int idUsuario, int intentosActuales)
+        private void IncrementarIntentosFallidos(SqlConnection conn, int idUsuario, int intentosActuales)
         {
             IncrementarIntentosFallidos(conn, null, idUsuario, intentosActuales);
         }
 
-        private void IncrementarIntentosFallidos(MySqlConnection conn, MySqlTransaction transaction, int idUsuario, int intentosActuales)
+        private void IncrementarIntentosFallidos(SqlConnection conn, SqlTransaction transaction, int idUsuario, int intentosActuales)
         {
             int nuevosIntentos = intentosActuales + 1;
             DateTime? bloqueo = null;
@@ -566,7 +566,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             string query = @"UPDATE Usuario SET intentos_fallidos = @intentos, bloqueado_hasta = @bloqueo
                              WHERE id_usuario = @id_usuario";
 
-            using (MySqlCommand cmd = new MySqlCommand(query, conn, transaction))
+            using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
             {
                 cmd.Parameters.AddWithValue("@intentos", nuevosIntentos);
                 cmd.Parameters.AddWithValue("@bloqueo", bloqueo.HasValue ? (object)bloqueo.Value : DBNull.Value);
@@ -575,25 +575,25 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
         }
 
-        private void ActualizarUltimoLogin(MySqlConnection conn, int idUsuario)
+        private void ActualizarUltimoLogin(SqlConnection conn, int idUsuario)
         {
-            string query = "UPDATE Usuario SET ultimo_login = NOW(), intentos_fallidos = 0, bloqueado_hasta = NULL WHERE id_usuario = @id_usuario";
-            using (MySqlCommand cmd = new MySqlCommand(query, conn))
+            string query = "UPDATE Usuario SET ultimo_login = GETDATE(), intentos_fallidos = 0, bloqueado_hasta = NULL WHERE id_usuario = @id_usuario";
+            using (SqlCommand cmd = new SqlCommand(query, conn))
             {
                 cmd.Parameters.AddWithValue("@id_usuario", idUsuario);
                 cmd.ExecuteNonQuery();
             }
         }
 
-        private void CrearSesion(MySqlConnection conn, int idUsuario)
+        private void CrearSesion(SqlConnection conn, int idUsuario)
         {
             string tokenSesion = Guid.NewGuid().ToString("N"); // 32 hex chars
             DateTime expiracion = DateTime.Now.AddHours(Seguridad.DuracionSesionHoras);
 
             string query = @"INSERT INTO Sesion (id_sesion, id_usuario, fecha_inicio, fecha_expiracion, ip_address, user_agent, status)
-                             VALUES (@token, @id_usuario, NOW(), @expiracion, @ip, @user_agent, 'activa')";
+                             VALUES (@token, @id_usuario, GETDATE(), @expiracion, @ip, @user_agent, 'activa')";
 
-            using (MySqlCommand cmd = new MySqlCommand(query, conn))
+            using (SqlCommand cmd = new SqlCommand(query, conn))
             {
                 cmd.Parameters.AddWithValue("@token", tokenSesion);
                 cmd.Parameters.AddWithValue("@id_usuario", idUsuario);
@@ -608,23 +608,23 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         /// Valida que el nuevo password no esté en el historial reciente del usuario.
         /// Por defecto verifica las últimas 5 contraseñas.
         /// </summary>
-        private bool EsPasswordReutilizado(MySqlConnection conn, int idUsuario, string passwordNuevo, int ultimas = 5)
+        private bool EsPasswordReutilizado(SqlConnection conn, int idUsuario, string passwordNuevo, int ultimas = 5)
         {
             try
             {
                 string query = @"SELECT password_hash FROM password_history
                                  WHERE id_usuario = @id
                                  ORDER BY fecha_cambio DESC
-                                 LIMIT @limite";
-                using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                                 OFFSET 0 ROWS FETCH NEXT @limite ROWS ONLY";
+                using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@id", idUsuario);
                     cmd.Parameters.AddWithValue("@limite", ultimas);
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            string hashAnterior = reader.GetString("password_hash");
+                            string hashAnterior = reader.GetString(reader.GetOrdinal("password_hash"));
                             if (BCrypt.Net.BCrypt.Verify(passwordNuevo, hashAnterior))
                                 return true;
                         }
@@ -641,13 +641,13 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         /// <summary>
         /// Registra el cambio de password en el historial.
         /// </summary>
-        private void RegistrarEnHistorial(MySqlConnection conn, MySqlTransaction transaction, int idUsuario, string passwordHashAnterior)
+        private void RegistrarEnHistorial(SqlConnection conn, SqlTransaction transaction, int idUsuario, string passwordHashAnterior)
         {
             if (string.IsNullOrEmpty(passwordHashAnterior)) return;
             try
             {
                 string query = @"INSERT INTO password_history (id_usuario, password_hash) VALUES (@id, @hash)";
-                using (MySqlCommand cmd = new MySqlCommand(query, conn, transaction))
+                using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
                 {
                     cmd.Parameters.AddWithValue("@id", idUsuario);
                     cmd.Parameters.AddWithValue("@hash", passwordHashAnterior);
@@ -663,19 +663,19 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         /// <summary>
         /// Registra una operacion en la tabla bitacora (auditoria enterprise).
         /// </summary>
-        private void InsertarBitacora(MySqlConnection conn, string tabla, string idRegistro, string operacion, string usuario)
+        private void InsertarBitacora(SqlConnection conn, string tabla, string idRegistro, string operacion, string usuario)
         {
             InsertarBitacora(conn, null, tabla, idRegistro, operacion, usuario);
         }
 
-        private void InsertarBitacora(MySqlConnection conn, MySqlTransaction transaction, string tabla, string idRegistro, string operacion, string usuario)
+        private void InsertarBitacora(SqlConnection conn, SqlTransaction transaction, string tabla, string idRegistro, string operacion, string usuario)
         {
             try
             {
                 string query = @"INSERT INTO bitacora (tabla_afectada, id_registro, operacion, usuario, ip_address, navegador, fecha)
-                                 VALUES (@tabla, @id_registro, @operacion, @usuario, @ip, @navegador, NOW())";
+                                 VALUES (@tabla, @id_registro, @operacion, @usuario, @ip, @navegador, GETDATE())";
 
-                using (MySqlCommand cmd = new MySqlCommand(query, conn, transaction))
+                using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
                 {
                     cmd.Parameters.AddWithValue("@tabla", tabla);
                     cmd.Parameters.AddWithValue("@id_registro", idRegistro);
@@ -699,11 +699,11 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             {
                 int idUsuario = SesionActiva.Instance.Id_Usuario;
 
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = "UPDATE Sesion SET status = 'cerrada' WHERE id_usuario = @id_usuario AND status = 'activa'";
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@id_usuario", idUsuario);
                         cmd.ExecuteNonQuery();
@@ -725,20 +725,20 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             List<Rol> roles = new List<Rol>();
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = "SELECT id_rol, nombre, descripcion FROM Rol ORDER BY nombre";
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
                             roles.Add(new Rol
                             {
-                                Id_Rol = reader.GetInt32("id_rol"),
-                                Nombre = reader.GetString("nombre"),
-                                Descripcion = reader.IsDBNull(reader.GetOrdinal("descripcion")) ? null : reader.GetString("descripcion")
+                                Id_Rol = reader.GetInt32(reader.GetOrdinal("id_rol")),
+                                Nombre = reader.GetString(reader.GetOrdinal("nombre")),
+                                Descripcion = reader.IsDBNull(reader.GetOrdinal("descripcion")) ? null : reader.GetString(reader.GetOrdinal("descripcion"))
                             });
                         }
                     }
@@ -790,7 +790,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 if (string.IsNullOrEmpty(tipoEntidad) || idEntidad <= 0)
                     return false;
 
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string tabla = tipoEntidad switch
@@ -808,7 +808,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                         _ => "id_entidad"
                     };
                     string query = $"SELECT COUNT(*) FROM {tabla} WHERE {columna} = @id";
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@id", idEntidad);
                         int count = Convert.ToInt32(cmd.ExecuteScalar());
@@ -833,11 +833,11 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 if (string.IsNullOrWhiteSpace(username))
                     return false;
 
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = "SELECT COUNT(*) FROM Usuario WHERE LOWER(username) = LOWER(@username)";
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@username", username.Trim());
                         int count = Convert.ToInt32(cmd.ExecuteScalar());
@@ -862,11 +862,11 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 if (string.IsNullOrWhiteSpace(email))
                     return false;
 
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = "SELECT COUNT(*) FROM Usuario WHERE LOWER(email) = LOWER(@email)";
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@email", email.Trim());
                         int count = Convert.ToInt32(cmd.ExecuteScalar());
@@ -938,10 +938,10 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 string passwordTemporal = GenerarPasswordTemporal();
                 string passwordTemporalHash = BCrypt.Net.BCrypt.HashPassword(passwordTemporal, Seguridad.BcryptCostFactor);
 
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
-                    using (MySqlTransaction transaction = conn.BeginTransaction())
+                    using (SqlTransaction transaction = conn.BeginTransaction())
                     {
                         try
                         {
@@ -955,7 +955,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                  TRUE, @temp_hash, @creado_por)";
 
                             int idUsuario;
-                            using (MySqlCommand cmd = new MySqlCommand(queryUsuario, conn, transaction))
+                            using (SqlCommand cmd = new SqlCommand(queryUsuario, conn, transaction))
                             {
                                 cmd.Parameters.AddWithValue("@username", username);
                                 cmd.Parameters.AddWithValue("@email", email);
@@ -964,7 +964,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                 cmd.Parameters.AddWithValue("@creado_por", creadoPor);
                                 cmd.ExecuteNonQuery();
 
-                                using (MySqlCommand cmdId = new MySqlCommand("SELECT LAST_INSERT_ID()", conn, transaction))
+                                using (SqlCommand cmdId = new SqlCommand("SELECT SCOPE_IDENTITY()", conn, transaction))
                                 {
                                     idUsuario = Convert.ToInt32(cmdId.ExecuteScalar());
                                 }
@@ -976,7 +976,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                 string tablaVinculo2 = ObtenerTablaVinculo(tipoEntidad);
                                 string columnaVinculo2 = ObtenerColumnaVinculo(tipoEntidad);
                                 string queryVinculo = $"INSERT INTO {tablaVinculo2} (id_usuario, {columnaVinculo2}) VALUES (@id_usuario, @id_entidad)";
-                                using (MySqlCommand cmd = new MySqlCommand(queryVinculo, conn, transaction))
+                                using (SqlCommand cmd = new SqlCommand(queryVinculo, conn, transaction))
                                 {
                                     cmd.Parameters.AddWithValue("@id_usuario", idUsuario);
                                     cmd.Parameters.AddWithValue("@id_entidad", idEntidad.Value);
@@ -1004,7 +1004,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                     }
                 }
             }
-            catch (MySqlException mysqlEx) when (mysqlEx.Number == 1062)
+            catch (SqlException mysqlEx) when (mysqlEx.Number == 1062)
             {
                 Logger.Warning($"Intento de crear duplicado: '{username}' o '{email}'");
                 return new ResultadoCarga { Success = false, Message = "Username o email duplicado" };
@@ -1058,10 +1058,10 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
-                    using (MySqlTransaction transaction = conn.BeginTransaction(System.Data.IsolationLevel.Serializable))
+                    using (SqlTransaction transaction = conn.BeginTransaction(System.Data.IsolationLevel.Serializable))
                     {
                         try
                         {
@@ -1081,10 +1081,10 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                             DateTime? bloqueadoHasta;
                             bool yaActivado = false;
 
-                            using (MySqlCommand cmd = new MySqlCommand(query, conn, transaction))
+                            using (SqlCommand cmd = new SqlCommand(query, conn, transaction))
                             {
                                 cmd.Parameters.AddWithValue("@username", username);
-                                using (MySqlDataReader reader = cmd.ExecuteReader())
+                                using (SqlDataReader reader = cmd.ExecuteReader())
                                 {
                                     if (!reader.Read())
                                     {
@@ -1096,11 +1096,11 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                         };
                                     }
 
-                                    idUsuario = reader.GetInt32("id_usuario");
-                                    email = reader.GetString("email");
-                                    status = reader.GetString("status");
-                                    intentosFallidos = reader.IsDBNull(reader.GetOrdinal("intentos_fallidos")) ? 0 : reader.GetInt32("intentos_fallidos");
-                                    bloqueadoHasta = reader.IsDBNull(reader.GetOrdinal("bloqueado_hasta")) ? (DateTime?)null : reader.GetDateTime("bloqueado_hasta");
+                                    idUsuario = reader.GetInt32(reader.GetOrdinal("id_usuario"));
+                                    email = reader.GetString(reader.GetOrdinal("email"));
+                                    status = reader.GetString(reader.GetOrdinal("status"));
+                                    intentosFallidos = reader.IsDBNull(reader.GetOrdinal("intentos_fallidos")) ? 0 : reader.GetInt32(reader.GetOrdinal("intentos_fallidos"));
+                                    bloqueadoHasta = reader.IsDBNull(reader.GetOrdinal("bloqueado_hasta")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("bloqueado_hasta"));
 
                                     if (reader.IsDBNull(reader.GetOrdinal("password_temporal_hash")))
                                     {
@@ -1109,7 +1109,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                     }
                                     else
                                     {
-                                        passwordTempHash = reader.GetString("password_temporal_hash");
+                                        passwordTempHash = reader.GetString(reader.GetOrdinal("password_temporal_hash"));
                                     }
                                 }
                             }
@@ -1188,12 +1188,12 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                                   SET password_hash = @nuevo_hash,
                                                       password_temporal_hash = NULL,
                                                       debe_cambiar_password = FALSE,
-                                                      fecha_activacion = NOW(),
+                                                      fecha_activacion = GETDATE(),
                                                       intentos_fallidos = 0,
                                                       bloqueado_hasta = NULL
                                                   WHERE id_usuario = @id";
 
-                            using (MySqlCommand cmd = new MySqlCommand(updateQuery, conn, transaction))
+                            using (SqlCommand cmd = new SqlCommand(updateQuery, conn, transaction))
                             {
                                 cmd.Parameters.AddWithValue("@nuevo_hash", nuevoHash);
                                 cmd.Parameters.AddWithValue("@id", idUsuario);
@@ -1213,7 +1213,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                             var (tipoEntidad, idEntidad) = ObtenerEntidadVinculada(conn, idUsuario);
 
                             string nombreRol = "";
-                            using (MySqlCommand cmd = new MySqlCommand("SELECT nombre FROM Rol WHERE id_rol = @id", conn))
+                            using (SqlCommand cmd = new SqlCommand("SELECT nombre FROM Rol WHERE id_rol = @id", conn))
                             {
                                 cmd.Parameters.AddWithValue("@id", usuario.Id_Rol);
                                 nombreRol = cmd.ExecuteScalar()?.ToString() ?? "";
@@ -1268,7 +1268,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 string passwordTemporal = GenerarPasswordTemporal();
                 string tempHash = BCrypt.Net.BCrypt.HashPassword(passwordTemporal, Seguridad.BcryptCostFactor);
 
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = @"UPDATE Usuario
@@ -1278,7 +1278,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                         fecha_activacion = NULL
                                     WHERE id_usuario = @id";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@temp_hash", tempHash);
                         cmd.Parameters.AddWithValue("@id", idUsuario);
@@ -1316,7 +1316,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             List<Usuario> usuarios = new List<Usuario>();
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = @"SELECT u.id_usuario, u.username, u.email, u.id_rol, u.status,
@@ -1326,23 +1326,23 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                      INNER JOIN Rol r ON u.id_rol = r.id_rol
                                      ORDER BY u.created_at DESC";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
                             var usuario = new Usuario
                             {
-                                Id_Usuario = reader.GetInt32("id_usuario"),
-                                Username = reader.GetString("username"),
-                                Email = reader.GetString("email"),
-                                Id_Rol = reader.GetInt32("id_rol"),
-                                Status = reader.GetString("status"),
-                                Debe_Cambiar_Password = reader.GetBoolean("debe_cambiar_password"),
+                                Id_Usuario = reader.GetInt32(reader.GetOrdinal("id_usuario")),
+                                Username = reader.GetString(reader.GetOrdinal("username")),
+                                Email = reader.GetString(reader.GetOrdinal("email")),
+                                Id_Rol = reader.GetInt32(reader.GetOrdinal("id_rol")),
+                                Status = reader.GetString(reader.GetOrdinal("status")),
+                                Debe_Cambiar_Password = reader.GetBoolean(reader.GetOrdinal("debe_cambiar_password")),
                                 Fecha_Activacion = reader.IsDBNull(reader.GetOrdinal("fecha_activacion"))
-                                    ? (DateTime?)null : reader.GetDateTime("fecha_activacion"),
-                                Created_At = reader.GetDateTime("created_at"),
-                                Rol = new Rol { Nombre = reader.GetString("rol_nombre") }
+                                    ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("fecha_activacion")),
+                                Created_At = reader.GetDateTime(reader.GetOrdinal("created_at")),
+                                Rol = new Rol { Nombre = reader.GetString(reader.GetOrdinal("rol_nombre")) }
                             };
                             usuarios.Add(usuario);
                         }
@@ -1366,11 +1366,11 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = "UPDATE Usuario SET status = @status WHERE id_usuario = @id";
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@status", nuevoStatus);
                         cmd.Parameters.AddWithValue("@id", idUsuario);
@@ -1397,14 +1397,14 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             if (usuario == null) return false;
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     List<string> privilegios = ObtenerPrivilegios(conn, usuario.Id_Rol);
                     var (tipoEntidad, idEntidad) = ObtenerEntidadVinculada(conn, usuario.Id_Usuario);
 
                     string nombreRol = "";
-                    using (MySqlCommand cmd = new MySqlCommand("SELECT nombre FROM Rol WHERE id_rol = @id", conn))
+                    using (SqlCommand cmd = new SqlCommand("SELECT nombre FROM Rol WHERE id_rol = @id", conn))
                     {
                         cmd.Parameters.AddWithValue("@id", usuario.Id_Rol);
                         nombreRol = cmd.ExecuteScalar()?.ToString() ?? "";

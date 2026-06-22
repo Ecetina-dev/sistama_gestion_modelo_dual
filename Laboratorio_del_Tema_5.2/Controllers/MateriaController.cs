@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using MySqlConnector;
+using System.Data.SqlClient;
 using Laboratorio_del_Tema_5_2.Data;
 using Laboratorio_del_Tema_5_2.Models;
 using Laboratorio_del_Tema_5_2.Utils;
@@ -13,7 +13,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = @"INSERT INTO Materia 
@@ -23,7 +23,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                      (@clave_materia, @nombre, @descripcion, @creditos, @semestre,
                                       @horas_teoria, @horas_practica, @status_materia)";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@clave_materia", materia.Clave_Materia);
                         cmd.Parameters.AddWithValue("@nombre", materia.Nombre);
@@ -52,34 +52,34 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = "SELECT * FROM Materia ORDER BY semestre, clave_materia";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
                             Materia materia = new Materia();
-                            materia.Id_Materia = reader.GetInt32("id_materia");
-                            materia.Clave_Materia = reader.GetString("clave_materia");
-                            materia.Nombre = reader.GetString("nombre");
+                            materia.Id_Materia = reader.GetInt32(reader.GetOrdinal("id_materia"));
+                            materia.Clave_Materia = reader.GetString(reader.GetOrdinal("clave_materia"));
+                            materia.Nombre = reader.GetString(reader.GetOrdinal("nombre"));
                             
                             int idx = reader.GetOrdinal("descripcion");
                             materia.Descripcion = reader.IsDBNull(idx) ? null : reader.GetString(idx);
                             
-                            materia.Creditos = reader.GetInt32("creditos");
+                            materia.Creditos = reader.GetInt32(reader.GetOrdinal("creditos"));
                             
                             idx = reader.GetOrdinal("semestre");
                             materia.Semestre = reader.IsDBNull(idx) ? 0 : reader.GetInt32(idx);
                             
-                            materia.Horas_Teoria = reader.GetInt32("horas_teoria");
-                            materia.Horas_Practica = reader.GetInt32("horas_practica");
-                            materia.Status_Materia = reader.GetString("status_materia");
-                            materia.Created_At = reader.GetDateTime("created_at");
-                            materia.Updated_At = reader.GetDateTime("updated_at");
+                            materia.Horas_Teoria = reader.GetInt32(reader.GetOrdinal("horas_teoria"));
+                            materia.Horas_Practica = reader.GetInt32(reader.GetOrdinal("horas_practica"));
+                            materia.Status_Materia = reader.GetString(reader.GetOrdinal("status_materia"));
+                            materia.Created_At = reader.GetDateTime(reader.GetOrdinal("created_at"));
+                            materia.Updated_At = reader.GetDateTime(reader.GetOrdinal("updated_at"));
                             
                             materias.Add(materia);
                         }
@@ -97,37 +97,37 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = "SELECT * FROM Materia WHERE id_materia = @id_materia";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@id_materia", idMateria);
 
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
                             if (reader.Read())
                             {
                                 Materia materia = new Materia();
-                                materia.Id_Materia = reader.GetInt32("id_materia");
-                                materia.Clave_Materia = reader.GetString("clave_materia");
-                                materia.Nombre = reader.GetString("nombre");
+                                materia.Id_Materia = reader.GetInt32(reader.GetOrdinal("id_materia"));
+                                materia.Clave_Materia = reader.GetString(reader.GetOrdinal("clave_materia"));
+                                materia.Nombre = reader.GetString(reader.GetOrdinal("nombre"));
                                 
                                 int idx = reader.GetOrdinal("descripcion");
                                 materia.Descripcion = reader.IsDBNull(idx) ? null : reader.GetString(idx);
                                 
-                                materia.Creditos = reader.GetInt32("creditos");
+                                materia.Creditos = reader.GetInt32(reader.GetOrdinal("creditos"));
                                 
                                 idx = reader.GetOrdinal("semestre");
                                 materia.Semestre = reader.IsDBNull(idx) ? 0 : reader.GetInt32(idx);
                                 
-                                materia.Horas_Teoria = reader.GetInt32("horas_teoria");
-                                materia.Horas_Practica = reader.GetInt32("horas_practica");
-                                materia.Status_Materia = reader.GetString("status_materia");
-                                materia.Created_At = reader.GetDateTime("created_at");
-                                materia.Updated_At = reader.GetDateTime("updated_at");
+                                materia.Horas_Teoria = reader.GetInt32(reader.GetOrdinal("horas_teoria"));
+                                materia.Horas_Practica = reader.GetInt32(reader.GetOrdinal("horas_practica"));
+                                materia.Status_Materia = reader.GetString(reader.GetOrdinal("status_materia"));
+                                materia.Created_At = reader.GetDateTime(reader.GetOrdinal("created_at"));
+                                materia.Updated_At = reader.GetDateTime(reader.GetOrdinal("updated_at"));
                                 
                                 return materia;
                             }
@@ -146,7 +146,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = @"UPDATE Materia SET 
@@ -160,7 +160,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                      status_materia = @status_materia
                                      WHERE id_materia = @id_materia";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@id_materia", materia.Id_Materia);
                         cmd.Parameters.AddWithValue("@clave_materia", materia.Clave_Materia);
@@ -188,12 +188,12 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = "DELETE FROM Materia WHERE id_materia = @id_materia";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@id_materia", idMateria);
                         int rowsAffected = cmd.ExecuteNonQuery();
@@ -212,14 +212,14 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = "SELECT COUNT(*) FROM Materia WHERE clave_materia = @clave";
                     if (excluirId.HasValue)
                         query += " AND id_materia != @id";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@clave", clave);
                         if (excluirId.HasValue)
@@ -241,7 +241,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = @"SELECT 
@@ -251,7 +251,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                         m.creditos,
                                         m.semestre,
                                         COUNT(pm.id_proyecto) AS num_proyectos,
-                                        GROUP_CONCAT(DISTINCT p.nombre_proyecto SEPARATOR ', ') AS proyectos,
+                                        STRING_AGG(p.nombre_proyecto, ', ') AS proyectos,
                                         ROUND(SUM(pm.porcentaje_aplicado), 2) AS porcentaje_total
                                     FROM Materia m
                                     INNER JOIN Proyecto_Materia pm ON m.id_materia = pm.id_materia
@@ -259,21 +259,21 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                     GROUP BY m.id_materia
                                     ORDER BY m.semestre, m.clave_materia";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
                             MateriaConProyectos item = new MateriaConProyectos();
-                            item.Id_Materia = reader.GetInt32("id_materia");
-                            item.Clave_Materia = reader.GetString("clave_materia");
-                            item.Nombre = reader.GetString("nombre");
-                            item.Creditos = reader.GetInt32("creditos");
+                            item.Id_Materia = reader.GetInt32(reader.GetOrdinal("id_materia"));
+                            item.Clave_Materia = reader.GetString(reader.GetOrdinal("clave_materia"));
+                            item.Nombre = reader.GetString(reader.GetOrdinal("nombre"));
+                            item.Creditos = reader.GetInt32(reader.GetOrdinal("creditos"));
                             
                             int idx = reader.GetOrdinal("semestre");
                             item.Semestre = reader.IsDBNull(idx) ? 0 : reader.GetInt32(idx);
                             
-                            item.Num_Proyectos = reader.GetInt32("num_proyectos");
+                            item.Num_Proyectos = reader.GetInt32(reader.GetOrdinal("num_proyectos"));
                             
                             idx = reader.GetOrdinal("proyectos");
                             item.Proyectos = reader.IsDBNull(idx) ? null : reader.GetString(idx);

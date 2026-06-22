@@ -1,5 +1,6 @@
 #pragma warning disable CS0414
 using System;
+using System.Data.SqlClient;
 using System.Drawing;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
@@ -106,7 +107,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             {
                 bool conectado = await Task.Run(() =>
                 {
-                    try { using var conn = MySQLConnection.GetConnection(); conn.Open(); return true; }
+                    try { using var conn = SqlServerConnection.GetConnection(); conn.Open(); return true; }
                     catch { return false; }
                 });
                 lblEstadoConexion.Text = conectado ? "🟢  Servidor conectado" : "🔴  Sin conexión";
@@ -355,7 +356,7 @@ namespace Laboratorio_del_Tema_5_2.Views
                 // Test de conexión rápido
                 bool conexionOk = await Task.Run(() =>
                 {
-                    try { using var conn = MySQLConnection.GetConnection(); conn.Open(); return true; }
+                    try { using var conn = SqlServerConnection.GetConnection(); conn.Open(); return true; }
                     catch { return false; }
                 });
 

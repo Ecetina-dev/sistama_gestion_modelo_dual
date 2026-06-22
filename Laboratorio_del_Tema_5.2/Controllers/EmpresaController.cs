@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using MySqlConnector;
+using System.Data.SqlClient;
 using Laboratorio_del_Tema_5_2.Data;
 using Laboratorio_del_Tema_5_2.Models;
 using Laboratorio_del_Tema_5_2.Utils;
@@ -19,7 +19,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = @"INSERT INTO Empresa 
@@ -31,7 +31,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                       @estado, @cp, @telefono_empresa, @email_empresa,
                                       @nombre_contacto, @puesto_contacto, @status_empresa)";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@nombre_comercial", empresa.Nombre_Comercial);
                         cmd.Parameters.AddWithValue("@razon_social", string.IsNullOrEmpty(empresa.Razon_Social) ? (object)DBNull.Value : empresa.Razon_Social);
@@ -67,19 +67,19 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = "SELECT * FROM Empresa ORDER BY nombre_comercial";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
                             Empresa empresa = new Empresa();
-                            empresa.Id_Empresa = reader.GetInt32("id_empresa");
-                            empresa.Nombre_Comercial = reader.GetString("nombre_comercial");
+                            empresa.Id_Empresa = reader.GetInt32(reader.GetOrdinal("id_empresa"));
+                            empresa.Nombre_Comercial = reader.GetString(reader.GetOrdinal("nombre_comercial"));
                             
                             int idx = reader.GetOrdinal("razon_social");
                             empresa.Razon_Social = reader.IsDBNull(idx) ? null : reader.GetString(idx);
@@ -111,9 +111,9 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                             idx = reader.GetOrdinal("puesto_contacto");
                             empresa.Puesto_Contacto = reader.IsDBNull(idx) ? null : reader.GetString(idx);
                             
-                            empresa.Status_Empresa = reader.GetString("status_empresa");
-                            empresa.Created_At = reader.GetDateTime("created_at");
-                            empresa.Updated_At = reader.GetDateTime("updated_at");
+                            empresa.Status_Empresa = reader.GetString(reader.GetOrdinal("status_empresa"));
+                            empresa.Created_At = reader.GetDateTime(reader.GetOrdinal("created_at"));
+                            empresa.Updated_At = reader.GetDateTime(reader.GetOrdinal("updated_at"));
                             
                             empresas.Add(empresa);
                         }
@@ -134,22 +134,22 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = "SELECT * FROM Empresa WHERE id_empresa = @id_empresa";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@id_empresa", idEmpresa);
 
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
                             if (reader.Read())
                             {
                                 Empresa empresa = new Empresa();
-                                empresa.Id_Empresa = reader.GetInt32("id_empresa");
-                                empresa.Nombre_Comercial = reader.GetString("nombre_comercial");
+                                empresa.Id_Empresa = reader.GetInt32(reader.GetOrdinal("id_empresa"));
+                                empresa.Nombre_Comercial = reader.GetString(reader.GetOrdinal("nombre_comercial"));
                                 
                                 int idx = reader.GetOrdinal("razon_social");
                                 empresa.Razon_Social = reader.IsDBNull(idx) ? null : reader.GetString(idx);
@@ -181,9 +181,9 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                 idx = reader.GetOrdinal("puesto_contacto");
                                 empresa.Puesto_Contacto = reader.IsDBNull(idx) ? null : reader.GetString(idx);
                                 
-                                empresa.Status_Empresa = reader.GetString("status_empresa");
-                                empresa.Created_At = reader.GetDateTime("created_at");
-                                empresa.Updated_At = reader.GetDateTime("updated_at");
+                                empresa.Status_Empresa = reader.GetString(reader.GetOrdinal("status_empresa"));
+                                empresa.Created_At = reader.GetDateTime(reader.GetOrdinal("created_at"));
+                                empresa.Updated_At = reader.GetDateTime(reader.GetOrdinal("updated_at"));
                                 
                                 return empresa;
                             }
@@ -205,7 +205,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = @"UPDATE Empresa SET 
@@ -223,7 +223,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                      status_empresa = @status_empresa
                                      WHERE id_empresa = @id_empresa";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@id_empresa", empresa.Id_Empresa);
                         cmd.Parameters.AddWithValue("@nombre_comercial", empresa.Nombre_Comercial);
@@ -258,12 +258,12 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = "DELETE FROM Empresa WHERE id_empresa = @id_empresa";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@id_empresa", idEmpresa);
                         int rowsAffected = cmd.ExecuteNonQuery();
@@ -285,14 +285,14 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = "SELECT COUNT(*) FROM Empresa WHERE rfc = @rfc";
                     if (excluirId.HasValue)
                         query += " AND id_empresa != @id";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@rfc", rfc);
                         if (excluirId.HasValue)
@@ -317,7 +317,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
 string query = @"SELECT 
@@ -326,29 +326,29 @@ string query = @"SELECT
                                         e.ciudad,
                                         e.status_empresa,
                                         COUNT(ae.id_alumno) AS num_alumnos,
-                                        GROUP_CONCAT(CONCAT(a.nombre, ' ', a.apellido_paterno) SEPARATOR ', ') AS alumnos
+                                        STRING_AGG(a.nombre + ' ' + a.apellido_paterno, ', ') AS alumnos
                                     FROM Empresa e
                                     INNER JOIN Alumno_Empresa ae ON e.id_empresa = ae.id_empresa
                                     INNER JOIN Alumno a ON ae.id_alumno = a.id_alumno
                                     WHERE ae.status_asignacion = @statusActivo
                                     GROUP BY e.id_empresa";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@statusActivo", Estatus.AsignacionActiva);
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
                             {
                                 EmpresaConAlumnos item = new EmpresaConAlumnos();
-                                item.Id_Empresa = reader.GetInt32("id_empresa");
-                                item.Nombre_Comercial = reader.GetString("nombre_comercial");
+                                item.Id_Empresa = reader.GetInt32(reader.GetOrdinal("id_empresa"));
+                                item.Nombre_Comercial = reader.GetString(reader.GetOrdinal("nombre_comercial"));
                                 
                                 int idx = reader.GetOrdinal("ciudad");
                                 item.Ciudad = reader.IsDBNull(idx) ? null : reader.GetString(idx);
                                 
-                                item.Status_Empresa = reader.GetString("status_empresa");
-                                item.Num_Alumnos = reader.GetInt32("num_alumnos");
+                                item.Status_Empresa = reader.GetString(reader.GetOrdinal("status_empresa"));
+                                item.Num_Alumnos = reader.GetInt32(reader.GetOrdinal("num_alumnos"));
                                 
                                 idx = reader.GetOrdinal("alumnos");
                                 item.Alumnos = reader.IsDBNull(idx) ? null : reader.GetString(idx);

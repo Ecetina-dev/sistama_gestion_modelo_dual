@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using MySqlConnector;
+using System.Data.SqlClient;
 using Laboratorio_del_Tema_5_2.Data;
 
 namespace Laboratorio_del_Tema_5_2.Utils
@@ -71,20 +71,20 @@ namespace Laboratorio_del_Tema_5_2.Utils
 
                 try
                 {
-                    using (MySqlConnection conn = MySQLConnection.GetConnection())
+                    using (SqlConnection conn = SqlServerConnection.GetConnection())
                     {
                         conn.Open();
 
                         string query = "SELECT clave, valor FROM parametro_sistema";
-                        using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        using (SqlCommand cmd = new SqlCommand(query, conn))
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
                             {
-                                string clave = reader.GetString("clave");
+                                string clave = reader.GetString(reader.GetOrdinal("clave"));
                                 string valor = reader.IsDBNull(reader.GetOrdinal("valor"))
                                     ? null
-                                    : reader.GetString("valor");
+                                    : reader.GetString(reader.GetOrdinal("valor"));
                                 _cache[clave] = valor;
                             }
                         }

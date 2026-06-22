@@ -1,4 +1,5 @@
 using System;
+using System.Data.SqlClient;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
@@ -195,7 +196,7 @@ namespace Laboratorio_del_Tema_5_2.Views
         {
             try
             {
-                using (var conn = MySQLConnection.GetConnection())
+                using (var conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     lblMySQLStatus.Text = "●  MySQL conectado";
@@ -609,7 +610,7 @@ O desde cmd con:
             var token = _cancelTokenSource.Token;
 
             AgregarLog("=== INICIANDO MIGRACIÓN ===", Color.Cyan);
-            AgregarLog($"Origen: MySQL ({MySQLConnection.GetConnection().DataSource}/ModeloDualDB)", Color.White);
+            AgregarLog($"Origen: MySQL ({SqlServerConnection.GetConnection().DataSource}/ModeloDualDB)", Color.White);
             AgregarLog($"Destino: SQL Server ({txtSQLServer.Text}/{txtSQLDatabase.Text})", Color.White);
             AgregarLog($"Modo: {(rbtnWindowsAuth.Checked ? "Windows Auth" : "SQL Auth")}", Color.White);
             AgregarLog($"Tablas a migrar: {tablasMigrar.Count} (ordenadas por dependencia)", Color.White);
@@ -1049,7 +1050,7 @@ O desde cmd con:
 ───────────────────────────────
 • Servidor: localhost:3307
 • Base de datos: ModeloDualDB
-• Estado: {(MySQLConnection.TestConnection() ? "✅ Accesible" : "❌ No disponible")}
+• Estado: {(SqlServerConnection.TestConnection() ? "✅ Accesible" : "❌ No disponible")}
 
 ⚙️  DESTINO (SQL Server)
 ───────────────────────────────
@@ -1078,7 +1079,7 @@ O desde cmd con:
    - Usar Factory Pattern para elegir el motor activo
 
 4. Diferencias SQL a considerar en los controladores:
-   • NOW()        → GETDATE()
+   • GETDATE()        → GETDATE()
    • LIMIT n      → SELECT TOP n
    • LIMIT n OFFSET m → OFFSET m ROWS FETCH NEXT n ROWS ONLY
    • IFNULL(x,y)  → ISNULL(x,y)

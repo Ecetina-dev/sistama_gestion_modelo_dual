@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using MySqlConnector;
+using System.Data.SqlClient;
 using Laboratorio_del_Tema_5_2.Data;
 using Laboratorio_del_Tema_5_2.Models;
 using Laboratorio_del_Tema_5_2.Utils;
@@ -13,7 +13,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = @"INSERT INTO Proyecto 
@@ -25,7 +25,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                       @fecha_inicio, @fecha_fin, @horas_totales,
                                       @status_proyecto, @created_at, @updated_at)";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@nombre_proyecto", proyecto.Nombre);
                         var descripcionCreate = string.IsNullOrEmpty(proyecto.Descripcion) ? DBNull.Value : (object)proyecto.Descripcion;
@@ -57,19 +57,19 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = "SELECT * FROM Proyecto ORDER BY fecha_inicio DESC";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
                             Proyecto proyecto = new Proyecto();
-                            proyecto.Id_Proyecto = reader.GetInt32("id_proyecto");
-                            proyecto.Nombre = reader.GetString("nombre_proyecto");
+                            proyecto.Id_Proyecto = reader.GetInt32(reader.GetOrdinal("id_proyecto"));
+                            proyecto.Nombre = reader.GetString(reader.GetOrdinal("nombre_proyecto"));
                             
                             int idx = reader.GetOrdinal("descripcion");
                             proyecto.Descripcion = reader.IsDBNull(idx) ? null : reader.GetString(idx);
@@ -86,9 +86,9 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                             idx = reader.GetOrdinal("horas_totales");
                             proyecto.Horas_Totales = reader.IsDBNull(idx) ? (int?)null : reader.GetInt32(idx);
                             
-                            proyecto.Status = reader.GetString("status_proyecto");
-                            proyecto.Created_At = reader.GetDateTime("created_at");
-                            proyecto.Updated_At = reader.GetDateTime("updated_at");
+                            proyecto.Status = reader.GetString(reader.GetOrdinal("status_proyecto"));
+                            proyecto.Created_At = reader.GetDateTime(reader.GetOrdinal("created_at"));
+                            proyecto.Updated_At = reader.GetDateTime(reader.GetOrdinal("updated_at"));
                             
                             proyectos.Add(proyecto);
                         }
@@ -106,22 +106,22 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = "SELECT * FROM Proyecto WHERE id_proyecto = @id_proyecto";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@id_proyecto", idProyecto);
 
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
                             if (reader.Read())
                             {
                                 Proyecto proyecto = new Proyecto();
-                                proyecto.Id_Proyecto = reader.GetInt32("id_proyecto");
-                                proyecto.Nombre = reader.GetString("nombre_proyecto");
+                                proyecto.Id_Proyecto = reader.GetInt32(reader.GetOrdinal("id_proyecto"));
+                                proyecto.Nombre = reader.GetString(reader.GetOrdinal("nombre_proyecto"));
                                 
                                 int idx = reader.GetOrdinal("descripcion");
                                 proyecto.Descripcion = reader.IsDBNull(idx) ? null : reader.GetString(idx);
@@ -138,9 +138,9 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                 idx = reader.GetOrdinal("horas_totales");
                                 proyecto.Horas_Totales = reader.IsDBNull(idx) ? (int?)null : reader.GetInt32(idx);
                                 
-                                proyecto.Status = reader.GetString("status_proyecto");
-                                proyecto.Created_At = reader.GetDateTime("created_at");
-                                proyecto.Updated_At = reader.GetDateTime("updated_at");
+                                proyecto.Status = reader.GetString(reader.GetOrdinal("status_proyecto"));
+                                proyecto.Created_At = reader.GetDateTime(reader.GetOrdinal("created_at"));
+                                proyecto.Updated_At = reader.GetDateTime(reader.GetOrdinal("updated_at"));
                                 
                                 return proyecto;
                             }
@@ -159,7 +159,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = @"UPDATE Proyecto SET 
@@ -173,7 +173,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                      updated_at = @updated_at
                                      WHERE id_proyecto = @id_proyecto";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@id_proyecto", proyecto.Id_Proyecto);
                         cmd.Parameters.AddWithValue("@nombre_proyecto", proyecto.Nombre);
@@ -203,12 +203,12 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = "DELETE FROM Proyecto WHERE id_proyecto = @id_proyecto";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@id_proyecto", idProyecto);
                         int rowsAffected = cmd.ExecuteNonQuery();

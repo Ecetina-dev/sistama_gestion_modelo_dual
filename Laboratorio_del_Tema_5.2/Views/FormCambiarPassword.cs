@@ -1,5 +1,6 @@
 #pragma warning disable CS0414
 using System;
+using System.Data.SqlClient;
 using System.Drawing;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
@@ -132,7 +133,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             try
             {
                 bool conexionOk = await Task.Run(() =>
-                { try { using var c = MySQLConnection.GetConnection(); c.Open(); return true; } catch { return false; } });
+                { try { using var c = SqlServerConnection.GetConnection(); c.Open(); return true; } catch { return false; } });
 
                 if (!conexionOk) { MostrarError("Error de conexión."); return; }
 

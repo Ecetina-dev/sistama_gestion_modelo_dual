@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using MySqlConnector;
+using System.Data.SqlClient;
 using Laboratorio_del_Tema_5_2.Data;
 using Laboratorio_del_Tema_5_2.Utils;
 
@@ -109,10 +109,10 @@ namespace Laboratorio_del_Tema_5_2.Models
             {
                 try
                 {
-                    using (var conn = Laboratorio_del_Tema_5_2.Data.MySQLConnection.GetConnection())
+                    using (var conn = Laboratorio_del_Tema_5_2.Data.SqlServerConnection.GetConnection())
                     {
                         conn.Open();
-                        using (var cmd = new MySqlConnector.MySqlCommand(
+                        using (var cmd = new System.Data.SqlClient.SqlCommand(
                             "UPDATE Usuario SET intentos_fallidos = 0, bloqueado_hasta = NULL WHERE id_usuario = @id", conn))
                         {
                             cmd.Parameters.AddWithValue("@id", _instance.Id_Usuario);

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using MySqlConnector;
+using System.Data.SqlClient;
 using Laboratorio_del_Tema_5_2.Data;
 using Laboratorio_del_Tema_5_2.Models;
 using Laboratorio_del_Tema_5_2.Utils;
@@ -23,13 +23,13 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = "SELECT * FROM Carrera ORDER BY nombre";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
@@ -57,16 +57,16 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = "SELECT * FROM Carrera WHERE status = @status ORDER BY nombre";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@status", Estatus.CarreraActiva);
 
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
                             {
@@ -92,16 +92,16 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = "SELECT * FROM Carrera WHERE id_carrera = @id_carrera";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@id_carrera", idCarrera);
 
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
                             if (reader.Read())
                                 return MapCarreraFromReader(reader);
@@ -118,12 +118,12 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             return null;
         }
 
-        private Carrera MapCarreraFromReader(MySqlDataReader reader)
+        private Carrera MapCarreraFromReader(SqlDataReader reader)
         {
             Carrera carrera = new Carrera();
-            carrera.Id_Carrera = reader.GetInt32("id_carrera");
-            carrera.Clave = reader.GetString("clave");
-            carrera.Nombre = reader.GetString("nombre");
+            carrera.Id_Carrera = reader.GetInt32(reader.GetOrdinal("id_carrera"));
+            carrera.Clave = reader.GetString(reader.GetOrdinal("clave"));
+            carrera.Nombre = reader.GetString(reader.GetOrdinal("nombre"));
 
             // La columna descripcion no existe en algunas versiones del schema.
             // Se usa try/catch para mantener compatibilidad sin romper la lectura.
@@ -137,10 +137,10 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 carrera.Descripcion = null;
             }
 
-            carrera.Duracion_Semestres = reader.GetInt32("duracion_semestres");
-            carrera.Status = reader.GetString("status");
-            carrera.Created_At = reader.GetDateTime("created_at");
-            carrera.Updated_At = reader.GetDateTime("updated_at");
+            carrera.Duracion_Semestres = reader.GetInt32(reader.GetOrdinal("duracion_semestres"));
+            carrera.Status = reader.GetString(reader.GetOrdinal("status"));
+            carrera.Created_At = reader.GetDateTime(reader.GetOrdinal("created_at"));
+            carrera.Updated_At = reader.GetDateTime(reader.GetOrdinal("updated_at"));
 
             return carrera;
         }

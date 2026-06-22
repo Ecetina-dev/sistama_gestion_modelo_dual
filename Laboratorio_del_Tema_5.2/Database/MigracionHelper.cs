@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
@@ -109,7 +110,7 @@ namespace Laboratorio_del_Tema_5_2.Database
 
             try
             {
-                using (var conn = MySQLConnection.GetConnection())
+                using (var conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
 
@@ -121,12 +122,12 @@ namespace Laboratorio_del_Tema_5_2.Database
                         AND TABLE_TYPE = 'BASE TABLE'
                         ORDER BY TABLE_NAME";
 
-                    using (var cmd = new MySqlCommand(sqlTablas, conn))
+                    using (var cmd = new SqlCommand(sqlTablas, conn))
                     using (var reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            string nombre = reader.GetString("TABLE_NAME");
+                            string nombre = reader.GetString(reader.GetOrdinal("TABLE_NAME"));
 
                             if (tablasFiltro != null && !tablasFiltro.Contains(nombre, StringComparer.OrdinalIgnoreCase))
                                 continue;
@@ -135,9 +136,9 @@ namespace Laboratorio_del_Tema_5_2.Database
                             {
                                 Nombre = nombre,
                                 Comentario = reader.IsDBNull(reader.GetOrdinal("TABLE_COMMENT"))
-                                    ? "" : reader.GetString("TABLE_COMMENT"),
+                                    ? "" : reader.GetString(reader.GetOrdinal("TABLE_COMMENT")),
                                 RowCount = reader.IsDBNull(reader.GetOrdinal("TABLE_ROWS"))
-                                    ? 0 : reader.GetInt64("TABLE_ROWS")
+                                    ? 0 : reader.GetInt64(reader.GetOrdinal("TABLE_ROWS"))
                             };
 
                             tablas.Add(tabla);
@@ -166,7 +167,7 @@ namespace Laboratorio_del_Tema_5_2.Database
             return tablas;
         }
 
-        private List<ColumnaInfo> ObtenerColumnasMySQL(MySqlConnection conn, string nombreTabla)
+        private List<ColumnaInfo> ObtenerColumnasMySQL(SqlConnection conn, string nombreTabla)
         {
             var columnas = new List<ColumnaInfo>();
 
@@ -187,7 +188,7 @@ namespace Laboratorio_del_Tema_5_2.Database
                   AND c.TABLE_NAME = @tableName
                 ORDER BY c.ORDINAL_POSITION";
 
-            using (var cmd = new MySqlCommand(sql, conn))
+            using (var cmd = new SqlCommand(sql, conn))
             {
                 cmd.Parameters.AddWithValue("@tableName", nombreTabla);
                 using (var reader = cmd.ExecuteReader())
@@ -196,10 +197,10 @@ namespace Laboratorio_del_Tema_5_2.Database
                     {
                         var col = new ColumnaInfo
                         {
-                            Nombre = reader.GetString("COLUMN_NAME"),
+                            Nombre = reader.GetString(reader.GetOrdinal("COLUMN_NAME")),
                             TipoMySQL = reader.IsDBNull(reader.GetOrdinal("COLUMN_TYPE"))
-                                ? "" : reader.GetString("COLUMN_TYPE"),
-                            EsNullable = reader.GetString("IS_NULLABLE") == "YES",
+                                ? "" : reader.GetString(reader.GetOrdinal("COLUMN_TYPE")),
+                            EsNullable = reader.GetString(reader.GetOrdinal("IS_NULLABLE")) == "YES",
                             MaxLength = reader.IsDBNull(reader.GetOrdinal("CHARACTER_MAXIMUM_LENGTH"))
                                 ? (int?)null : Convert.ToInt32(reader["CHARACTER_MAXIMUM_LENGTH"]),
                             Precision = reader.IsDBNull(reader.GetOrdinal("NUMERIC_PRECISION"))
@@ -207,14 +208,14 @@ namespace Laboratorio_del_Tema_5_2.Database
                             Scale = reader.IsDBNull(reader.GetOrdinal("NUMERIC_SCALE"))
                                 ? (int?)null : Convert.ToInt32(reader["NUMERIC_SCALE"]),
                             Comentario = reader.IsDBNull(reader.GetOrdinal("COLUMN_COMMENT"))
-                                ? "" : reader.GetString("COLUMN_COMMENT"),
-                            EsAutoIncrement = reader.GetString("EXTRA").Contains("auto_increment"),
+                                ? "" : reader.GetString(reader.GetOrdinal("COLUMN_COMMENT")),
+                            EsAutoIncrement = reader.GetString(reader.GetOrdinal("EXTRA")).Contains("auto_increment"),
                         };
 
                         // Default value como string
                         if (!reader.IsDBNull(reader.GetOrdinal("COLUMN_DEFAULT")))
                         {
-                            string def = reader.GetString("COLUMN_DEFAULT");
+                            string def = reader.GetString(reader.GetOrdinal("COLUMN_DEFAULT"));
                             // Convertir funciones MySQL a T-SQL
                             if (string.Equals(def, "CURRENT_TIMESTAMP", StringComparison.OrdinalIgnoreCase) ||
                                 string.Equals(def, "current_timestamp()", StringComparison.OrdinalIgnoreCase) ||
@@ -259,7 +260,7 @@ namespace Laboratorio_del_Tema_5_2.Database
             return columnas;
         }
 
-        private List<string> ObtenerPrimaryKeyMySQL(MySqlConnection conn, string nombreTabla)
+        private List<string> ObtenerPrimaryKeyMySQL(SqlConnection conn, string nombreTabla)
         {
             var pk = new List<string>();
 
@@ -275,20 +276,20 @@ namespace Laboratorio_del_Tema_5_2.Database
                   AND tc.CONSTRAINT_TYPE = 'PRIMARY KEY'
                 ORDER BY k.ORDINAL_POSITION";
 
-            using (var cmd = new MySqlCommand(sql, conn))
+            using (var cmd = new SqlCommand(sql, conn))
             {
                 cmd.Parameters.AddWithValue("@tableName", nombreTabla);
                 using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
-                        pk.Add(reader.GetString("COLUMN_NAME"));
+                        pk.Add(reader.GetString(reader.GetOrdinal("COLUMN_NAME")));
                 }
             }
 
             return pk;
         }
 
-        private List<ForeignKeyInfo> ObtenerForeignKeysMySQL(MySqlConnection conn, string nombreTabla)
+        private List<ForeignKeyInfo> ObtenerForeignKeysMySQL(SqlConnection conn, string nombreTabla)
         {
             var fks = new List<ForeignKeyInfo>();
 
@@ -308,7 +309,7 @@ namespace Laboratorio_del_Tema_5_2.Database
                   AND k.TABLE_NAME = @tableName
                   AND k.REFERENCED_TABLE_NAME IS NOT NULL";
 
-            using (var cmd = new MySqlCommand(sql, conn))
+            using (var cmd = new SqlCommand(sql, conn))
             {
                 cmd.Parameters.AddWithValue("@tableName", nombreTabla);
                 using (var reader = cmd.ExecuteReader())
@@ -317,12 +318,12 @@ namespace Laboratorio_del_Tema_5_2.Database
                     {
                         fks.Add(new ForeignKeyInfo
                         {
-                            Nombre = reader.GetString("CONSTRAINT_NAME"),
-                            ColumnaOrigen = reader.GetString("COLUMN_NAME"),
-                            TablaDestino = reader.GetString("REFERENCED_TABLE_NAME"),
-                            ColumnaDestino = reader.GetString("REFERENCED_COLUMN_NAME"),
-                            DeleteRule = reader.GetString("DELETE_RULE"),
-                            UpdateRule = reader.GetString("UPDATE_RULE")
+                            Nombre = reader.GetString(reader.GetOrdinal("CONSTRAINT_NAME")),
+                            ColumnaOrigen = reader.GetString(reader.GetOrdinal("COLUMN_NAME")),
+                            TablaDestino = reader.GetString(reader.GetOrdinal("REFERENCED_TABLE_NAME")),
+                            ColumnaDestino = reader.GetString(reader.GetOrdinal("REFERENCED_COLUMN_NAME")),
+                            DeleteRule = reader.GetString(reader.GetOrdinal("DELETE_RULE")),
+                            UpdateRule = reader.GetString(reader.GetOrdinal("UPDATE_RULE"))
                         });
                     }
                 }
@@ -331,7 +332,7 @@ namespace Laboratorio_del_Tema_5_2.Database
             return fks;
         }
 
-        private List<IndexInfo> ObtenerIndicesMySQL(MySqlConnection conn, string nombreTabla)
+        private List<IndexInfo> ObtenerIndicesMySQL(SqlConnection conn, string nombreTabla)
         {
             var indices = new List<IndexInfo>();
 
@@ -347,7 +348,7 @@ namespace Laboratorio_del_Tema_5_2.Database
                   AND INDEX_NAME != 'PRIMARY'
                 ORDER BY INDEX_NAME, SEQ_IN_INDEX";
 
-            using (var cmd = new MySqlCommand(sql, conn))
+            using (var cmd = new SqlCommand(sql, conn))
             {
                 cmd.Parameters.AddWithValue("@tableName", nombreTabla);
                 using (var reader = cmd.ExecuteReader())
@@ -356,10 +357,10 @@ namespace Laboratorio_del_Tema_5_2.Database
                     {
                         indices.Add(new IndexInfo
                         {
-                            Nombre = reader.GetString("INDEX_NAME"),
-                            Columna = reader.GetString("COLUMN_NAME"),
-                            Orden = reader.GetInt32("SEQ_IN_INDEX"),
-                            EsUnico = reader.GetInt64("NON_UNIQUE") == 0
+                            Nombre = reader.GetString(reader.GetOrdinal("INDEX_NAME")),
+                            Columna = reader.GetString(reader.GetOrdinal("COLUMN_NAME")),
+                            Orden = reader.GetInt32(reader.GetOrdinal("SEQ_IN_INDEX")),
+                            EsUnico = reader.GetInt64(reader.GetOrdinal("NON_UNIQUE")) == 0
                         });
                     }
                 }
@@ -699,7 +700,7 @@ namespace Laboratorio_del_Tema_5_2.Database
 
                 long totalMigradas = 0;
 
-                using (var mysqlConn = MySQLConnection.GetConnection())
+                using (var mysqlConn = SqlServerConnection.GetConnection())
                 {
                     mysqlConn.Open();
 
@@ -707,7 +708,7 @@ namespace Laboratorio_del_Tema_5_2.Database
                     string columnasSelect = string.Join(", ", tabla.Columnas.Select(c => $"`{c.Nombre}`"));
                     string sqlSelect = $"SELECT {columnasSelect} FROM `{tabla.Nombre}`";
 
-                    using (var cmdMySQL = new MySqlCommand(sqlSelect, mysqlConn))
+                    using (var cmdMySQL = new SqlCommand(sqlSelect, mysqlConn))
                     using (var reader = cmdMySQL.ExecuteReader())
                     {
                         // Crear DataTable completo

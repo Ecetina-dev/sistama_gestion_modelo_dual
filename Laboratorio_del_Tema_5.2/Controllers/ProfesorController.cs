@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using MySqlConnector;
+using System.Data.SqlClient;
 using Laboratorio_del_Tema_5_2.Data;
 using Laboratorio_del_Tema_5_2.Models;
 using Laboratorio_del_Tema_5_2.Utils;
@@ -13,7 +13,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = @"INSERT INTO Profesor 
@@ -23,7 +23,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                      (@no_empleado, @nombre, @apellido_paterno, @apellido_materno,
                                       @email, @telefono, @departamento, @puesto, @status_profesor)";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@no_empleado", profesor.No_Empleado);
                         cmd.Parameters.AddWithValue("@nombre", profesor.Nombre);
@@ -74,21 +74,21 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = "SELECT * FROM Profesor ORDER BY apellido_paterno, nombre";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
                             Profesor profesor = new Profesor();
-                            profesor.Id_Profesor = reader.GetInt32("id_profesor");
-                            profesor.No_Empleado = reader.GetString("no_empleado");
-                            profesor.Nombre = reader.GetString("nombre");
-                            profesor.Apellido_Paterno = reader.GetString("apellido_paterno");
+                            profesor.Id_Profesor = reader.GetInt32(reader.GetOrdinal("id_profesor"));
+                            profesor.No_Empleado = reader.GetString(reader.GetOrdinal("no_empleado"));
+                            profesor.Nombre = reader.GetString(reader.GetOrdinal("nombre"));
+                            profesor.Apellido_Paterno = reader.GetString(reader.GetOrdinal("apellido_paterno"));
                             
                             int idx = reader.GetOrdinal("apellido_materno");
                             profesor.Apellido_Materno = reader.IsDBNull(idx) ? null : reader.GetString(idx);
@@ -105,9 +105,9 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                             idx = reader.GetOrdinal("puesto");
                             profesor.Puesto = reader.IsDBNull(idx) ? null : reader.GetString(idx);
                             
-                            profesor.Status_Profesor = reader.GetString("status_profesor");
-                            profesor.Created_At = reader.GetDateTime("created_at");
-                            profesor.Updated_At = reader.GetDateTime("updated_at");
+                            profesor.Status_Profesor = reader.GetString(reader.GetOrdinal("status_profesor"));
+                            profesor.Created_At = reader.GetDateTime(reader.GetOrdinal("created_at"));
+                            profesor.Updated_At = reader.GetDateTime(reader.GetOrdinal("updated_at"));
                             
                             profesores.Add(profesor);
                         }
@@ -125,24 +125,24 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = "SELECT * FROM Profesor WHERE id_profesor = @id_profesor";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@id_profesor", idProfesor);
 
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
                             if (reader.Read())
                             {
                                 Profesor profesor = new Profesor();
-                                profesor.Id_Profesor = reader.GetInt32("id_profesor");
-                                profesor.No_Empleado = reader.GetString("no_empleado");
-                                profesor.Nombre = reader.GetString("nombre");
-                                profesor.Apellido_Paterno = reader.GetString("apellido_paterno");
+                                profesor.Id_Profesor = reader.GetInt32(reader.GetOrdinal("id_profesor"));
+                                profesor.No_Empleado = reader.GetString(reader.GetOrdinal("no_empleado"));
+                                profesor.Nombre = reader.GetString(reader.GetOrdinal("nombre"));
+                                profesor.Apellido_Paterno = reader.GetString(reader.GetOrdinal("apellido_paterno"));
                                 
                                 int idx = reader.GetOrdinal("apellido_materno");
                                 profesor.Apellido_Materno = reader.IsDBNull(idx) ? null : reader.GetString(idx);
@@ -159,9 +159,9 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                 idx = reader.GetOrdinal("puesto");
                                 profesor.Puesto = reader.IsDBNull(idx) ? null : reader.GetString(idx);
                                 
-                                profesor.Status_Profesor = reader.GetString("status_profesor");
-                                profesor.Created_At = reader.GetDateTime("created_at");
-                                profesor.Updated_At = reader.GetDateTime("updated_at");
+                                profesor.Status_Profesor = reader.GetString(reader.GetOrdinal("status_profesor"));
+                                profesor.Created_At = reader.GetDateTime(reader.GetOrdinal("created_at"));
+                                profesor.Updated_At = reader.GetDateTime(reader.GetOrdinal("updated_at"));
                                 
                                 return profesor;
                             }
@@ -180,7 +180,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = @"UPDATE Profesor SET 
@@ -195,7 +195,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                      status_profesor = @status_profesor
                                      WHERE id_profesor = @id_profesor";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@id_profesor", profesor.Id_Profesor);
                         cmd.Parameters.AddWithValue("@no_empleado", profesor.No_Empleado);
@@ -245,12 +245,12 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = "DELETE FROM Profesor WHERE id_profesor = @id_profesor";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@id_profesor", idProfesor);
                         int rowsAffected = cmd.ExecuteNonQuery();
@@ -269,14 +269,14 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = "SELECT COUNT(*) FROM Profesor WHERE no_empleado = @no_empleado";
                     if (excluirId.HasValue)
                         query += " AND id_profesor != @id";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@no_empleado", noEmpleado);
                         if (excluirId.HasValue)
@@ -298,7 +298,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = @"SELECT 
@@ -309,26 +309,26 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                         p.apellido_materno,
                                         p.departamento,
                                         COUNT(DISTINCT pr.id_proyecto) AS num_proyectos,
-                                        GROUP_CONCAT(DISTINCT pp.tipo_supervision SEPARATOR ', ') AS tipos_supervision,
-                                        GROUP_CONCAT(DISTINCT CONCAT(pp.tipo_supervision, ': ', pr.nombre_proyecto) SEPARATOR ', ') AS proyectos
+                                        STRING_AGG(DISTINCT pp.tipo_supervision, ', ') AS tipos_supervision,
+                                        STRING_AGG(pp.tipo_supervision + ': ' + pr.nombre_proyecto, ', ') AS proyectos
                                     FROM Profesor p
                                     INNER JOIN Proyecto_Profesor pp ON p.id_profesor = pp.id_profesor
                                     INNER JOIN Proyecto pr ON pp.id_proyecto = pr.id_proyecto
                                     WHERE pp.status_supervision = @statusActiva
                                     GROUP BY p.id_profesor, p.no_empleado, p.nombre, p.apellido_paterno, p.apellido_materno, p.departamento";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@statusActiva", Estatus.AsignacionActiva);
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
                             {
                                 ProfesorConProyectos item = new ProfesorConProyectos();
-                                item.Id_Profesor = reader.GetInt32("id_profesor");
-                                item.No_Empleado = reader.GetString("no_empleado");
-                                item.Nombre = reader.GetString("nombre");
-                                item.Apellido_Paterno = reader.GetString("apellido_paterno");
+                                item.Id_Profesor = reader.GetInt32(reader.GetOrdinal("id_profesor"));
+                                item.No_Empleado = reader.GetString(reader.GetOrdinal("no_empleado"));
+                                item.Nombre = reader.GetString(reader.GetOrdinal("nombre"));
+                                item.Apellido_Paterno = reader.GetString(reader.GetOrdinal("apellido_paterno"));
                                 
                                 int idx = reader.GetOrdinal("apellido_materno");
                                 item.Apellido_Materno = reader.IsDBNull(idx) ? null : reader.GetString(idx);
@@ -336,7 +336,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                 idx = reader.GetOrdinal("departamento");
                                 item.Departamento = reader.IsDBNull(idx) ? null : reader.GetString(idx);
                                 
-                                item.Num_Proyectos = reader.GetInt32("num_proyectos");
+                                item.Num_Proyectos = reader.GetInt32(reader.GetOrdinal("num_proyectos"));
                                 
                                 idx = reader.GetOrdinal("tipos_supervision");
                                 item.Tipos_Supervision = reader.IsDBNull(idx) ? null : reader.GetString(idx);

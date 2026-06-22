@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using MySqlConnector;
+using System.Data.SqlClient;
 using Laboratorio_del_Tema_5_2.Data;
 using Laboratorio_del_Tema_5_2.Models;
 using Laboratorio_del_Tema_5_2.Utils;
@@ -13,7 +13,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = @"INSERT INTO Tema 
@@ -21,7 +21,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                       VALUES 
                                       (@id_materia, @numero_tema, @nombre, @descripcion, @status_tema)";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@id_materia", tema.Id_Materia);
                         cmd.Parameters.AddWithValue("@numero_tema", tema.Numero_Tema);
@@ -47,7 +47,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = @"SELECT t.*, m.nombre AS nombre_materia 
@@ -55,23 +55,23 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                     INNER JOIN Materia m ON t.id_materia = m.id_materia
                                     ORDER BY t.id_materia, t.numero_tema";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
                             Tema tema = new Tema();
-                            tema.Id_Tema = reader.GetInt32("id_tema");
-                            tema.Id_Materia = reader.GetInt32("id_materia");
-                            tema.Numero_Tema = reader.GetInt32("numero_tema");
-                            tema.Nombre = reader.GetString("nombre");
+                            tema.Id_Tema = reader.GetInt32(reader.GetOrdinal("id_tema"));
+                            tema.Id_Materia = reader.GetInt32(reader.GetOrdinal("id_materia"));
+                            tema.Numero_Tema = reader.GetInt32(reader.GetOrdinal("numero_tema"));
+                            tema.Nombre = reader.GetString(reader.GetOrdinal("nombre"));
                             
                             int idx = reader.GetOrdinal("descripcion");
                             tema.Descripcion = reader.IsDBNull(idx) ? null : reader.GetString(idx);
                             
-                            tema.Status_Tema = reader.GetString("status_tema");
-                            tema.Created_At = reader.GetDateTime("created_at");
-                            tema.Updated_At = reader.GetDateTime("updated_at");
+                            tema.Status_Tema = reader.GetString(reader.GetOrdinal("status_tema"));
+                            tema.Created_At = reader.GetDateTime(reader.GetOrdinal("created_at"));
+                            tema.Updated_At = reader.GetDateTime(reader.GetOrdinal("updated_at"));
                             
                             idx = reader.GetOrdinal("nombre_materia");
                             tema.Nombre_Materia = reader.IsDBNull(idx) ? null : reader.GetString(idx);
@@ -92,7 +92,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = @"SELECT t.*, m.nombre AS nombre_materia 
@@ -100,26 +100,26 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                     INNER JOIN Materia m ON t.id_materia = m.id_materia
                                     WHERE t.id_tema = @id_tema";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@id_tema", idTema);
 
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
                             if (reader.Read())
                             {
                                 Tema tema = new Tema();
-                                tema.Id_Tema = reader.GetInt32("id_tema");
-                                tema.Id_Materia = reader.GetInt32("id_materia");
-                                tema.Numero_Tema = reader.GetInt32("numero_tema");
-                                tema.Nombre = reader.GetString("nombre");
+                                tema.Id_Tema = reader.GetInt32(reader.GetOrdinal("id_tema"));
+                                tema.Id_Materia = reader.GetInt32(reader.GetOrdinal("id_materia"));
+                                tema.Numero_Tema = reader.GetInt32(reader.GetOrdinal("numero_tema"));
+                                tema.Nombre = reader.GetString(reader.GetOrdinal("nombre"));
                                 
                                 int idx = reader.GetOrdinal("descripcion");
                                 tema.Descripcion = reader.IsDBNull(idx) ? null : reader.GetString(idx);
                                 
-                                tema.Status_Tema = reader.GetString("status_tema");
-                                tema.Created_At = reader.GetDateTime("created_at");
-                                tema.Updated_At = reader.GetDateTime("updated_at");
+                                tema.Status_Tema = reader.GetString(reader.GetOrdinal("status_tema"));
+                                tema.Created_At = reader.GetDateTime(reader.GetOrdinal("created_at"));
+                                tema.Updated_At = reader.GetDateTime(reader.GetOrdinal("updated_at"));
                                 
                                 idx = reader.GetOrdinal("nombre_materia");
                                 tema.Nombre_Materia = reader.IsDBNull(idx) ? null : reader.GetString(idx);
@@ -144,7 +144,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = @"SELECT t.*, m.nombre AS nombre_materia 
@@ -153,26 +153,26 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                     WHERE t.id_materia = @id_materia
                                     ORDER BY t.numero_tema";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@id_materia", idMateria);
 
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
                             {
                                 Tema tema = new Tema();
-                                tema.Id_Tema = reader.GetInt32("id_tema");
-                                tema.Id_Materia = reader.GetInt32("id_materia");
-                                tema.Numero_Tema = reader.GetInt32("numero_tema");
-                                tema.Nombre = reader.GetString("nombre");
+                                tema.Id_Tema = reader.GetInt32(reader.GetOrdinal("id_tema"));
+                                tema.Id_Materia = reader.GetInt32(reader.GetOrdinal("id_materia"));
+                                tema.Numero_Tema = reader.GetInt32(reader.GetOrdinal("numero_tema"));
+                                tema.Nombre = reader.GetString(reader.GetOrdinal("nombre"));
                                 
                                 int idx = reader.GetOrdinal("descripcion");
                                 tema.Descripcion = reader.IsDBNull(idx) ? null : reader.GetString(idx);
                                 
-                                tema.Status_Tema = reader.GetString("status_tema");
-                                tema.Created_At = reader.GetDateTime("created_at");
-                                tema.Updated_At = reader.GetDateTime("updated_at");
+                                tema.Status_Tema = reader.GetString(reader.GetOrdinal("status_tema"));
+                                tema.Created_At = reader.GetDateTime(reader.GetOrdinal("created_at"));
+                                tema.Updated_At = reader.GetDateTime(reader.GetOrdinal("updated_at"));
                                 
                                 idx = reader.GetOrdinal("nombre_materia");
                                 tema.Nombre_Materia = reader.IsDBNull(idx) ? null : reader.GetString(idx);
@@ -194,7 +194,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = @"UPDATE Tema SET 
@@ -205,7 +205,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                       status_tema = @status_tema
                                       WHERE id_tema = @id_tema";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@id_tema", tema.Id_Tema);
                         cmd.Parameters.AddWithValue("@id_materia", tema.Id_Materia);
@@ -230,12 +230,12 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = "DELETE FROM Tema WHERE id_tema = @id_tema";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@id_tema", idTema);
                         int rowsAffected = cmd.ExecuteNonQuery();

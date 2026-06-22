@@ -1,4 +1,5 @@
 using System;
+using System.Data.SqlClient;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
@@ -150,7 +151,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             {
                 bool conectado = await Task.Run(() =>
                 {
-                    try { using var conn = MySQLConnection.GetConnection(); conn.Open(); return true; }
+                    try { using var conn = SqlServerConnection.GetConnection(); conn.Open(); return true; }
                     catch { return false; }
                 });
 
@@ -323,7 +324,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             {
                 bool conexionOk = await Task.Run(() =>
                 {
-                    try { using var conn = MySQLConnection.GetConnection(); conn.Open(); return true; }
+                    try { using var conn = SqlServerConnection.GetConnection(); conn.Open(); return true; }
                     catch { return false; }
                 });
 

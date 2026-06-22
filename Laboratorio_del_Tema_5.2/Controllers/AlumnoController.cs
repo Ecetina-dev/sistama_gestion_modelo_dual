@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using MySqlConnector;
+using System.Data.SqlClient;
 using Laboratorio_del_Tema_5_2.Data;
 using Laboratorio_del_Tema_5_2.Models;
 using Laboratorio_del_Tema_5_2.Utils;
@@ -21,7 +21,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     using (var tx = conn.BeginTransaction())
@@ -61,7 +61,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                       @promedio_general, @created_by)";
 
                             int rowsAffectedCreate;
-                            using (MySqlCommand cmd = new MySqlCommand(query, conn, tx))
+                            using (SqlCommand cmd = new SqlCommand(query, conn, tx))
                             {
                                 AgregarParametrosAlumno(cmd, alumno, incluirAuditAlta: true, incluirAuditCambio: false);
 
@@ -72,7 +72,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                 rowsAffectedCreate = cmd.ExecuteNonQuery();
                                 if (rowsAffectedCreate > 0)
                                 {
-                                    alumno.Id_Alumno = Convert.ToInt32(new MySqlCommand("SELECT LAST_INSERT_ID()", conn, tx).ExecuteScalar());
+                                    alumno.Id_Alumno = Convert.ToInt32(new SqlCommand("SELECT SCOPE_IDENTITY()", conn, tx).ExecuteScalar());
                                     SincronizarEmailUsuario(conn, alumno.Id_Alumno, alumno.Email);
                                     InsertarBitacora(conn, "INSERT", alumno);
                                 }
@@ -93,12 +93,12 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             {
                 throw;
             }
-            catch (MySqlException ex) when (ex.Number == 1062)
+            catch (SqlException ex) when (ex.Number == 1062)
             {
                 Logger.Error("Duplicate entry while creating alumno", ex);
                 throw new CrudOperationException(MensajesAlumno.NoControlExiste, "Create", alumno);
             }
-            catch (MySqlException ex)
+            catch (SqlException ex)
             {
                 string detalle = string.Format(
                     "NoControl={0}, Nombre={1}, Curp={2}, Genero={3}, IdCarrera={4}, Semestre={5}, Turno={6}, Grupo={7}",
@@ -127,15 +127,15 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = @"SELECT * FROM Alumno
                                       WHERE is_deleted = 0
                                       ORDER BY apellido_paterno, nombre";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
@@ -160,16 +160,16 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = "SELECT * FROM Alumno WHERE id_alumno = @id_alumno AND is_deleted = 0";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@id_alumno", idAlumno);
 
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
                             if (reader.Read())
                                 return MapAlumnoFromReader(reader);
@@ -193,7 +193,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     using (var tx = conn.BeginTransaction())
@@ -248,11 +248,11 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                      promedio_general = @promedio_general,
                                      status_change_reason = @status_change_reason,
                                      updated_by = @updated_by,
-                                     updated_at = NOW()
+                                     updated_at = GETDATE()
                                      WHERE id_alumno = @id_alumno AND is_deleted = 0";
 
                             int rowsAffectedUpdate;
-                            using (MySqlCommand cmd = new MySqlCommand(query, conn, tx))
+                            using (SqlCommand cmd = new SqlCommand(query, conn, tx))
                             {
                                 AgregarParametrosAlumno(cmd, alumno, incluirAuditAlta: false, incluirAuditCambio: true);
                                 cmd.Parameters.AddWithValue("@id_alumno", alumno.Id_Alumno);
@@ -281,7 +281,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             {
                 throw;
             }
-            catch (MySqlException ex) when (ex.Number == 1062)
+            catch (SqlException ex) when (ex.Number == 1062)
             {
                 Logger.Error("Duplicate entry while updating alumno", ex);
                 throw new CrudOperationException(MensajesAlumno.NoControlExiste, "Update", alumno);
@@ -304,7 +304,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 if (string.IsNullOrWhiteSpace(deletedReason))
                     throw new CrudOperationException(MensajesAlumno.MotivoEliminacionRequerido, "Delete", null);
 
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     using (var tx = conn.BeginTransaction())
@@ -316,13 +316,13 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
                             string query = @"UPDATE Alumno SET
                                      is_deleted = 1,
-                                     deleted_at = NOW(),
+                                     deleted_at = GETDATE(),
                                      deleted_by = @deleted_by,
                                      deleted_reason = @deleted_reason
                                      WHERE id_alumno = @id_alumno AND is_deleted = 0";
 
                             int rowsAffected;
-                            using (MySqlCommand cmd = new MySqlCommand(query, conn, tx))
+                            using (SqlCommand cmd = new SqlCommand(query, conn, tx))
                             {
                                 cmd.Parameters.AddWithValue("@id_alumno", idAlumno);
                                 cmd.Parameters.AddWithValue("@deleted_by", ObtenerUsuarioAuditoria() ?? (object)DBNull.Value);
@@ -364,7 +364,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
 
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     string query = @"SELECT
@@ -386,18 +386,18 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                      AND a.is_deleted = 0
                                      ORDER BY a.apellido_paterno, a.nombre";
 
-                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@statusActivo", Estatus.AsignacionActiva);
-                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
                             {
                                 AlumnoConEmpresa item = new AlumnoConEmpresa();
-                                item.Id_Alumno = reader.GetInt32("id_alumno");
-                                item.No_Control = reader.GetString("no_control");
-                                item.Nombre = reader.GetString("nombre");
-                                item.Apellido_Paterno = reader.GetString("apellido_paterno");
+                                item.Id_Alumno = reader.GetInt32(reader.GetOrdinal("id_alumno"));
+                                item.No_Control = reader.GetString(reader.GetOrdinal("no_control"));
+                                item.Nombre = reader.GetString(reader.GetOrdinal("nombre"));
+                                item.Apellido_Paterno = reader.GetString(reader.GetOrdinal("apellido_paterno"));
 
                                 int idxApMaterno = reader.GetOrdinal("apellido_materno");
                                 item.Apellido_Materno = reader.IsDBNull(idxApMaterno) ? null : reader.GetString(idxApMaterno);
@@ -408,9 +408,9 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                                 int idxTelefono = reader.GetOrdinal("telefono");
                                 item.Telefono = reader.IsDBNull(idxTelefono) ? null : reader.GetString(idxTelefono);
 
-                                item.Status_Alumno = reader.GetString("status_alumno");
-                                item.Empresa = reader.GetString("empresa");
-                                item.Puesto = reader.GetString("puesto");
+                                item.Status_Alumno = reader.GetString(reader.GetOrdinal("status_alumno"));
+                                item.Empresa = reader.GetString(reader.GetOrdinal("empresa"));
+                                item.Puesto = reader.GetString(reader.GetOrdinal("puesto"));
 
                                 int idxSalario = reader.GetOrdinal("salario");
                                 item.Salario = reader.IsDBNull(idxSalario) ? 0 : reader.GetDecimal(idxSalario);
@@ -433,7 +433,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     return ExisteNoControl(conn, noControl, excluirId);
@@ -450,7 +450,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     return ExisteCurp(conn, curp, excluirId);
@@ -467,7 +467,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     return ExisteEmail(conn, email, excluirId);
@@ -484,7 +484,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     return ExisteNoControlEliminado(conn, noControl);
@@ -501,7 +501,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     return ExisteCurpEliminado(conn, curp);
@@ -515,13 +515,13 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         }
 
         // PRIVATE HELPERS
-        private Alumno ReadById(MySqlConnection conn, int idAlumno)
+        private Alumno ReadById(SqlConnection conn, int idAlumno)
         {
             string query = "SELECT * FROM Alumno WHERE id_alumno = @id_alumno AND is_deleted = 0";
-            using (MySqlCommand cmd = new MySqlCommand(query, conn))
+            using (SqlCommand cmd = new SqlCommand(query, conn))
             {
                 cmd.Parameters.AddWithValue("@id_alumno", idAlumno);
-                using (MySqlDataReader reader = cmd.ExecuteReader())
+                using (SqlDataReader reader = cmd.ExecuteReader())
                 {
                     if (reader.Read())
                         return MapAlumnoFromReader(reader);
@@ -530,13 +530,13 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             return null;
         }
 
-        private Alumno MapAlumnoFromReader(MySqlDataReader reader)
+        private Alumno MapAlumnoFromReader(SqlDataReader reader)
         {
             Alumno alumno = new Alumno();
-            alumno.Id_Alumno = reader.GetInt32("id_alumno");
-            alumno.No_Control = reader.GetString("no_control");
-            alumno.Nombre = reader.GetString("nombre");
-            alumno.Apellido_Paterno = reader.GetString("apellido_paterno");
+            alumno.Id_Alumno = reader.GetInt32(reader.GetOrdinal("id_alumno"));
+            alumno.No_Control = reader.GetString(reader.GetOrdinal("no_control"));
+            alumno.Nombre = reader.GetString(reader.GetOrdinal("nombre"));
+            alumno.Apellido_Paterno = reader.GetString(reader.GetOrdinal("apellido_paterno"));
 
             alumno.Apellido_Materno = GetStringOrNull(reader, "apellido_materno");
             alumno.Email = GetStringOrNull(reader, "email");
@@ -545,9 +545,9 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             int idxFechaNac = reader.GetOrdinal("fecha_nacimiento");
             alumno.Fecha_Nacimiento = reader.IsDBNull(idxFechaNac) ? (DateTime?)null : reader.GetDateTime(idxFechaNac);
 
-            alumno.Status_Alumno = reader.GetString("status_alumno");
-            alumno.Created_At = reader.GetDateTime("created_at");
-            alumno.Updated_At = reader.GetDateTime("updated_at");
+            alumno.Status_Alumno = reader.GetString(reader.GetOrdinal("status_alumno"));
+            alumno.Created_At = reader.GetDateTime(reader.GetOrdinal("created_at"));
+            alumno.Updated_At = reader.GetDateTime(reader.GetOrdinal("updated_at"));
 
             // Phase 1 enterprise columns
             alumno.Curp = GetStringOrNull(reader, "curp");
@@ -588,31 +588,31 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             return alumno;
         }
 
-        private string GetStringOrNull(MySqlDataReader reader, string column)
+        private string GetStringOrNull(SqlDataReader reader, string column)
         {
             int idx = reader.GetOrdinal(column);
             return reader.IsDBNull(idx) ? null : reader.GetString(idx);
         }
 
-        private int? GetIntOrNull(MySqlDataReader reader, string column)
+        private int? GetIntOrNull(SqlDataReader reader, string column)
         {
             int idx = reader.GetOrdinal(column);
             return reader.IsDBNull(idx) ? (int?)null : reader.GetInt32(idx);
         }
 
-        private DateTime? GetDateOrNull(MySqlDataReader reader, string column)
+        private DateTime? GetDateOrNull(SqlDataReader reader, string column)
         {
             int idx = reader.GetOrdinal(column);
             return reader.IsDBNull(idx) ? (DateTime?)null : reader.GetDateTime(idx);
         }
 
-        private decimal? GetDecimalOrNull(MySqlDataReader reader, string column)
+        private decimal? GetDecimalOrNull(SqlDataReader reader, string column)
         {
             int idx = reader.GetOrdinal(column);
             return reader.IsDBNull(idx) ? (decimal?)null : reader.GetDecimal(idx);
         }
 
-        private void AgregarParametrosAlumno(MySqlCommand cmd, Alumno alumno, bool incluirAuditAlta, bool incluirAuditCambio)
+        private void AgregarParametrosAlumno(SqlCommand cmd, Alumno alumno, bool incluirAuditAlta, bool incluirAuditCambio)
         {
             cmd.Parameters.AddWithValue("@no_control", alumno.No_Control);
             cmd.Parameters.AddWithValue("@nombre", alumno.Nombre);
@@ -668,7 +668,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             return SesionActiva.Instance?.Id_Usuario > 0 ? SesionActiva.Instance.Id_Usuario : (int?)null;
         }
 
-        private void ValidarCamposRequeridos(MySqlConnection conn, Alumno alumno, bool esNuevo)
+        private void ValidarCamposRequeridos(SqlConnection conn, Alumno alumno, bool esNuevo)
         {
             if (string.IsNullOrWhiteSpace(alumno.No_Control))
                 throw new CrudOperationException("El numero de control es requerido.", "Validate", alumno);
@@ -731,7 +731,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 throw new CrudOperationException(error, "Validate", alumno);
         }
 
-        private void ValidarDuplicados(MySqlConnection conn, Alumno alumno, int? excluirId)
+        private void ValidarDuplicados(SqlConnection conn, Alumno alumno, int? excluirId)
         {
             if (ExisteNoControl(conn, alumno.No_Control, excluirId))
                 throw new CrudOperationException(MensajesAlumno.NoControlExiste, "Validate", alumno);
@@ -758,13 +758,13 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
         }
 
-        private bool ExisteNoControl(MySqlConnection conn, string noControl, int? excluirId)
+        private bool ExisteNoControl(SqlConnection conn, string noControl, int? excluirId)
         {
             string query = "SELECT COUNT(*) FROM Alumno WHERE no_control = @no_control AND is_deleted = 0";
             if (excluirId.HasValue)
                 query += " AND id_alumno != @id";
 
-            using (MySqlCommand cmd = new MySqlCommand(query, conn))
+            using (SqlCommand cmd = new SqlCommand(query, conn))
             {
                 cmd.Parameters.AddWithValue("@no_control", noControl);
                 if (excluirId.HasValue)
@@ -773,13 +773,13 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
         }
 
-        private bool ExisteCurp(MySqlConnection conn, string curp, int? excluirId)
+        private bool ExisteCurp(SqlConnection conn, string curp, int? excluirId)
         {
             string query = "SELECT COUNT(*) FROM Alumno WHERE curp = @curp AND is_deleted = 0";
             if (excluirId.HasValue)
                 query += " AND id_alumno != @id";
 
-            using (MySqlCommand cmd = new MySqlCommand(query, conn))
+            using (SqlCommand cmd = new SqlCommand(query, conn))
             {
                 cmd.Parameters.AddWithValue("@curp", curp);
                 if (excluirId.HasValue)
@@ -788,13 +788,13 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
         }
 
-        private bool ExisteEmail(MySqlConnection conn, string email, int? excluirId)
+        private bool ExisteEmail(SqlConnection conn, string email, int? excluirId)
         {
             string query = "SELECT COUNT(*) FROM Alumno WHERE email = @email AND is_deleted = 0";
             if (excluirId.HasValue)
                 query += " AND id_alumno != @id";
 
-            using (MySqlCommand cmd = new MySqlCommand(query, conn))
+            using (SqlCommand cmd = new SqlCommand(query, conn))
             {
                 cmd.Parameters.AddWithValue("@email", email);
                 if (excluirId.HasValue)
@@ -803,20 +803,20 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
         }
 
-        private bool ExisteEmailEliminado(MySqlConnection conn, string email)
+        private bool ExisteEmailEliminado(SqlConnection conn, string email)
         {
             string query = "SELECT COUNT(*) FROM Alumno WHERE email = @email AND is_deleted = 1";
-            using (MySqlCommand cmd = new MySqlCommand(query, conn))
+            using (SqlCommand cmd = new SqlCommand(query, conn))
             {
                 cmd.Parameters.AddWithValue("@email", email);
                 return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
             }
         }
 
-        private bool ExisteNoControlEliminado(MySqlConnection conn, string noControl)
+        private bool ExisteNoControlEliminado(SqlConnection conn, string noControl)
         {
             string query = "SELECT COUNT(*) FROM Alumno WHERE no_control = @no_control AND is_deleted = 1";
-            using (MySqlCommand cmd = new MySqlCommand(query, conn))
+            using (SqlCommand cmd = new SqlCommand(query, conn))
             {
                 cmd.Parameters.AddWithValue("@no_control", noControl);
                 return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
@@ -827,7 +827,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
-                using (MySqlConnection conn = MySQLConnection.GetConnection())
+                using (SqlConnection conn = SqlServerConnection.GetConnection())
                 {
                     conn.Open();
                     return CarreraExiste(conn, idCarrera);
@@ -840,27 +840,27 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
         }
 
-        private bool CarreraExiste(MySqlConnection conn, int idCarrera)
+        private bool CarreraExiste(SqlConnection conn, int idCarrera)
         {
             string query = "SELECT COUNT(*) FROM Carrera WHERE id_carrera = @id_carrera";
-            using (MySqlCommand cmd = new MySqlCommand(query, conn))
+            using (SqlCommand cmd = new SqlCommand(query, conn))
             {
                 cmd.Parameters.AddWithValue("@id_carrera", idCarrera);
                 return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
             }
         }
 
-        private bool ExisteCurpEliminado(MySqlConnection conn, string curp)
+        private bool ExisteCurpEliminado(SqlConnection conn, string curp)
         {
             string query = "SELECT COUNT(*) FROM Alumno WHERE curp = @curp AND is_deleted = 1";
-            using (MySqlCommand cmd = new MySqlCommand(query, conn))
+            using (SqlCommand cmd = new SqlCommand(query, conn))
             {
                 cmd.Parameters.AddWithValue("@curp", curp);
                 return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
             }
         }
 
-        private void ValidarTransicionStatus(MySqlConnection conn, Alumno alumno, Alumno actual)
+        private void ValidarTransicionStatus(SqlConnection conn, Alumno alumno, Alumno actual)
         {
             string statusNuevo = string.IsNullOrEmpty(alumno.Status_Alumno) ? actual.Status_Alumno : alumno.Status_Alumno;
             string statusActual = actual.Status_Alumno;
@@ -902,11 +902,11 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                    !string.Equals(actual, Estatus.AlumnoActivo, StringComparison.OrdinalIgnoreCase);
         }
 
-        private bool TieneAsignacionesActivas(MySqlConnection conn, int idAlumno)
+        private bool TieneAsignacionesActivas(SqlConnection conn, int idAlumno)
         {
             string query = @"SELECT COUNT(*) FROM Alumno_Empresa
                               WHERE id_alumno = @id_alumno AND status_asignacion = @statusActivo";
-            using (MySqlCommand cmd = new MySqlCommand(query, conn))
+            using (SqlCommand cmd = new SqlCommand(query, conn))
             {
                 cmd.Parameters.AddWithValue("@id_alumno", idAlumno);
                 cmd.Parameters.AddWithValue("@statusActivo", Estatus.AsignacionActiva);
@@ -914,7 +914,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
         }
 
-        private void SincronizarEmailUsuario(MySqlConnection conn, int idAlumno, string nuevoEmail)
+        private void SincronizarEmailUsuario(SqlConnection conn, int idAlumno, string nuevoEmail)
         {
             try
             {
@@ -923,7 +923,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                     return;
 
                 string query = "UPDATE Usuario SET email = @email WHERE id_usuario = @id_usuario";
-                using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@email", nuevoEmail.Trim());
                     cmd.Parameters.AddWithValue("@id_usuario", idUsuario.Value);
@@ -937,12 +937,12 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
         }
 
-        private int? ObtenerUsuarioIdPorAlumno(MySqlConnection conn, int idAlumno)
+        private int? ObtenerUsuarioIdPorAlumno(SqlConnection conn, int idAlumno)
         {
             string query = @"SELECT id_usuario FROM Usuario_Alumno
                               WHERE id_alumno = @id_alumno
-                              LIMIT 1";
-            using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                              ";
+            using (SqlCommand cmd = new SqlCommand(query, conn))
             {
                 cmd.Parameters.AddWithValue("@id_alumno", idAlumno);
                 object result = cmd.ExecuteScalar();
@@ -950,13 +950,13 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
         }
 
-        private void InsertarBitacora(MySqlConnection conn, string operacion, Alumno alumno)
+        private void InsertarBitacora(SqlConnection conn, string operacion, Alumno alumno)
         {
             try
             {
                 string query = @"INSERT INTO bitacora (tabla_afectada, id_registro, operacion, usuario, datos_nuevos, fecha)
-                                 VALUES ('Alumno', @id, @op, @usr, @datos, NOW())";
-                using (var cmd = new MySqlCommand(query, conn))
+                                 VALUES ('Alumno', @id, @op, @usr, @datos, GETDATE())";
+                using (var cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@id", alumno.Id_Alumno > 0 ? alumno.Id_Alumno : 0);
                     cmd.Parameters.AddWithValue("@op", operacion);
@@ -972,13 +972,13 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             }
         }
 
-        private void InsertarBitacora(MySqlConnection conn, string operacion, int idAlumno, string datos)
+        private void InsertarBitacora(SqlConnection conn, string operacion, int idAlumno, string datos)
         {
             try
             {
                 string query = @"INSERT INTO bitacora (tabla_afectada, id_registro, operacion, usuario, datos_nuevos, fecha)
-                                 VALUES ('Alumno', @id, @op, @usr, @datos, NOW())";
-                using (var cmd = new MySqlCommand(query, conn))
+                                 VALUES ('Alumno', @id, @op, @usr, @datos, GETDATE())";
+                using (var cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@id", idAlumno);
                     cmd.Parameters.AddWithValue("@op", operacion);
