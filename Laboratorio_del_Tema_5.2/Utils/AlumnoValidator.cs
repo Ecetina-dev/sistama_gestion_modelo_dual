@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Laboratorio_del_Tema_5_2.Models;
 
@@ -36,17 +37,51 @@ namespace Laboratorio_del_Tema_5_2.Utils
                 return false;
             }
 
+            // CURP mexicano: 18 caracteres alfanumericos
+            // Posiciones 0-3: letras (nombre/apellido)
+            // Posiciones 4-9: digitos fecha (AAMMDD) - validada
+            // Posiciones 10-15: letras/digitos (homoclave)
+            // Posicion 16-17: digitos (consulta + verificador)
+            //
+            // NOTA: El digito verificador (pos 17) NO es verificable client-side.
+            // RENAPO/Gobierno de Mexico no ha publicado el algoritmo oficial.
+            // Las implementaciones en internet son aproximaciones incorrectas.
             if (!Regex.IsMatch(curp, AlumnoConfig.CurpPattern))
             {
                 error = MensajesAlumno.CurpFormatoInvalido;
                 return false;
             }
 
-            if (!ValidarChecksumCurp(curp))
+            // Validar fecha integrada en posiciones 4-9 (AAMMDD)
+            if (!ValidarFechaCurp(curp.Substring(4, 6)))
             {
-                error = MensajesAlumno.CurpChecksumInvalido;
+                error = "La fecha de nacimiento en el CURP no es valida.";
                 return false;
             }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Valida los 6 digitos de fecha del CURP (AAMMDD).
+        /// Solo valida dia y mes validos. El ano asume 1900-2099.
+        /// </summary>
+        private static bool ValidarFechaCurp(string fecha)
+        {
+            // fecha = AAMMDD (6 digitos)
+            if (fecha.Length != 6 || !fecha.All(char.IsDigit))
+                return false;
+
+            int.TryParse(fecha.Substring(0, 2), out int aa);
+            int.TryParse(fecha.Substring(2, 2), out int mm);
+            int.TryParse(fecha.Substring(4, 2), out int dd);
+
+            // Ano: asume 1900-2099 segun el dgito verificador (pos 16)
+            // Solo validamos mes y dia
+            if (mm < 1 || mm > 12) return false;
+
+            int[] diasPorMes = { 0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+            if (dd < 1 || dd > diasPorMes[mm]) return false;
 
             return true;
         }
@@ -54,25 +89,11 @@ namespace Laboratorio_del_Tema_5_2.Utils
         public static bool ValidarCurp(string curp)
             => ValidarCurp(curp, out _);
 
-        private static bool ValidarChecksumCurp(string curp)
-        {
-            const string caracteres = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            int suma = 0;
-
-            for (int i = 0; i < 17; i++)
-            {
-                int valor = caracteres.IndexOf(curp[i]);
-                if (valor < 0)
-                    return false;
-
-                suma += valor * (18 - i);
-            }
-
-            int checksum = (10 - (suma % 10)) % 10;
-            char ultimo = curp[17];
-
-            return char.IsDigit(ultimo) && checksum == (ultimo - '0');
-        }
+        /// <summary>
+        /// Valida que los 6 digitos de fecha integrados en el CURP (posiciones 4-9)
+        /// representen una fecha valida (AAMMDD).
+        /// No verifica el ao completo - solo rango dia/mes valido.
+        /// </summary>
 
         #endregion
 

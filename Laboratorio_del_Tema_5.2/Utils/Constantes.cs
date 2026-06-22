@@ -141,7 +141,14 @@ namespace Laboratorio_del_Tema_5_2.Utils
         public const int EdadMinAlumno = 15;
         public const int EdadMaxAlumno = 100;
 
-        public const string CurpPattern = "^[A-Z]{1}[AEIOUX]{1}[A-Z]{2}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])[HM]{1}(AS|BC|BS|CC|CS|CH|CL|CM|DF|DG|GT|GR|HG|JC|MC|MN|MS|NT|NL|OC|PL|QT|QR|SP|SL|SR|TC|TS|TL|VZ|YN|ZS|NE)[B-DF-HJ-NP-TV-Z]{3}[0-9A-Z]{1}[0-9]{1}$";
+        // CURP mexicano: 18 caracteres alfanumericos.
+        // Posiciones 0-3: letras (primer apellido, vocal interno, segundo apellido, nombre)
+        // Posiciones 4-9: fecha nacimiento AAMMDD
+        // Posicion 10: H/M (sexo)
+        // Posiciones 11-12: codigo de estado (32 estados + XX para nacidos en el extranjero)
+        // Posiciones 13-15: consonantes internas
+        // Posiciones 16-17: digitos (consulta inicial + verificador)
+        public const string CurpPattern = @"^[A-Z]{4}[0-9]{6}[HM]{1}[A-Z]{6}[0-9]{2}$";
         public const string RfcPattern = "^[A-ZÑ&]{4}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])[A-Z0-9]{3}$";
         public const string EmailPattern = "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$";
         public const string TelefonoPattern = "^[0-9]{10}$";
