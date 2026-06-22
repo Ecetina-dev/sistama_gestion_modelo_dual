@@ -101,6 +101,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers.Services
                         .OrderBy(a => a.Apellido_Paterno)
                         .ThenBy(a => a.Nombre)
                         .AsNoTracking()
+                        .ToList()
                         .Select(a => MapToAlumno(a))
                         .ToList();
                 }
