@@ -76,12 +76,13 @@ namespace Laboratorio_del_Tema_5_2.Views
             dtpFechaNacimiento.CustomFormat = "yyyy-MM-dd";
             dtpFechaNacimiento.ShowCheckBox = true;
             dtpFechaNacimiento.Checked = false;
+            dtpFechaNacimiento.Value = DateTime.Today;
             dtpFechaNacimiento.Font = new Font("Segoe UI", 12F);
             dtpFechaNacimiento.Location = txtFechaNacimiento.Location;
             dtpFechaNacimiento.Size = txtFechaNacimiento.Size;
             dtpFechaNacimiento.TabIndex = txtFechaNacimiento.TabIndex;
-            dtpFechaNacimiento.MaxDate = DateTime.Now;
-            dtpFechaNacimiento.MinDate = DateTime.Now.AddYears(-120);
+            dtpFechaNacimiento.MinDate = DateTime.Today.AddYears(-120);
+            dtpFechaNacimiento.MaxDate = DateTime.Today;
 
             // Reemplazar textbox en el parent
             if (txtFechaNacimiento.Parent != null)
