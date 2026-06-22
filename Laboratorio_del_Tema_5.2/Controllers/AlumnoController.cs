@@ -93,7 +93,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             {
                 throw;
             }
-            catch (SqlException ex) when (ex.Number == 1062)
+            catch (SqlException ex) when (ex.Number == 2627)
             {
                 Logger.Error("Duplicate entry while creating alumno", ex);
                 throw new CrudOperationException(MensajesAlumno.NoControlExiste, "Create", alumno);
@@ -106,7 +106,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                     alumno.Genero ?? "NULL", alumno.Id_Carrera.HasValue ? alumno.Id_Carrera.Value.ToString() : "NULL",
                     alumno.Semestre.HasValue ? alumno.Semestre.Value.ToString() : "NULL",
                     alumno.Turno ?? "NULL", alumno.Grupo ?? "NULL");
-                Logger.Error(string.Format("MySQL error. Number={0}, Message={1}, Detail={2}", ex.Number, ex.Message, detalle), ex);
+                Logger.Error(string.Format("SQL Server error. Number={0}, Message={1}, Detail={2}", ex.Number, ex.Message, detalle), ex);
                 throw new CrudOperationException(
                     string.Format("Error de BD (codigo {0}): {1}. Datos: {2}", ex.Number, ex.Message, detalle),
                     "Create", alumno);
@@ -281,7 +281,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
             {
                 throw;
             }
-            catch (SqlException ex) when (ex.Number == 1062)
+            catch (SqlException ex) when (ex.Number == 2627)
             {
                 Logger.Error("Duplicate entry while updating alumno", ex);
                 throw new CrudOperationException(MensajesAlumno.NoControlExiste, "Update", alumno);
