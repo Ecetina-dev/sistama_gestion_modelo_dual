@@ -194,8 +194,10 @@ namespace Laboratorio_del_Tema_5_2.Views
                 // Para emails, tomar la parte antes del @ y la inicial del nombre local
                 string display = username;
                 int atIdx = username.IndexOf('@');
-                if (atIdx > 0) display = username.Substring(0, atIdx);
-                lblAvatar.Text = display.Substring(0, 1).ToUpper();
+                if (atIdx > 0 && username.Length > 0) display = username.Substring(0, atIdx);
+                lblAvatar.Text = display.Length > 0
+                    ? display.Substring(0, 1).ToUpper()
+                    : "?";
             }
 
             // Saludo personalizado
@@ -227,15 +229,22 @@ namespace Laboratorio_del_Tema_5_2.Views
             // Cargar estadísticas del dashboard
             CargarEstadisticas();
 
+            string logoPath = System.IO.Path.Combine(Application.StartupPath, "Resources", "logo_modelo_dual.png");
             try
             {
-                string logoPath = System.IO.Path.Combine(Application.StartupPath, "Resources", "logo_modelo_dual.png");
                 if (System.IO.File.Exists(logoPath))
                 {
                     lblLogoIcono.Image = Image.FromFile(logoPath);
                 }
+                else
+                {
+                    Logger.Warning("Logo no encontrado: " + logoPath);
+                }
             }
-            catch { }
+            catch (Exception logoEx)
+            {
+                Logger.Warning("Error al cargar logo: " + logoEx.Message);
+            }
         }
 
         private string CapitalizarPrimeraLetra(string texto)
@@ -293,11 +302,13 @@ namespace Laboratorio_del_Tema_5_2.Views
                     "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
+            if (SesionActiva.Instance == null) return;
             AbrirFormulario<FormAlumnos>();
         }
 
         private void btnEmpresas_Click(object sender, EventArgs e)
         {
+            if (SesionActiva.Instance == null) return;
             if (!SesionActiva.Instance.EsAdmin && !SesionActiva.Instance.EsEmpresa)
             {
                 MessageBox.Show("No tienes permiso para acceder a esta sección.",
@@ -309,6 +320,7 @@ namespace Laboratorio_del_Tema_5_2.Views
 
         private void btnProyectos_Click(object sender, EventArgs e)
         {
+            if (SesionActiva.Instance == null) return;
             if (!SesionActiva.Instance.EsAdmin &&
                 !SesionActiva.Instance.EsProfesor &&
                 !SesionActiva.Instance.EsAlumno &&
@@ -324,6 +336,7 @@ namespace Laboratorio_del_Tema_5_2.Views
 
         private void btnProfesores_Click(object sender, EventArgs e)
         {
+            if (SesionActiva.Instance == null) return;
             if (!SesionActiva.Instance.EsAdmin)
             {
                 MessageBox.Show("No tienes permiso para acceder a esta sección.",
@@ -335,6 +348,7 @@ namespace Laboratorio_del_Tema_5_2.Views
 
         private void btnMaterias_Click(object sender, EventArgs e)
         {
+            if (SesionActiva.Instance == null) return;
             if (!SesionActiva.Instance.TienePrivilegio("profesor.crud_materia") &&
                 !SesionActiva.Instance.EsAdmin)
             {
@@ -347,6 +361,7 @@ namespace Laboratorio_del_Tema_5_2.Views
 
         private void btnTemas_Click(object sender, EventArgs e)
         {
+            if (SesionActiva.Instance == null) return;
             if (!SesionActiva.Instance.TienePrivilegio("profesor.crud_tema") &&
                 !SesionActiva.Instance.EsAdmin)
             {
@@ -359,6 +374,7 @@ namespace Laboratorio_del_Tema_5_2.Views
 
         private void btnGestionUsuarios_Click(object sender, EventArgs e)
         {
+            if (SesionActiva.Instance == null) return;
             if (!SesionActiva.Instance.EsAdmin)
             {
                 MessageBox.Show("Solo el administrador puede acceder a esta sección.",
@@ -511,6 +527,7 @@ namespace Laboratorio_del_Tema_5_2.Views
 
         private void btnMigracionBD_Click(object sender, EventArgs e)
         {
+            if (SesionActiva.Instance == null) return;
             if (!SesionActiva.Instance.EsAdmin)
             {
                 MessageBox.Show("Solo el administrador puede acceder a esta sección.",
@@ -527,6 +544,12 @@ namespace Laboratorio_del_Tema_5_2.Views
 
         private void btnCambiarPassword_Click(object sender, EventArgs e)
         {
+            if (SesionActiva.Instance == null || SesionActiva.Instance.Id_Usuario == 0)
+            {
+                MessageBox.Show("Debes iniciar sesión para cambiar tu contraseña.",
+                    "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
             using (var form = new FormCambiarPassword())
             {
                 form.ShowDialog();
@@ -543,7 +566,6 @@ namespace Laboratorio_del_Tema_5_2.Views
 
             if (result == DialogResult.Yes)
             {
-                _authController.CerrarSesion();
                 this.Close();
             }
         }
