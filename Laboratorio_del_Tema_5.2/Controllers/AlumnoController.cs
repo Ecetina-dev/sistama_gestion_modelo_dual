@@ -65,6 +65,10 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                             {
                                 AgregarParametrosAlumno(cmd, alumno, incluirAuditAlta: true, incluirAuditCambio: false);
 
+                                Logger.Info($"Create alumno: no_control={alumno.No_Control}, nombre={alumno.Nombre}, " +
+                                    $"curp={alumno.Curp}, genero={alumno.Genero}, id_carrera={alumno.Id_Carrera}, " +
+                                    $"semestre={alumno.Semestre}, turno={alumno.Turno}");
+
                                 rowsAffectedCreate = cmd.ExecuteNonQuery();
                                 if (rowsAffectedCreate > 0)
                                 {
@@ -94,10 +98,23 @@ namespace Laboratorio_del_Tema_5_2.Controllers
                 Logger.Error("Duplicate entry while creating alumno", ex);
                 throw new CrudOperationException(MensajesAlumno.NoControlExiste, "Create", alumno);
             }
+            catch (MySqlException ex)
+            {
+                string detalle = string.Format(
+                    "NoControl={0}, Nombre={1}, Curp={2}, Genero={3}, IdCarrera={4}, Semestre={5}, Turno={6}, Grupo={7}",
+                    alumno.No_Control, alumno.Nombre, alumno.Curp ?? "NULL",
+                    alumno.Genero ?? "NULL", alumno.Id_Carrera.HasValue ? alumno.Id_Carrera.Value.ToString() : "NULL",
+                    alumno.Semestre.HasValue ? alumno.Semestre.Value.ToString() : "NULL",
+                    alumno.Turno ?? "NULL", alumno.Grupo ?? "NULL");
+                Logger.Error(string.Format("MySQL error. Number={0}, Message={1}, Detail={2}", ex.Number, ex.Message, detalle), ex);
+                throw new CrudOperationException(
+                    string.Format("Error de BD (codigo {0}): {1}. Datos: {2}", ex.Number, ex.Message, detalle),
+                    "Create", alumno);
+            }
             catch (Exception ex)
             {
-                Logger.Error("Error creating alumno", ex);
-                throw new CrudOperationException("Ocurrio un error inesperado al crear el alumno.", "Create", alumno);
+                Logger.Error(string.Format("Error creating alumno. Message={0}", ex.Message), ex);
+                throw new CrudOperationException(string.Format("Ocurrio un error inesperado: {0}", ex.Message), "Create", alumno);
             }
         }
 

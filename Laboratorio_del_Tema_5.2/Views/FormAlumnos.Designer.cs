@@ -100,7 +100,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelSidebar.Location = new System.Drawing.Point(0, 0);
             this.panelSidebar.Margin = new System.Windows.Forms.Padding(2);
             this.panelSidebar.Name = "panelSidebar";
-            this.panelSidebar.Size = new System.Drawing.Size(165, 601);
+            this.panelSidebar.Size = new System.Drawing.Size(165, 700);
             this.panelSidebar.TabIndex = 0;
             // 
             // btnNavVolver
@@ -128,7 +128,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelSidebarFooter.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(26)))), ((int)(((byte)(40)))));
             this.panelSidebarFooter.Controls.Add(this.lblSideVersion);
             this.panelSidebarFooter.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panelSidebarFooter.Location = new System.Drawing.Point(0, 536);
+            this.panelSidebarFooter.Location = new System.Drawing.Point(0, 635);
             this.panelSidebarFooter.Margin = new System.Windows.Forms.Padding(2);
             this.panelSidebarFooter.Name = "panelSidebarFooter";
             this.panelSidebarFooter.Padding = new System.Windows.Forms.Padding(11, 8, 11, 8);
@@ -303,7 +303,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelMain.Location = new System.Drawing.Point(165, 0);
             this.panelMain.Margin = new System.Windows.Forms.Padding(2);
             this.panelMain.Name = "panelMain";
-            this.panelMain.Size = new System.Drawing.Size(660, 601);
+            this.panelMain.Size = new System.Drawing.Size(660, 700);
             this.panelMain.TabIndex = 1;
             // 
             // panelContent
@@ -318,7 +318,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelContent.Margin = new System.Windows.Forms.Padding(2);
             this.panelContent.Name = "panelContent";
             this.panelContent.Padding = new System.Windows.Forms.Padding(19, 12, 19, 12);
-            this.panelContent.Size = new System.Drawing.Size(660, 536);
+            this.panelContent.Size = new System.Drawing.Size(660, 635);
             this.panelContent.TabIndex = 1;
             // 
             // panelCardDatos
@@ -328,10 +328,10 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelCardDatos.Controls.Add(this.panelCardActions);
             this.panelCardDatos.Controls.Add(this.panelCardBar);
             this.panelCardDatos.Controls.Add(this.panelCardBody);
-            this.panelCardDatos.Location = new System.Drawing.Point(18, 315);
+            this.panelCardDatos.Location = new System.Drawing.Point(18, 270);
             this.panelCardDatos.Margin = new System.Windows.Forms.Padding(2);
             this.panelCardDatos.Name = "panelCardDatos";
-            this.panelCardDatos.Size = new System.Drawing.Size(623, 212);
+            this.panelCardDatos.Size = new System.Drawing.Size(623, 309);
             this.panelCardDatos.TabIndex = 2;
             this.panelCardDatos.Visible = false;
             // 
@@ -342,7 +342,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelCardActions.Controls.Add(this.btnCancelar);
             this.panelCardActions.Controls.Add(this.btnGuardar);
             this.panelCardActions.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panelCardActions.Location = new System.Drawing.Point(4, 164);
+            this.panelCardActions.Location = new System.Drawing.Point(4, 261);
             this.panelCardActions.Margin = new System.Windows.Forms.Padding(2);
             this.panelCardActions.Name = "panelCardActions";
             this.panelCardActions.Padding = new System.Windows.Forms.Padding(8);
@@ -392,7 +392,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelCardBar.Location = new System.Drawing.Point(0, 0);
             this.panelCardBar.Margin = new System.Windows.Forms.Padding(2);
             this.panelCardBar.Name = "panelCardBar";
-            this.panelCardBar.Size = new System.Drawing.Size(4, 210);
+            this.panelCardBar.Size = new System.Drawing.Size(4, 307);
             this.panelCardBar.TabIndex = 0;
             // 
             // panelCardBody
@@ -626,9 +626,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblNoControl.Size = new System.Drawing.Size(78, 15);
             this.lblNoControl.TabIndex = 14;
             this.lblNoControl.Text = "No. Control *";
-            //
+            // 
             // txtCURP
-            //
+            // 
             this.txtCURP.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
             this.txtCURP.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtCURP.Font = new System.Drawing.Font("Segoe UI", 12F);
@@ -636,9 +636,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.txtCURP.Name = "txtCURP";
             this.txtCURP.Size = new System.Drawing.Size(170, 29);
             this.txtCURP.TabIndex = 4;
-            //
+            // 
             // lblCURP
-            //
+            // 
             this.lblCURP.AutoSize = true;
             this.lblCURP.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.lblCURP.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
@@ -647,9 +647,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblCURP.Size = new System.Drawing.Size(46, 15);
             this.lblCURP.TabIndex = 15;
             this.lblCURP.Text = "CURP *";
-            //
+            // 
             // cmbGenero
-            //
+            // 
             this.cmbGenero.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
             this.cmbGenero.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbGenero.Font = new System.Drawing.Font("Segoe UI", 12F);
@@ -657,9 +657,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.cmbGenero.Name = "cmbGenero";
             this.cmbGenero.Size = new System.Drawing.Size(140, 29);
             this.cmbGenero.TabIndex = 5;
-            //
+            // 
             // lblGenero
-            //
+            // 
             this.lblGenero.AutoSize = true;
             this.lblGenero.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.lblGenero.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
@@ -668,9 +668,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblGenero.Size = new System.Drawing.Size(57, 15);
             this.lblGenero.TabIndex = 16;
             this.lblGenero.Text = "Género *";
-            //
+            // 
             // cmbCarrera
-            //
+            // 
             this.cmbCarrera.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
             this.cmbCarrera.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbCarrera.Font = new System.Drawing.Font("Segoe UI", 12F);
@@ -678,9 +678,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.cmbCarrera.Name = "cmbCarrera";
             this.cmbCarrera.Size = new System.Drawing.Size(200, 29);
             this.cmbCarrera.TabIndex = 6;
-            //
+            // 
             // lblCarrera
-            //
+            // 
             this.lblCarrera.AutoSize = true;
             this.lblCarrera.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.lblCarrera.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
@@ -689,17 +689,17 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblCarrera.Size = new System.Drawing.Size(56, 15);
             this.lblCarrera.TabIndex = 17;
             this.lblCarrera.Text = "Carrera *";
-            //
+            // 
             // nudSemestre
-            //
+            // 
             this.nudSemestre.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.nudSemestre.Location = new System.Drawing.Point(277, 150);
             this.nudSemestre.Name = "nudSemestre";
             this.nudSemestre.Size = new System.Drawing.Size(80, 29);
             this.nudSemestre.TabIndex = 7;
-            //
+            // 
             // lblSemestre
-            //
+            // 
             this.lblSemestre.AutoSize = true;
             this.lblSemestre.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.lblSemestre.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
@@ -708,9 +708,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblSemestre.Size = new System.Drawing.Size(69, 15);
             this.lblSemestre.TabIndex = 18;
             this.lblSemestre.Text = "Semestre *";
-            //
+            // 
             // cmbTurno
-            //
+            // 
             this.cmbTurno.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
             this.cmbTurno.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbTurno.Font = new System.Drawing.Font("Segoe UI", 12F);
@@ -718,9 +718,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.cmbTurno.Name = "cmbTurno";
             this.cmbTurno.Size = new System.Drawing.Size(120, 29);
             this.cmbTurno.TabIndex = 8;
-            //
+            // 
             // lblTurno
-            //
+            // 
             this.lblTurno.AutoSize = true;
             this.lblTurno.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.lblTurno.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
@@ -729,9 +729,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblTurno.Size = new System.Drawing.Size(47, 15);
             this.lblTurno.TabIndex = 19;
             this.lblTurno.Text = "Turno *";
-            //
+            // 
             // dtpFechaIngreso
-            //
+            // 
             this.dtpFechaIngreso.CustomFormat = "dd/MM/yyyy";
             this.dtpFechaIngreso.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.dtpFechaIngreso.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
@@ -739,9 +739,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.dtpFechaIngreso.Name = "dtpFechaIngreso";
             this.dtpFechaIngreso.Size = new System.Drawing.Size(150, 29);
             this.dtpFechaIngreso.TabIndex = 9;
-            //
+            // 
             // lblFechaIngreso
-            //
+            // 
             this.lblFechaIngreso.AutoSize = true;
             this.lblFechaIngreso.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.lblFechaIngreso.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
@@ -750,9 +750,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblFechaIngreso.Size = new System.Drawing.Size(92, 15);
             this.lblFechaIngreso.TabIndex = 20;
             this.lblFechaIngreso.Text = "Fecha Ingreso *";
-            //
+            // 
             // txtGrupo
-            //
+            // 
             this.txtGrupo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
             this.txtGrupo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtGrupo.Font = new System.Drawing.Font("Segoe UI", 12F);
@@ -760,9 +760,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.txtGrupo.Name = "txtGrupo";
             this.txtGrupo.Size = new System.Drawing.Size(100, 29);
             this.txtGrupo.TabIndex = 10;
-            //
+            // 
             // lblGrupo
-            //
+            // 
             this.lblGrupo.AutoSize = true;
             this.lblGrupo.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.lblGrupo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
@@ -771,7 +771,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblGrupo.Size = new System.Drawing.Size(42, 15);
             this.lblGrupo.TabIndex = 21;
             this.lblGrupo.Text = "Grupo";
-            //
+            // 
             // dgvAlumnos
             // 
             this.dgvAlumnos.AllowUserToAddRows = false;
@@ -929,7 +929,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(247)))), ((int)(((byte)(250)))));
-            this.ClientSize = new System.Drawing.Size(825, 601);
+            this.ClientSize = new System.Drawing.Size(825, 700);
             this.Controls.Add(this.panelMain);
             this.Controls.Add(this.panelSidebar);
             this.Margin = new System.Windows.Forms.Padding(2);
