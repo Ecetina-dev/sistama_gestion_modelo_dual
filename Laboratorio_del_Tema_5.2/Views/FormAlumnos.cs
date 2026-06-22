@@ -41,8 +41,8 @@ namespace Laboratorio_del_Tema_5_2.Views
         private const int MAX_APELLIDO = 80;
         // Sincronizado con BD: alumno.email VARCHAR(254) — RFC 5321
         private const int MAX_EMAIL = 254;
-        // Sincronizado con BD: alumno.telefono VARCHAR(15)
-        private const int MAX_TELEFONO = 15;
+        // Sincronizado con BD: alumno.telefono VARCHAR(15) pero constraint chk_alumno_telefono exige exactamente 10 digitos
+        private const int MAX_TELEFONO = 10;
         private const int EXT_MIN_TELEFONO = 10;
 
         // DateTimePicker creado programaticamente (no necesita Designer)
@@ -122,13 +122,20 @@ namespace Laboratorio_del_Tema_5_2.Views
 
             // Tooltips en campos
             toolTip.SetToolTip(txtNoControl, "10 caracteres alfanuméricos mayúsculas/números (ej: 2021101001)");
-            toolTip.SetToolTip(txtNombre, "Nombre del alumno");
-            toolTip.SetToolTip(txtApellidoPaterno, "Apellido paterno");
-            toolTip.SetToolTip(txtApellidoMaterno, "Apellido materno (opcional)");
+            toolTip.SetToolTip(txtNombre, "Nombre del alumno (solo letras, min 2 caracteres)");
+            toolTip.SetToolTip(txtApellidoPaterno, "Apellido paterno (solo letras)");
+            toolTip.SetToolTip(txtApellidoMaterno, "Apellido materno (opcional, solo letras)");
             toolTip.SetToolTip(txtEmail, "Correo electrónico (ej: alumno@dominio.com)");
             toolTip.SetToolTip(txtTelefono, "10 dígitos (ej: 5551234567)");
             toolTip.SetToolTip(txtFechaNacimiento, "Formato: aaaa-mm-dd");
             toolTip.SetToolTip(dtpFechaNacimiento, "Selecciona la fecha de nacimiento");
+            toolTip.SetToolTip(txtCURP, "CURP: 18 caracteres alfanuméricos (ej: GOMC800101HNENSN09)");
+            toolTip.SetToolTip(cmbGenero, "Selecciona el género");
+            toolTip.SetToolTip(cmbCarrera, "Selecciona la carrera");
+            toolTip.SetToolTip(nudSemestre, "Semestre actual (1-20)");
+            toolTip.SetToolTip(cmbTurno, "Selecciona el turno");
+            toolTip.SetToolTip(dtpFechaIngreso, "Fecha de ingreso al sistema");
+            toolTip.SetToolTip(txtGrupo, "Grupo (ej: A, B, 101, etc.)");
 
             // Clic en icono de busqueda para limpiar
             lblBuscarIcono.Cursor = Cursors.Hand;
@@ -149,6 +156,8 @@ namespace Laboratorio_del_Tema_5_2.Views
             txtApellidoMaterno.TextChanged += restaurar;
             txtEmail.TextChanged += restaurar;
             txtTelefono.TextChanged += restaurar;
+            txtCURP.TextChanged += restaurar;
+            txtGrupo.TextChanged += restaurar;
 
             ConfigurarEnterSgteCampo(txtNoControl, txtNombre);
             ConfigurarEnterSgteCampo(txtNombre, txtApellidoPaterno);
@@ -894,14 +903,22 @@ namespace Laboratorio_del_Tema_5_2.Views
         private bool HayCambiosSinGuardar() =>
             !string.IsNullOrWhiteSpace(txtNoControl.Text) ||
             !string.IsNullOrWhiteSpace(txtNombre.Text) ||
-            !string.IsNullOrWhiteSpace(txtApellidoPaterno.Text);
+            !string.IsNullOrWhiteSpace(txtApellidoPaterno.Text) ||
+            !string.IsNullOrWhiteSpace(txtEmail.Text) ||
+            !string.IsNullOrWhiteSpace(txtTelefono.Text) ||
+            !string.IsNullOrWhiteSpace(txtCURP.Text) ||
+            !string.IsNullOrWhiteSpace(txtGrupo.Text) ||
+            cmbGenero.SelectedIndex > 0 ||
+            cmbCarrera.SelectedIndex > 0 ||
+            cmbTurno.SelectedIndex > 0 ||
+            nudSemestre.Value > 1;
 
         private void MarcarError(TextBox txt) { txt.BackColor = Color.FromArgb(255, 235, 235); txt.Focus(); }
 
         private void RestaurarColores()
         {
             foreach (var txt in new[] { txtNoControl, txtNombre, txtApellidoPaterno,
-                txtApellidoMaterno, txtEmail, txtTelefono })
+                txtApellidoMaterno, txtEmail, txtTelefono, txtCURP, txtGrupo })
                 txt.BackColor = Color.FromArgb(248, 250, 252);
         }
 
@@ -1108,7 +1125,7 @@ namespace Laboratorio_del_Tema_5_2.Views
 
             // Caracteres permitidos en nombres
             string permitidos = "áéíóúüñÁÉÍÓÚÜÑ";
-            if (char.IsLetter(e.KeyChar) || e.KeyChar == ' ' || e.KeyChar == '.' || permitidos.Contains(e.KeyChar))
+            if (char.IsLetter(e.KeyChar) || e.KeyChar == ' ' || permitidos.Contains(e.KeyChar))
                 return;
 
             // TODO lo demás se bloquea
