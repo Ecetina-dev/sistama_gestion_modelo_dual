@@ -24,6 +24,15 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
+                // Validar antes de enviar al servicio EF
+                ValidarFormatos(alumno);
+
+                using (var conn = SqlServerConnection.GetConnection())
+                {
+                    conn.Open();
+                    ValidarDuplicados(conn, alumno, null);
+                }
+
                 return _alumnoService.Create(alumno);
             }
             catch (CrudOperationException)
@@ -51,6 +60,15 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         {
             try
             {
+                // Validar antes de enviar al servicio EF
+                ValidarFormatos(alumno);
+
+                using (var conn = SqlServerConnection.GetConnection())
+                {
+                    conn.Open();
+                    ValidarDuplicados(conn, alumno, alumno.Id_Alumno);
+                }
+
                 return _alumnoService.Update(alumno);
             }
             catch (CrudOperationException)
@@ -433,6 +451,11 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         private void ValidarFormatos(Alumno alumno)
         {
             string error;
+
+            // Normalizar a mayusculas antes de validar
+            alumno.No_Control = alumno.No_Control?.ToUpperInvariant();
+            alumno.Curp = alumno.Curp?.ToUpperInvariant();
+            alumno.Rfc = alumno.Rfc?.ToUpperInvariant();
 
             if (!AlumnoValidator.ValidarNoControl(alumno.No_Control, out error))
                 throw new CrudOperationException(error, "Validate", alumno);

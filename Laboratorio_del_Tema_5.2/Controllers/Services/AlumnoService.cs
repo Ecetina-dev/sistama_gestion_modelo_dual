@@ -29,7 +29,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers.Services
 
                         var entity = new AlumnoEF
                         {
-                            No_Control = alumno.No_Control,
+                            No_Control = alumno.No_Control?.ToUpperInvariant(),
                             Nombre = alumno.Nombre,
                             Apellido_Paterno = alumno.Apellido_Paterno,
                             Apellido_Materno = alumno.Apellido_Materno,
@@ -37,8 +37,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers.Services
                             Telefono = alumno.Telefono,
                             Fecha_Nacimiento = alumno.Fecha_Nacimiento,
                             Status_Alumno = alumno.Status_Alumno,
-                            Curp = alumno.Curp,
-                            Rfc = alumno.Rfc,
+                            Curp = alumno.Curp?.ToUpperInvariant(),
+                            Rfc = alumno.Rfc?.ToUpperInvariant(),
                             Nss = alumno.Nss,
                             Genero = alumno.Genero,
                             Estado_Civil = alumno.Estado_Civil,
