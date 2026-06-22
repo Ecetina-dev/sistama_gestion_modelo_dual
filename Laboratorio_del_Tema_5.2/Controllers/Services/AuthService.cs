@@ -313,7 +313,39 @@ namespace Laboratorio_del_Tema_5_2.Controllers.Services
                 SesionActiva.Instance.CerrarSesion();
             }
         }
-    
+
+        public List<Usuario> ListarUsuarios()
+        {
+            try
+            {
+                using (var db = new ModeloDualContext())
+                {
+                    return db.Usuarios
+                        .Include(u => u.Rol)
+                        .OrderByDescending(u => u.Created_At)
+                        .AsNoTracking()
+                        .Select(u => new Usuario
+                        {
+                            Id_Usuario = u.Id_Usuario,
+                            Username = u.Username,
+                            Email = u.Email,
+                            Id_Rol = u.Id_Rol,
+                            Status = u.Status,
+                            Debe_Cambiar_Password = u.Debe_Cambiar_Password == 1,
+                            Fecha_Activacion = u.Fecha_Activacion,
+                            Created_At = u.Created_At ?? DateTime.Now,
+                            Rol = new Rol { Nombre = u.Rol.Nombre }
+                        })
+                        .ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error al listar usuarios", ex);
+                return new List<Usuario>();
+            }
+        }
+
         public ResultadoLogin ActivarCuenta(string username, string passwordTemporal, string passwordNuevo)
         {
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrEmpty(passwordTemporal) || string.IsNullOrEmpty(passwordNuevo))

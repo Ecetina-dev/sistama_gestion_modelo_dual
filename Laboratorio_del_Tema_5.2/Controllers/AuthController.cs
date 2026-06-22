@@ -843,47 +843,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers
         /// </summary>
         public List<Usuario> ListarUsuarios()
         {
-            List<Usuario> usuarios = new List<Usuario>();
-            try
-            {
-                using (SqlConnection conn = SqlServerConnection.GetConnection())
-                {
-                    conn.Open();
-                    string query = @"SELECT u.id_usuario, u.username, u.email, u.id_rol, u.status,
-                                            u.debe_cambiar_password, u.fecha_activacion, u.created_at,
-                                            r.nombre AS rol_nombre
-                                     FROM Usuario u
-                                     INNER JOIN Rol r ON u.id_rol = r.id_rol
-                                     ORDER BY u.created_at DESC";
-
-                    using (SqlCommand cmd = new SqlCommand(query, conn))
-                    using (SqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            var usuario = new Usuario
-                            {
-                                Id_Usuario = reader.GetInt32(reader.GetOrdinal("id_usuario")),
-                                Username = reader.GetString(reader.GetOrdinal("username")),
-                                Email = reader.GetString(reader.GetOrdinal("email")),
-                                Id_Rol = reader.GetInt32(reader.GetOrdinal("id_rol")),
-                                Status = reader.GetString(reader.GetOrdinal("status")),
-                                Debe_Cambiar_Password = reader.GetInt16(reader.GetOrdinal("debe_cambiar_password")) != 0,
-                                Fecha_Activacion = reader.IsDBNull(reader.GetOrdinal("fecha_activacion"))
-                                    ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("fecha_activacion")),
-                                Created_At = reader.GetDateTime(reader.GetOrdinal("created_at")),
-                                Rol = new Rol { Nombre = reader.GetString(reader.GetOrdinal("rol_nombre")) }
-                            };
-                            usuarios.Add(usuario);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Error("Error al listar usuarios", ex);
-            }
-            return usuarios;
+            return _authService.ListarUsuarios();
         }
 
         /// <summary>
