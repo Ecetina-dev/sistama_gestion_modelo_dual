@@ -442,5 +442,10 @@ namespace Laboratorio_del_Tema_5_2.Views
                 if (result == DialogResult.No) e.Cancel = true;
             }
         }
+
+        private void FormLogin_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }
