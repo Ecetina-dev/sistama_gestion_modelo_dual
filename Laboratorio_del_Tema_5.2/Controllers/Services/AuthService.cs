@@ -314,6 +314,116 @@ namespace Laboratorio_del_Tema_5_2.Controllers.Services
             }
         }
 
+        public ResultadoCarga CargarUsuario(string username, string email, int idRol,
+            string tipoEntidad, int? idEntidad, int creadoPor)
+        {
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(email))
+                return new ResultadoCarga { Success = false, Message = "Username y email son requeridos" };
+
+            if (creadoPor <= 0)
+                return new ResultadoCarga { Success = false, Message = "Se requiere el ID del admin que crea el usuario" };
+
+            username = username.Trim();
+            email = email.Trim().ToLower();
+
+            try
+            {
+                using (var db = new ModeloDualContext())
+                {
+                    // Verificar duplicados con EF
+                    bool userExists = db.Usuarios.Any(u => u.Username.ToLower() == username.ToLower());
+                    if (userExists)
+                        return new ResultadoCarga { Success = false, Message = $"El username '{username}' ya esta registrado" };
+
+                    bool emailExists = db.Usuarios.Any(u => u.Email.ToLower() == email.ToLower());
+                    if (emailExists)
+                        return new ResultadoCarga { Success = false, Message = $"El email '{email}' ya esta registrado" };
+
+                    // Verificar entidad no vinculada
+                    if (!string.IsNullOrEmpty(tipoEntidad) && idEntidad.HasValue && idEntidad.Value > 0)
+                    {
+                        bool entidadVinculada = tipoEntidad.ToLower() switch
+                        {
+                            "alumno" => db.UsuariosAlumnos.Any(ua => ua.Id_Alumno == idEntidad.Value),
+                            "profesor" => db.UsuariosProfesores.Any(up => up.Id_Profesor == idEntidad.Value),
+                            "empresa" => db.UsuariosEmpresas.Any(ue => ue.Id_Empresa == idEntidad.Value),
+                            _ => true
+                        };
+                        if (entidadVinculada)
+                            return new ResultadoCarga { Success = false, Message = "La entidad seleccionada ya esta vinculada a otro usuario" };
+                    }
+
+                    string passwordTemporal = PasswordService.GenerarPasswordTemporal();
+                    string passwordTemporalHash = BCrypt.Net.BCrypt.HashPassword(passwordTemporal, Seguridad.BcryptCostFactor);
+
+                    using (var tx = db.Database.BeginTransaction())
+                    {
+                        try
+                        {
+                            var newUser = new UsuarioEF
+                            {
+                                Username = username,
+                                Email = email,
+                                PasswordHash = passwordTemporalHash,
+                                Password_Temporal_Hash = passwordTemporalHash,
+                                Id_Rol = idRol,
+                                Status = "activo",
+                                Debe_Cambiar_Password = 1,
+                                Creado_Por = creadoPor,
+                                Created_At = DateTime.Now,
+                                Updated_At = DateTime.Now
+                            };
+                            db.Usuarios.Add(newUser);
+                            db.SaveChanges();
+
+                            int idUsuario = newUser.Id_Usuario;
+
+                            // Vincular con entidad
+                            if (!string.IsNullOrEmpty(tipoEntidad) && idEntidad.HasValue && idEntidad.Value > 0)
+                            {
+                                switch (tipoEntidad.ToLower())
+                                {
+                                    case "alumno":
+                                        db.UsuariosAlumnos.Add(new UsuarioAlumnoEF { Id_Usuario = idUsuario, Id_Alumno = idEntidad.Value });
+                                        break;
+                                    case "profesor":
+                                        db.UsuariosProfesores.Add(new UsuarioProfesorEF { Id_Usuario = idUsuario, Id_Profesor = idEntidad.Value });
+                                        break;
+                                    case "empresa":
+                                        db.UsuariosEmpresas.Add(new UsuarioEmpresaEF { Id_Usuario = idUsuario, Id_Empresa = idEntidad.Value });
+                                        break;
+                                }
+                                db.SaveChanges();
+                            }
+
+                            tx.Commit();
+
+                            Logger.Info($"Usuario cargado por admin {creadoPor}: '{username}' (password temporal generado)");
+
+                            return new ResultadoCarga
+                            {
+                                Success = true,
+                                Message = "Usuario creado. Entrega el password temporal al usuario.",
+                                PasswordTemporal = passwordTemporal,
+                                Id_Usuario = idUsuario,
+                                Username = username
+                            };
+                        }
+                        catch
+                        {
+                            tx.Rollback();
+                            throw;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error al cargar usuario", ex);
+                return new ResultadoCarga { Success = false, Message = "Error al crear el usuario" };
+            }
+        }
+
         public List<Usuario> ListarUsuarios()
         {
             try
