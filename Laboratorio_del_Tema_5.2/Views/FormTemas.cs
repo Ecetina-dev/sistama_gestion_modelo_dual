@@ -34,11 +34,44 @@ namespace Laboratorio_del_Tema_5_2.Views
             CargarMaterias();
         }
 
+        private Label lblCharNombre;
+        private Label lblCharDesc;
+        private Label lblStatusBar;
+
         private void ConfigurarFormulario()
         {
             // Limitar longitud de campos segun modelo
             txtNombre.MaxLength = MAX_NOMBRE;
             txtDescripcion.MaxLength = MAX_DESCRIPCION;
+
+            // Character counters
+            lblCharNombre = new Label();
+            lblCharNombre.Text = $"0/{MAX_NOMBRE}";
+            lblCharNombre.Font = new Font("Segoe UI", 8F);
+            lblCharNombre.ForeColor = Color.Gray;
+            lblCharNombre.Size = new Size(80, 15);
+            lblCharNombre.Location = new Point(txtNombre.Left + txtNombre.Width - 70, txtNombre.Top - 16);
+            panelCardBody.Controls.Add(lblCharNombre);
+
+            lblCharDesc = new Label();
+            lblCharDesc.Text = $"0/{MAX_DESCRIPCION}";
+            lblCharDesc.Font = new Font("Segoe UI", 8F);
+            lblCharDesc.ForeColor = Color.Gray;
+            lblCharDesc.Size = new Size(80, 15);
+            lblCharDesc.Location = new Point(txtDescripcion.Left + txtDescripcion.Width - 80, txtDescripcion.Top - 16);
+            panelCardBody.Controls.Add(lblCharDesc);
+
+            txtNombre.TextChanged += (s, e) => lblCharNombre.Text = $"{txtNombre.Text.Length}/{MAX_NOMBRE}";
+            txtDescripcion.TextChanged += (s, e) => lblCharDesc.Text = $"{txtDescripcion.Text.Length}/{MAX_DESCRIPCION}";
+
+            // Status bar
+            lblStatusBar = new Label();
+            lblStatusBar.Text = "Cargando...";
+            lblStatusBar.Font = new Font("Segoe UI", 9F);
+            lblStatusBar.ForeColor = Color.FromArgb(108, 117, 125);
+            lblStatusBar.AutoSize = true;
+            lblStatusBar.Location = new Point(19, 470);
+            panelContent.Controls.Add(lblStatusBar);
 
             // Configurar NumericUpDown
             nudNumeroTema.Minimum = MIN_NUMERO_TEMA;
@@ -104,6 +137,27 @@ namespace Laboratorio_del_Tema_5_2.Views
                 e.SuppressKeyPress = true;
                 btnCancelar_Click(sender, e);
             }
+            if (e.Control && e.KeyCode == Keys.N)
+            {
+                e.SuppressKeyPress = true;
+                if (!panelCardDatos.Visible) btnNuevo_Click(sender, e);
+            }
+            if (e.Control && e.KeyCode == Keys.S && panelCardDatos.Visible && !isLoading)
+            {
+                e.SuppressKeyPress = true;
+                btnGuardar_Click(sender, e);
+            }
+            if (e.Control && e.KeyCode == Keys.F)
+            {
+                e.SuppressKeyPress = true;
+                txtBuscar.Focus();
+                txtBuscar.SelectAll();
+            }
+            if (e.KeyCode == Keys.F5)
+            {
+                e.SuppressKeyPress = true;
+                btnActualizar_Click(sender, e);
+            }
         }
 
         private void ConfigurarEnterSgteCampo(Control actual, Control siguiente)
@@ -125,6 +179,8 @@ namespace Laboratorio_del_Tema_5_2.Views
             try
             {
                 _temasCache = controller.Read() ?? new List<Tema>();
+                if (lblStatusBar != null && !panelCardDatos.Visible)
+                    ActualizarStatusBar(null);
                 AplicarFiltroBusqueda();
             }
             catch (Exception ex)
@@ -165,6 +221,19 @@ namespace Laboratorio_del_Tema_5_2.Views
             dgvTemas.DataSource = null;
             dgvTemas.DataSource = fuente;
             ConfigurarGrid();
+            ActualizarStatusBar(filtro);
+        }
+
+        private void ActualizarStatusBar(string filtro)
+        {
+            if (lblStatusBar == null) return;
+            int total = _temasCache.Count;
+            int mostrando = dgvTemas.Rows.Count;
+            string filtroTxt = string.IsNullOrEmpty(filtro) ? "" : $" (filtrados)";
+            if (total == 0)
+                lblStatusBar.Text = "No hay temas registrados.";
+            else
+                lblStatusBar.Text = $"Mostrando {mostrando} de {total} temas{filtroTxt}";
         }
 
         private void ConfigurarGrid()

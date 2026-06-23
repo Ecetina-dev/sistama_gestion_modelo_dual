@@ -128,7 +128,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.btnNavVolver.Padding = new System.Windows.Forms.Padding(11, 0, 0, 0);
             this.btnNavVolver.Size = new System.Drawing.Size(150, 34);
             this.btnNavVolver.TabIndex = 1;
-            this.btnNavVolver.Text = "←  Volver al Menú";
+            this.btnNavVolver.Text = "← Volver al Menú";
             this.btnNavVolver.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnNavVolver.UseVisualStyleBackColor = false;
             this.btnNavVolver.Click += new System.EventHandler(this.btnCerrar_Click);
@@ -155,7 +155,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblSideTitulo.Name = "lblSideTitulo";
             this.lblSideTitulo.Size = new System.Drawing.Size(122, 25);
             this.lblSideTitulo.TabIndex = 0;
-            this.lblSideTitulo.Text = "📖  Temas";
+            this.lblSideTitulo.Text = "Temas";
             // 
             // panelMain
             // 
@@ -194,7 +194,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelCardDatos.Location = new System.Drawing.Point(19, 276);
             this.panelCardDatos.Margin = new System.Windows.Forms.Padding(2);
             this.panelCardDatos.Name = "panelCardDatos";
-            this.panelCardDatos.Size = new System.Drawing.Size(623, 212);
+            this.panelCardDatos.Size = new System.Drawing.Size(623, 270);
             this.panelCardDatos.TabIndex = 2;
             this.panelCardDatos.Visible = false;
             // 
@@ -243,7 +243,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.btnGuardar.Name = "btnGuardar";
             this.btnGuardar.Size = new System.Drawing.Size(71, 29);
             this.btnGuardar.TabIndex = 0;
-            this.btnGuardar.Text = "✔️  Guardar";
+            this.btnGuardar.Text = "Guardar";
             this.toolTip.SetToolTip(this.btnGuardar, "Guardar cambios");
             this.btnGuardar.UseVisualStyleBackColor = false;
             this.btnGuardar.Click += new System.EventHandler(this.btnGuardar_Click);
@@ -255,7 +255,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelCardBar.Location = new System.Drawing.Point(0, 0);
             this.panelCardBar.Margin = new System.Windows.Forms.Padding(2);
             this.panelCardBar.Name = "panelCardBar";
-            this.panelCardBar.Size = new System.Drawing.Size(4, 210);
+            this.panelCardBar.Size = new System.Drawing.Size(4, 268);
             this.panelCardBar.TabIndex = 0;
             // 
             // panelCardBody
@@ -297,7 +297,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblCardTitulo.Name = "lblCardTitulo";
             this.lblCardTitulo.Size = new System.Drawing.Size(174, 25);
             this.lblCardTitulo.TabIndex = 0;
-            this.lblCardTitulo.Text = "📋  Datos del Tema";
+            this.lblCardTitulo.Text = "Datos del Tema";
             // 
             // txtIdTema
             // 
@@ -314,11 +314,11 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.txtDescripcion.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(250)))), ((int)(((byte)(252)))));
             this.txtDescripcion.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtDescripcion.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.txtDescripcion.Location = new System.Drawing.Point(308, 109);
+            this.txtDescripcion.Location = new System.Drawing.Point(14, 155);
             this.txtDescripcion.Margin = new System.Windows.Forms.Padding(2);
             this.txtDescripcion.Multiline = true;
             this.txtDescripcion.Name = "txtDescripcion";
-            this.txtDescripcion.Size = new System.Drawing.Size(210, 45);
+            this.txtDescripcion.Size = new System.Drawing.Size(590, 60);
             this.txtDescripcion.TabIndex = 4;
             // 
             // lblDescripcion
@@ -326,7 +326,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblDescripcion.AutoSize = true;
             this.lblDescripcion.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.lblDescripcion.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(60)))), ((int)(((byte)(60)))));
-            this.lblDescripcion.Location = new System.Drawing.Point(308, 96);
+            this.lblDescripcion.Location = new System.Drawing.Point(14, 139);
             this.lblDescripcion.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblDescripcion.Name = "lblDescripcion";
             this.lblDescripcion.Size = new System.Drawing.Size(72, 15);
@@ -497,7 +497,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.btnActualizar.Name = "btnActualizar";
             this.btnActualizar.Size = new System.Drawing.Size(90, 26);
             this.btnActualizar.TabIndex = 5;
-            this.btnActualizar.Text = "🔄  Refrescar";
+            this.btnActualizar.Text = "Refrescar";
             this.toolTip.SetToolTip(this.btnActualizar, "Recargar lista de temas");
             this.btnActualizar.UseVisualStyleBackColor = false;
             this.btnActualizar.Click += new System.EventHandler(this.btnActualizar_Click);
@@ -515,7 +515,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.btnEliminar.Name = "btnEliminar";
             this.btnEliminar.Size = new System.Drawing.Size(79, 26);
             this.btnEliminar.TabIndex = 4;
-            this.btnEliminar.Text = "🗑️  Eliminar";
+            this.btnEliminar.Text = "- Eliminar";
             this.toolTip.SetToolTip(this.btnEliminar, "Eliminar tema seleccionado");
             this.btnEliminar.UseVisualStyleBackColor = false;
             this.btnEliminar.Click += new System.EventHandler(this.btnEliminar_Click);
@@ -533,7 +533,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.btnEditar.Name = "btnEditar";
             this.btnEditar.Size = new System.Drawing.Size(79, 26);
             this.btnEditar.TabIndex = 3;
-            this.btnEditar.Text = "✏️  Editar";
+            this.btnEditar.Text = "Editar";
             this.toolTip.SetToolTip(this.btnEditar, "Editar tema seleccionado");
             this.btnEditar.UseVisualStyleBackColor = false;
             this.btnEditar.Click += new System.EventHandler(this.btnEditar_Click);
@@ -551,7 +551,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.btnNuevo.Name = "btnNuevo";
             this.btnNuevo.Size = new System.Drawing.Size(79, 26);
             this.btnNuevo.TabIndex = 2;
-            this.btnNuevo.Text = "➕  Nuevo";
+            this.btnNuevo.Text = "+ Nuevo";
             this.toolTip.SetToolTip(this.btnNuevo, "Agregar nuevo tema");
             this.btnNuevo.UseVisualStyleBackColor = false;
             this.btnNuevo.Click += new System.EventHandler(this.btnNuevo_Click);
@@ -602,7 +602,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblTitulo.Name = "lblTitulo";
             this.lblTitulo.Size = new System.Drawing.Size(310, 37);
             this.lblTitulo.TabIndex = 0;
-            this.lblTitulo.Text = "📖  Gestion de Temas";
+            this.lblTitulo.Text = "Gestion de Temas";
             // 
             // FormTemas
             // 
