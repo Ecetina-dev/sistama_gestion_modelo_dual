@@ -65,7 +65,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers.Services
                             Created_By = ObtenerUsuarioAuditoria(),
                             Created_At = DateTime.Now,
                             Updated_At = DateTime.Now,
-                            No_Control_Unico = alumno.No_Control?.ToUpperInvariant()
                         };
 
                         // Verificar duplicados antes de insertar
@@ -96,31 +95,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers.Services
             }
             catch (Exception ex)
             {
-                Logger.Error($"Error al crear alumno: {ex}", ex);
-
-                // Capturar errores de validacion de EF
-                if (ex is System.Data.Entity.Validation.DbEntityValidationException valEx)
-                {
-                    var detalles = valEx.EntityValidationErrors
-                        .SelectMany(e => e.ValidationErrors)
-                        .Select(e => $"{e.PropertyName}: {e.ErrorMessage}");
-                    string msg = string.Join("; ", detalles);
-                    Logger.Error($"Error de validacion EF: {msg}");
-                    throw new CrudOperationException($"Error de validacion: {msg}", "Create", alumno);
-                }
-
-                // Capturar error SQL real (inner exception mas profunda)
-                var baseEx = ex.GetBaseException();
-                string detalle = baseEx?.Message ?? ex.Message;
-
-                // Loggear el SQL que fallo si hay info
-                if (ex is System.Data.Entity.Infrastructure.DbUpdateException dbEx)
-                {
-                    Logger.Error($"DbUpdateException. Inner: {dbEx.InnerException?.Message}");
-                    Logger.Error($"BaseException: {baseEx?.Message}");
-                }
-
-                throw new CrudOperationException($"Error BD: {detalle}", "Create", alumno);
+                Logger.Error($"Error al crear alumno: {ex.Message}", ex);
+                throw new CrudOperationException("Ocurrio un error al crear el alumno.", "Create", alumno);
             }
         }
 
@@ -215,7 +191,6 @@ namespace Laboratorio_del_Tema_5_2.Controllers.Services
                         entity.Fecha_Baja = alumno.Fecha_Baja;
                         entity.Motivo_Baja = alumno.Motivo_Baja;
                         entity.Promedio_General = alumno.Promedio_General;
-                        entity.No_Control_Unico = alumno.No_Control?.ToUpperInvariant();
                         entity.Updated_At = DateTime.Now;
 
                         entity.Updated_By = ObtenerUsuarioAuditoria();

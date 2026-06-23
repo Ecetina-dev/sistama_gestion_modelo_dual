@@ -81,4 +81,4 @@ ALTER TABLE Usuario_Entidad MODIFY COLUMN tipo_entidad VARCHAR(10) NOT NULL;
 ALTER TABLE Usuario_Entidad ADD CONSTRAINT chk_ue_tipo
     CHECK (tipo_entidad IN ('alumno', 'profesor', 'empresa'));
 
-SELECT ' ENUMs convertidos a VARCHAR + CHECK' AS Status;
+SELECT '✅ ENUMs convertidos a VARCHAR + CHECK' AS Status;
