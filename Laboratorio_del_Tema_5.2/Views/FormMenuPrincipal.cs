@@ -527,19 +527,8 @@ namespace Laboratorio_del_Tema_5_2.Views
 
         private void btnMigracionBD_Click(object sender, EventArgs e)
         {
-            if (SesionActiva.Instance == null) return;
-            if (!SesionActiva.Instance.EsAdmin)
-            {
-                MessageBox.Show("Solo el administrador puede acceder a esta sección.",
-                    "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-            // Issue #6: marcar que vamos a abrir un módulo hijo
-            _volviendoDeModuloHijo = true;
-            using (var form = new FormMigracionBD())
-            {
-                form.ShowDialog();
-            }
+            MessageBox.Show("La migracion de base de datos se completo.\nEl sistema ahora usa SQL Server con Entity Framework 6.\n\nPara cambios futuros, usar Migrations:\nAdd-Migration NombreDelCambio / Update-Database",
+                "Migracion Completada", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void btnCambiarPassword_Click(object sender, EventArgs e)
