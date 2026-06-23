@@ -429,7 +429,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelCardBody.Controls.Add(this.lblFechaIngreso);
             this.panelCardBody.Controls.Add(this.txtGrupo);
             this.panelCardBody.Controls.Add(this.lblGrupo);
-            this.panelCardBody.Location = new System.Drawing.Point(4, 2);
+            this.panelCardBody.Location = new System.Drawing.Point(4, 1);
             this.panelCardBody.Margin = new System.Windows.Forms.Padding(2);
             this.panelCardBody.Name = "panelCardBody";
             this.panelCardBody.Size = new System.Drawing.Size(617, 260);
