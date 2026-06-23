@@ -64,7 +64,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers.Services
                             Promedio_General = alumno.Promedio_General,
                             Created_By = ObtenerUsuarioAuditoria(),
                             Created_At = DateTime.Now,
-                            Updated_At = DateTime.Now
+                            Updated_At = DateTime.Now,
+                            No_Control_Unico = alumno.No_Control?.ToUpperInvariant()
                         };
 
                         // Verificar duplicados antes de insertar
@@ -214,6 +215,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers.Services
                         entity.Fecha_Baja = alumno.Fecha_Baja;
                         entity.Motivo_Baja = alumno.Motivo_Baja;
                         entity.Promedio_General = alumno.Promedio_General;
+                        entity.No_Control_Unico = alumno.No_Control?.ToUpperInvariant();
                         entity.Updated_At = DateTime.Now;
 
                         entity.Updated_By = ObtenerUsuarioAuditoria();
