@@ -96,7 +96,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers.Services
             catch (Exception ex)
             {
                 Logger.Error($"Error al crear alumno: {ex.Message}", ex);
-                throw new CrudOperationException("Ocurrio un error al crear el alumno.", "Create", alumno);
+                string detalle = ex.InnerException?.Message ?? ex.Message;
+                throw new CrudOperationException($"Error al crear el alumno: {detalle}", "Create", alumno);
             }
         }
 
