@@ -64,7 +64,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers.Services
                             Promedio_General = alumno.Promedio_General,
                             Created_By = ObtenerUsuarioAuditoria(),
                             Created_At = DateTime.Now,
-                            Updated_At = DateTime.Now,
+                            Updated_At = DateTime.Now
                         };
 
                         // Verificar duplicados antes de insertar
