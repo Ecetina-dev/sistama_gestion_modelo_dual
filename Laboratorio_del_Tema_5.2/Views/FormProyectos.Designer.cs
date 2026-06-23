@@ -161,7 +161,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblSideTitulo.Name = "lblSideTitulo";
             this.lblSideTitulo.Size = new System.Drawing.Size(128, 25);
             this.lblSideTitulo.TabIndex = 0;
-            this.lblSideTitulo.Text = "📊  Proyectos";
+            this.lblSideTitulo.Text = "Proyectos";
             // 
             // panelMain
             // 
@@ -293,7 +293,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.btnActualizar.Name = "btnActualizar";
             this.btnActualizar.Size = new System.Drawing.Size(79, 26);
             this.btnActualizar.TabIndex = 5;
-            this.btnActualizar.Text = "🔄  Refrescar";
+            this.btnActualizar.Text = "Refrescar";
             this.toolTip.SetToolTip(this.btnActualizar, "Recargar lista de proyectos");
             this.btnActualizar.UseVisualStyleBackColor = false;
             this.btnActualizar.Click += new System.EventHandler(this.btnActualizar_Click);
@@ -311,7 +311,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.btnEliminar.Name = "btnEliminar";
             this.btnEliminar.Size = new System.Drawing.Size(79, 26);
             this.btnEliminar.TabIndex = 4;
-            this.btnEliminar.Text = "🗑️  Eliminar";
+            this.btnEliminar.Text = "- Eliminar";
             this.toolTip.SetToolTip(this.btnEliminar, "Eliminar proyecto seleccionado");
             this.btnEliminar.UseVisualStyleBackColor = false;
             this.btnEliminar.Click += new System.EventHandler(this.btnEliminar_Click);
@@ -329,7 +329,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.btnEditar.Name = "btnEditar";
             this.btnEditar.Size = new System.Drawing.Size(79, 26);
             this.btnEditar.TabIndex = 3;
-            this.btnEditar.Text = "✏️  Editar";
+            this.btnEditar.Text = "Editar";
             this.toolTip.SetToolTip(this.btnEditar, "Editar proyecto seleccionado");
             this.btnEditar.UseVisualStyleBackColor = false;
             this.btnEditar.Click += new System.EventHandler(this.btnEditar_Click);
@@ -347,7 +347,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.btnNuevo.Name = "btnNuevo";
             this.btnNuevo.Size = new System.Drawing.Size(79, 26);
             this.btnNuevo.TabIndex = 2;
-            this.btnNuevo.Text = "➕  Nuevo";
+            this.btnNuevo.Text = "+ Nuevo";
             this.toolTip.SetToolTip(this.btnNuevo, "Agregar nuevo proyecto");
             this.btnNuevo.UseVisualStyleBackColor = false;
             this.btnNuevo.Click += new System.EventHandler(this.btnNuevo_Click);
@@ -507,7 +507,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.lblCardTitulo.Name = "lblCardTitulo";
             this.lblCardTitulo.Size = new System.Drawing.Size(217, 25);
             this.lblCardTitulo.TabIndex = 0;
-            this.lblCardTitulo.Text = "📋  Datos del Proyecto";
+            this.lblCardTitulo.Text = "Datos del Proyecto";
             // 
             // txtIdProyecto
             // 
