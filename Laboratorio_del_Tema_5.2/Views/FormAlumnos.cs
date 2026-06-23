@@ -65,6 +65,7 @@ namespace Laboratorio_del_Tema_5_2.Views
                 AplicarFiltros();
             };
 
+            dtpFechaIngreso.Value = DateTime.Today;
             ConfigurarFormulario();
             CargarAlumnos();
         }
@@ -103,6 +104,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             txtApellidoMaterno.MaxLength = MAX_APELLIDO;
             txtEmail.MaxLength = MAX_EMAIL;
             txtTelefono.MaxLength = MAX_TELEFONO;
+            txtGrupo.MaxLength = 10;
 
             // Filtros de entrada por tipo de campo
             txtNoControl.KeyPress += (s, e) => SoloAlfanumericoMayusculas(e);
@@ -141,6 +143,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             toolTip.SetToolTip(txtApellidoPaterno, "Apellido paterno (solo letras)");
             toolTip.SetToolTip(txtApellidoMaterno, "Apellido materno (opcional, solo letras)");
             toolTip.SetToolTip(txtEmail, "Correo electrónico (ej: alumno@dominio.com)");
+            txtEmail.TextChanged += (s, e) => toolTip.SetToolTip(txtEmail, $"{txtEmail.Text.Length}/{MAX_EMAIL} - Correo electrónico");
             toolTip.SetToolTip(txtTelefono, "10 dígitos (ej: 5551234567)");
             toolTip.SetToolTip(txtFechaNacimiento, "Formato: aaaa-mm-dd");
             toolTip.SetToolTip(dtpFechaNacimiento, "Selecciona la fecha de nacimiento");
@@ -500,6 +503,12 @@ namespace Laboratorio_del_Tema_5_2.Views
                 e.SuppressKeyPress = true;
                 btnActualizar_Click(sender, e);
             }
+            if (e.Control && e.KeyCode == Keys.F)
+            {
+                e.SuppressKeyPress = true;
+                txtBuscar.Focus();
+                txtBuscar.SelectAll();
+            }
         }
 
         private void ConfigurarEnterSgteCampo(TextBox actual, Control siguiente)
@@ -661,6 +670,8 @@ namespace Laboratorio_del_Tema_5_2.Views
         private void btnNuevo_Click(object sender, EventArgs e)
         {
             isNewRecord = true;
+            txtNoControl.ReadOnly = false;
+            txtNoControl.BackColor = System.Drawing.Color.White;
             isEditing = true;
             LimpiarFormulario();
             HabilitarNoControl(true);
@@ -866,6 +877,8 @@ namespace Laboratorio_del_Tema_5_2.Views
             panelCardDatos.Visible = false;
             LimpiarFormulario();
             RestaurarColores();
+            txtNoControl.ReadOnly = false;
+            txtNoControl.BackColor = System.Drawing.Color.White;
         }
 
         // ==================== VALIDACION ====================
@@ -888,6 +901,10 @@ namespace Laboratorio_del_Tema_5_2.Views
                 string email = txtEmail.Text.Trim();
                 if (!System.Text.RegularExpressions.Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
                 { MarcarError(txtEmail); return "Email inválido (ej: usuario@dominio.com)."; }
+                if (!isNewRecord && controller.ExisteEmail(email, Convert.ToInt32(txtIdAlumno.Text)))
+                { MarcarError(txtEmail); return "El email ya está registrado por otro alumno."; }
+                if (isNewRecord && controller.ExisteEmail(email, null))
+                { MarcarError(txtEmail); return "El email ya está registrado."; }
             }
 
             if (!string.IsNullOrWhiteSpace(txtTelefono.Text))
@@ -913,6 +930,10 @@ namespace Laboratorio_del_Tema_5_2.Views
             {
                 string curpError = ValidarCURP(curp);
                 if (curpError != null) return curpError;
+            if (!isNewRecord && !string.IsNullOrWhiteSpace(curp) && controller.ExisteCurp(curp, Convert.ToInt32(txtIdAlumno.Text)))
+                return "El CURP ya está registrado por otro alumno.";
+            if (isNewRecord && !string.IsNullOrWhiteSpace(curp) && controller.ExisteCurp(curp, null))
+                return "El CURP ya está registrado.";
             }
 
             // Genero requerido para nuevos alumnos
@@ -938,6 +959,12 @@ namespace Laboratorio_del_Tema_5_2.Views
             int semestre = (int)nudSemestre.Value;
             if (semestre < 1 || semestre > 20)
                 return "El semestre debe estar entre 1 y 20.";
+            if (cmbCarrera.SelectedValue is int idCarrera && idCarrera > 0)
+            {
+                var carrera = _carreras.FirstOrDefault(c => c.Id_Carrera == idCarrera);
+                if (carrera != null && semestre > carrera.Duracion_Semestres)
+                    return $"El semestre ({semestre}) excede la duración de la carrera ({carrera.Duracion_Semestres} semestres).";
+            }
 
             return null;
         }
@@ -976,6 +1003,8 @@ namespace Laboratorio_del_Tema_5_2.Views
 
             txtIdAlumno.Text = a.Id_Alumno.ToString();
             txtNoControl.Text = a.No_Control ?? "";
+            txtNoControl.ReadOnly = true;
+            txtNoControl.BackColor = System.Drawing.Color.FromArgb(240, 240, 240);
             txtNombre.Text = a.Nombre ?? "";
             txtApellidoPaterno.Text = a.Apellido_Paterno ?? "";
             txtApellidoMaterno.Text = a.Apellido_Materno ?? "";
@@ -1167,5 +1196,9 @@ namespace Laboratorio_del_Tema_5_2.Views
             // TODO lo demás se bloquea
             e.Handled = true;
         }
+
+
+
+
     }
 }
