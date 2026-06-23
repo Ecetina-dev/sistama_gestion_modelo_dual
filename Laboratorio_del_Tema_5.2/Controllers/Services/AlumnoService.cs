@@ -147,8 +147,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers.Services
                         if (entity == null || (entity.Is_Deleted != null && entity.Is_Deleted != 0))
                             return false;
 
-                        // Actualizar propiedades
-                        entity.No_Control = alumno.No_Control;
+                        // Actualizar propiedades (normalizar mayusculas)
+                        entity.No_Control = alumno.No_Control?.ToUpperInvariant();
                         entity.Nombre = alumno.Nombre;
                         entity.Apellido_Paterno = alumno.Apellido_Paterno;
                         entity.Apellido_Materno = alumno.Apellido_Materno;
@@ -156,8 +156,8 @@ namespace Laboratorio_del_Tema_5_2.Controllers.Services
                         entity.Telefono = alumno.Telefono;
                         entity.Fecha_Nacimiento = alumno.Fecha_Nacimiento;
                         entity.Status_Alumno = alumno.Status_Alumno;
-                        entity.Curp = alumno.Curp;
-                        entity.Rfc = alumno.Rfc;
+                        entity.Curp = alumno.Curp?.ToUpperInvariant();
+                        entity.Rfc = alumno.Rfc?.ToUpperInvariant();
                         entity.Nss = alumno.Nss;
                         entity.Genero = alumno.Genero;
                         entity.Estado_Civil = alumno.Estado_Civil;
@@ -183,8 +183,7 @@ namespace Laboratorio_del_Tema_5_2.Controllers.Services
                         entity.Promedio_General = alumno.Promedio_General;
                         entity.Updated_At = DateTime.Now;
 
-                        if (!string.IsNullOrEmpty(alumno.Email))
-                            entity.Updated_By = ObtenerUsuarioAuditoria();
+                        entity.Updated_By = ObtenerUsuarioAuditoria();
 
                         db.SaveChanges();
                         tx.Commit();
