@@ -342,11 +342,11 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.panelCardActions.Controls.Add(this.btnCancelar);
             this.panelCardActions.Controls.Add(this.btnGuardar);
             this.panelCardActions.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panelCardActions.Location = new System.Drawing.Point(4, 261);
+            this.panelCardActions.Location = new System.Drawing.Point(4, 266);
             this.panelCardActions.Margin = new System.Windows.Forms.Padding(2);
             this.panelCardActions.Name = "panelCardActions";
             this.panelCardActions.Padding = new System.Windows.Forms.Padding(8);
-            this.panelCardActions.Size = new System.Drawing.Size(617, 46);
+            this.panelCardActions.Size = new System.Drawing.Size(617, 41);
             this.panelCardActions.TabIndex = 2;
             // 
             // btnCancelar
@@ -357,7 +357,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.btnCancelar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnCancelar.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.btnCancelar.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(100)))), ((int)(((byte)(100)))));
-            this.btnCancelar.Location = new System.Drawing.Point(458, 8);
+            this.btnCancelar.Location = new System.Drawing.Point(458, 4);
             this.btnCancelar.Margin = new System.Windows.Forms.Padding(2);
             this.btnCancelar.Name = "btnCancelar";
             this.btnCancelar.Size = new System.Drawing.Size(75, 29);
@@ -375,7 +375,7 @@ namespace Laboratorio_del_Tema_5_2.Views
             this.btnGuardar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnGuardar.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
             this.btnGuardar.ForeColor = System.Drawing.Color.White;
-            this.btnGuardar.Location = new System.Drawing.Point(540, 8);
+            this.btnGuardar.Location = new System.Drawing.Point(540, 3);
             this.btnGuardar.Margin = new System.Windows.Forms.Padding(2);
             this.btnGuardar.Name = "btnGuardar";
             this.btnGuardar.Size = new System.Drawing.Size(68, 29);

@@ -101,7 +101,6 @@ namespace Laboratorio_del_Tema_5_2.Views
             HacerCardAccesible(cardMaterias, btnMaterias_Click);
             HacerCardAccesible(cardTemas, btnTemas_Click);
             HacerCardAccesible(cardGestionUsuarios, btnGestionUsuarios_Click);
-            HacerCardAccesible(cardMigracionBD, btnMigracionBD_Click);
         }
 
         private void HacerCardAccesible(Panel card, EventHandler clickHandler)
@@ -270,7 +269,6 @@ namespace Laboratorio_del_Tema_5_2.Views
             bool puedeMaterias = esAdmin || esProfesor;
             bool puedeTemas = esAdmin || esProfesor;
             bool puedeGestionUsuarios = esAdmin;
-            bool puedeMigracionBD = esAdmin;
 
             // Visibilidad de cards
             cardAlumnos.Visible = puedeAlumnos;
@@ -280,7 +278,8 @@ namespace Laboratorio_del_Tema_5_2.Views
             cardMaterias.Visible = puedeMaterias;
             cardTemas.Visible = puedeTemas;
             cardGestionUsuarios.Visible = puedeGestionUsuarios;
-            cardMigracionBD.Visible = puedeMigracionBD;
+
+            cardMigracionBD.Visible = false;  // hidden: migration complete
 
             // Visibilidad de nav buttons
             btnNavAlumnos.Visible = puedeAlumnos;
@@ -525,11 +524,7 @@ namespace Laboratorio_del_Tema_5_2.Views
                 activoBtn.BackColor = activo;
         }
 
-        private void btnMigracionBD_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("La migracion de base de datos se completo.\nEl sistema ahora usa SQL Server con Entity Framework 6.\n\nPara cambios futuros, usar Migrations:\nAdd-Migration NombreDelCambio / Update-Database",
-                "Migracion Completada", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
+        private void btnMigracionBD_Click(object sender, EventArgs e) { }
 
         private void btnCambiarPassword_Click(object sender, EventArgs e)
         {
@@ -618,7 +613,6 @@ namespace Laboratorio_del_Tema_5_2.Views
             descProfesores.Text = string.Empty;
             // Resetear visibilidad de stats y cards de admin (Bug #2: ventana insegura post-logout)
             statPendientes.Visible = false;
-            cardMigracionBD.Visible = false;
             cardGestionUsuarios.Visible = false;
             cardProfesores.Visible = false;
             cardMaterias.Visible = false;
