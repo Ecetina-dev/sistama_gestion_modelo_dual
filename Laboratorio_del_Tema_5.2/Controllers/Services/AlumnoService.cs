@@ -67,6 +67,16 @@ namespace Laboratorio_del_Tema_5_2.Controllers.Services
                             Updated_At = DateTime.Now
                         };
 
+                        // Verificar duplicados antes de insertar
+                        if (db.Alumnos.Any(a => a.No_Control == entity.No_Control))
+                            throw new CrudOperationException(MensajesAlumno.NoControlExiste, "Create", alumno);
+
+                        if (!string.IsNullOrEmpty(entity.Curp) && db.Alumnos.Any(a => a.Curp == entity.Curp))
+                            throw new CrudOperationException(MensajesAlumno.CurpExiste, "Create", alumno);
+
+                        if (!string.IsNullOrEmpty(entity.Email) && db.Alumnos.Any(a => a.Email == entity.Email))
+                            throw new CrudOperationException(MensajesAlumno.EmailExiste, "Create", alumno);
+
                         db.Alumnos.Add(entity);
                         db.SaveChanges();
                         alumno.Id_Alumno = entity.Id_Alumno;
@@ -184,6 +194,16 @@ namespace Laboratorio_del_Tema_5_2.Controllers.Services
                         entity.Updated_At = DateTime.Now;
 
                         entity.Updated_By = ObtenerUsuarioAuditoria();
+
+                        // Verificar duplicados (excluyendo el registro actual)
+                        if (db.Alumnos.Any(a => a.No_Control == entity.No_Control && a.Id_Alumno != entity.Id_Alumno))
+                            throw new CrudOperationException(MensajesAlumno.NoControlExiste, "Update", alumno);
+
+                        if (!string.IsNullOrEmpty(entity.Curp) && db.Alumnos.Any(a => a.Curp == entity.Curp && a.Id_Alumno != entity.Id_Alumno))
+                            throw new CrudOperationException(MensajesAlumno.CurpExiste, "Update", alumno);
+
+                        if (!string.IsNullOrEmpty(entity.Email) && db.Alumnos.Any(a => a.Email == entity.Email && a.Id_Alumno != entity.Id_Alumno))
+                            throw new CrudOperationException(MensajesAlumno.EmailExiste, "Update", alumno);
 
                         db.SaveChanges();
                         tx.Commit();
