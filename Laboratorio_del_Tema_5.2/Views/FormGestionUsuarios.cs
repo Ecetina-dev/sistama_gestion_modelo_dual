@@ -37,10 +37,12 @@ namespace Laboratorio_del_Tema_5_2.Views
 
         private void Inicializar()
         {
-            // Validacion de longitud
             txtUsername.MaxLength = Seguridad.UsernameMaxLength;
             txtEmail.MaxLength = Seguridad.EmailMaxLength;
 
+            this.KeyPreview = true;
+            this.KeyDown += FormGestionUsuarios_KeyDown;
+            this.FormClosing += FormGestionUsuarios_FormClosing;
             CargarDatos();
             CargarUsuarios();
             ConfigurarEventos();
@@ -312,38 +314,64 @@ namespace Laboratorio_del_Tema_5_2.Views
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
-
             var tipoItem = cmbTipoUsuario.SelectedItem as ComboBoxItem;
             string tipo = tipoItem.Value.ToString();
-
             if (tipo != TIPO_ADMIN && cmbEntidad.SelectedItem == null)
             {
                 MessageBox.Show("Selecciona la entidad a vincular", "Validacion",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
-
             if (cmbRol.SelectedItem == null)
             {
                 MessageBox.Show("Selecciona un rol", "Validacion",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
-
-            if (string.IsNullOrWhiteSpace(txtUsername.Text))
+            string username = txtUsername.Text.Trim();
+            if (string.IsNullOrWhiteSpace(username))
             {
                 MessageBox.Show("Ingresa un nombre de usuario", "Validacion",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
-
-            if (string.IsNullOrWhiteSpace(txtEmail.Text))
+            if (username.Length < 3)
+            {
+                MessageBox.Show("El username debe tener al menos 3 caracteres.", "Validacion",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+            if (!System.Text.RegularExpressions.Regex.IsMatch(username, @"^[a-zA-Z0-9._]+$"))
+            {
+                MessageBox.Show("El username solo puede contener letras, numeros, puntos y guiones bajos.", "Validacion",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+            string email = txtEmail.Text.Trim();
+            if (string.IsNullOrWhiteSpace(email))
             {
                 MessageBox.Show("Ingresa un email", "Validacion",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
-
+            if (!System.Text.RegularExpressions.Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+            {
+                MessageBox.Show("El email no tiene un formato valido.", "Validacion",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+            if (!_authController.UsernameDisponible(username))
+            {
+                MessageBox.Show("El username ya esta registrado.", "Validacion",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+            if (!_authController.EmailDisponible(email))
+            {
+                MessageBox.Show("El email ya esta registrado.", "Validacion",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
             return true;
         }
 
@@ -447,6 +475,33 @@ namespace Laboratorio_del_Tema_5_2.Views
         {
             CargarDatos();
             CargarUsuarios();
+        }
+
+        private void FormGestionUsuarios_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(txtUsername.Text) || !string.IsNullOrWhiteSpace(txtEmail.Text))
+            {
+                if (MessageBox.Show("Hay cambios sin guardar. Descartarlos?",
+                    "Confirmar", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                    e.Cancel = true;
+            }
+        }
+
+        private void FormGestionUsuarios_KeyDown(object sender, KeyEventArgs e)
+        {
+
+            if (e.Control && e.KeyCode == Keys.F5)
+            {
+                e.SuppressKeyPress = true;
+                btnActualizar_Click(sender, e);
+            }
+            if (e.Control && e.KeyCode == Keys.N)
+            {
+                e.SuppressKeyPress = true;
+                LimpiarFormulario();
+                cmbTipoUsuario.SelectedIndex = 0;
+                ActualizarCombos();
+            }
         }
 
         private void FormGestionUsuarios_Load(object sender, EventArgs e)
